@@ -1,0 +1,310 @@
+package com.android.volley.toolbox;
+
+import android.os.SystemClock;
+import android.support.v4.view.accessibility.AccessibilityNodeInfoCompat;
+import com.android.volley.Cache.Entry;
+import com.android.volley.Network;
+import com.android.volley.Request;
+import com.android.volley.RetryPolicy;
+import com.android.volley.ServerError;
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
+import com.google.android.gms.common.api.CommonStatusCodes;
+import com.google.android.gms.location.places.Place;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Date;
+import java.util.Map;
+import java.util.TreeMap;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.StatusLine;
+import org.apache.http.impl.cookie.DateUtils;
+
+public class BasicNetwork implements Network {
+    protected static final boolean DEBUG;
+    private static int DEFAULT_POOL_SIZE;
+    private static int SLOW_REQUEST_THRESHOLD_MS;
+    protected final HttpStack mHttpStack;
+    protected final ByteArrayPool mPool;
+
+    static {
+        DEBUG = VolleyLog.DEBUG;
+        SLOW_REQUEST_THRESHOLD_MS = CommonStatusCodes.AUTH_API_INVALID_CREDENTIALS;
+        DEFAULT_POOL_SIZE = AccessibilityNodeInfoCompat.ACTION_SCROLL_FORWARD;
+    }
+
+    public BasicNetwork(HttpStack httpStack) {
+        this(httpStack, new ByteArrayPool(DEFAULT_POOL_SIZE));
+    }
+
+    public BasicNetwork(HttpStack httpStack, ByteArrayPool byteArrayPool) {
+        this.mHttpStack = httpStack;
+        this.mPool = byteArrayPool;
+    }
+
+    private void addCacheHeaders(Map<String, String> map, Entry entry) {
+        if (entry != null) {
+            if (entry.etag != null) {
+                map.put("If-None-Match", entry.etag);
+            }
+            if (entry.lastModified > 0) {
+                map.put("If-Modified-Since", DateUtils.formatDate(new Date(entry.lastModified)));
+            }
+        }
+    }
+
+    private static void attemptRetryOnException(String str, Request<?> request, VolleyError volleyError) throws VolleyError {
+        RetryPolicy retryPolicy = request.getRetryPolicy();
+        int timeoutMs = request.getTimeoutMs();
+        try {
+            retryPolicy.retry(volleyError);
+            request.addMarker(String.format("%s-retry [timeout=%s]", new Object[]{str, Integer.valueOf(timeoutMs)}));
+        } catch (VolleyError e) {
+            request.addMarker(String.format("%s-timeout-giveup [timeout=%s]", new Object[]{str, Integer.valueOf(timeoutMs)}));
+            throw e;
+        }
+    }
+
+    protected static Map<String, String> convertHeaders(Header[] headerArr) {
+        Map<String, String> treeMap = new TreeMap(String.CASE_INSENSITIVE_ORDER);
+        for (int i = 0; i < headerArr.length; i++) {
+            treeMap.put(headerArr[i].getName(), headerArr[i].getValue());
+        }
+        return treeMap;
+    }
+
+    private byte[] entityToBytes(HttpEntity httpEntity) throws IOException, ServerError {
+        PoolingByteArrayOutputStream poolingByteArrayOutputStream = new PoolingByteArrayOutputStream(this.mPool, (int) httpEntity.getContentLength());
+        byte[] bArr = null;
+        try {
+            InputStream content = httpEntity.getContent();
+            if (content == null) {
+                throw new ServerError();
+            }
+            bArr = this.mPool.getBuf(Place.TYPE_SUBLOCALITY_LEVEL_2);
+            while (true) {
+                int read = content.read(bArr);
+                if (read == -1) {
+                    break;
+                }
+                poolingByteArrayOutputStream.write(bArr, 0, read);
+            }
+            byte[] toByteArray = poolingByteArrayOutputStream.toByteArray();
+            return toByteArray;
+        } finally {
+            try {
+                httpEntity.consumeContent();
+            } catch (IOException e) {
+                VolleyLog.m19v("Error occured when calling consumingContent", new Object[0]);
+            }
+            this.mPool.returnBuf(bArr);
+            poolingByteArrayOutputStream.close();
+        }
+    }
+
+    private void logSlowRequests(long j, Request<?> request, byte[] bArr, StatusLine statusLine) {
+        if (DEBUG || j > ((long) SLOW_REQUEST_THRESHOLD_MS)) {
+            Integer valueOf = bArr != null ? Integer.valueOf(bArr.length) : "null";
+            VolleyLog.m16d("HTTP response for request=<%s> [lifetime=%d], [size=%s], [rc=%d], [retryCount=%s]", request, Long.valueOf(j), valueOf, Integer.valueOf(statusLine.getStatusCode()), Integer.valueOf(request.getRetryPolicy().getCurrentRetryCount()));
+        }
+    }
+
+    protected void logError(String str, String str2, long j) {
+        VolleyLog.m19v("HTTP ERROR(%s) %d ms to fetch %s", str, Long.valueOf(SystemClock.elapsedRealtime() - j), str2);
+    }
+
+    /* JADX WARNING: inconsistent code. */
+    /* Code decompiled incorrectly, please refer to instructions dump. */
+    public com.android.volley.NetworkResponse performRequest(com.android.volley.Request<?> r19) throws com.android.volley.VolleyError {
+        /*
+        r18 = this;
+        r16 = android.os.SystemClock.elapsedRealtime();
+    L_0x0004:
+        r3 = 0;
+        r6 = java.util.Collections.emptyMap();
+        r2 = new java.util.HashMap;	 Catch:{ SocketTimeoutException -> 0x013f, ConnectTimeoutException -> 0x0148, MalformedURLException -> 0x0145, IOException -> 0x00e2 }
+        r2.<init>();	 Catch:{ SocketTimeoutException -> 0x013f, ConnectTimeoutException -> 0x0148, MalformedURLException -> 0x0145, IOException -> 0x00e2 }
+        r4 = r19.getCacheEntry();	 Catch:{ SocketTimeoutException -> 0x013f, ConnectTimeoutException -> 0x0148, MalformedURLException -> 0x0145, IOException -> 0x00e2 }
+        r0 = r18;
+        r0.addCacheHeaders(r2, r4);	 Catch:{ SocketTimeoutException -> 0x013f, ConnectTimeoutException -> 0x0148, MalformedURLException -> 0x0145, IOException -> 0x00e2 }
+        r0 = r18;
+        r4 = r0.mHttpStack;	 Catch:{ SocketTimeoutException -> 0x013f, ConnectTimeoutException -> 0x0148, MalformedURLException -> 0x0145, IOException -> 0x00e2 }
+        r0 = r19;
+        r14 = r4.performRequest(r0, r2);	 Catch:{ SocketTimeoutException -> 0x013f, ConnectTimeoutException -> 0x0148, MalformedURLException -> 0x0145, IOException -> 0x00e2 }
+        r12 = r14.getStatusLine();	 Catch:{ SocketTimeoutException -> 0x013f, ConnectTimeoutException -> 0x0148, MalformedURLException -> 0x0145, IOException -> 0x0142 }
+        r4 = r12.getStatusCode();	 Catch:{ SocketTimeoutException -> 0x013f, ConnectTimeoutException -> 0x0148, MalformedURLException -> 0x0145, IOException -> 0x0142 }
+        r2 = r14.getAllHeaders();	 Catch:{ SocketTimeoutException -> 0x013f, ConnectTimeoutException -> 0x0148, MalformedURLException -> 0x0145, IOException -> 0x0142 }
+        r6 = convertHeaders(r2);	 Catch:{ SocketTimeoutException -> 0x013f, ConnectTimeoutException -> 0x0148, MalformedURLException -> 0x0145, IOException -> 0x0142 }
+        r2 = 304; // 0x130 float:4.26E-43 double:1.5E-321;
+        if (r4 != r2) goto L_0x0064;
+    L_0x0035:
+        r2 = r19.getCacheEntry();	 Catch:{ SocketTimeoutException -> 0x013f, ConnectTimeoutException -> 0x0148, MalformedURLException -> 0x0145, IOException -> 0x0142 }
+        if (r2 != 0) goto L_0x004b;
+    L_0x003b:
+        r3 = new com.android.volley.NetworkResponse;	 Catch:{ SocketTimeoutException -> 0x013f, ConnectTimeoutException -> 0x0148, MalformedURLException -> 0x0145, IOException -> 0x0142 }
+        r4 = 304; // 0x130 float:4.26E-43 double:1.5E-321;
+        r5 = 0;
+        r7 = 1;
+        r8 = android.os.SystemClock.elapsedRealtime();	 Catch:{ SocketTimeoutException -> 0x013f, ConnectTimeoutException -> 0x0148, MalformedURLException -> 0x0145, IOException -> 0x0142 }
+        r8 = r8 - r16;
+        r3.<init>(r4, r5, r6, r7, r8);	 Catch:{ SocketTimeoutException -> 0x013f, ConnectTimeoutException -> 0x0148, MalformedURLException -> 0x0145, IOException -> 0x0142 }
+    L_0x004a:
+        return r3;
+    L_0x004b:
+        r3 = r2.responseHeaders;	 Catch:{ SocketTimeoutException -> 0x013f, ConnectTimeoutException -> 0x0148, MalformedURLException -> 0x0145, IOException -> 0x0142 }
+        r3.putAll(r6);	 Catch:{ SocketTimeoutException -> 0x013f, ConnectTimeoutException -> 0x0148, MalformedURLException -> 0x0145, IOException -> 0x0142 }
+        r7 = new com.android.volley.NetworkResponse;	 Catch:{ SocketTimeoutException -> 0x013f, ConnectTimeoutException -> 0x0148, MalformedURLException -> 0x0145, IOException -> 0x0142 }
+        r8 = 304; // 0x130 float:4.26E-43 double:1.5E-321;
+        r9 = r2.data;	 Catch:{ SocketTimeoutException -> 0x013f, ConnectTimeoutException -> 0x0148, MalformedURLException -> 0x0145, IOException -> 0x0142 }
+        r10 = r2.responseHeaders;	 Catch:{ SocketTimeoutException -> 0x013f, ConnectTimeoutException -> 0x0148, MalformedURLException -> 0x0145, IOException -> 0x0142 }
+        r11 = 1;
+        r2 = android.os.SystemClock.elapsedRealtime();	 Catch:{ SocketTimeoutException -> 0x013f, ConnectTimeoutException -> 0x0148, MalformedURLException -> 0x0145, IOException -> 0x0142 }
+        r12 = r2 - r16;
+        r7.<init>(r8, r9, r10, r11, r12);	 Catch:{ SocketTimeoutException -> 0x013f, ConnectTimeoutException -> 0x0148, MalformedURLException -> 0x0145, IOException -> 0x0142 }
+        r3 = r7;
+        goto L_0x004a;
+    L_0x0064:
+        r2 = r14.getEntity();	 Catch:{ SocketTimeoutException -> 0x013f, ConnectTimeoutException -> 0x0148, MalformedURLException -> 0x0145, IOException -> 0x0142 }
+        if (r2 == 0) goto L_0x009e;
+    L_0x006a:
+        r2 = r14.getEntity();	 Catch:{ SocketTimeoutException -> 0x013f, ConnectTimeoutException -> 0x0148, MalformedURLException -> 0x0145, IOException -> 0x0142 }
+        r0 = r18;
+        r11 = r0.entityToBytes(r2);	 Catch:{ SocketTimeoutException -> 0x013f, ConnectTimeoutException -> 0x0148, MalformedURLException -> 0x0145, IOException -> 0x0142 }
+    L_0x0074:
+        r2 = android.os.SystemClock.elapsedRealtime();	 Catch:{ SocketTimeoutException -> 0x008f, ConnectTimeoutException -> 0x00b0, MalformedURLException -> 0x00bf, IOException -> 0x013c }
+        r8 = r2 - r16;
+        r7 = r18;
+        r10 = r19;
+        r7.logSlowRequests(r8, r10, r11, r12);	 Catch:{ SocketTimeoutException -> 0x008f, ConnectTimeoutException -> 0x00b0, MalformedURLException -> 0x00bf, IOException -> 0x013c }
+        r2 = 200; // 0xc8 float:2.8E-43 double:9.9E-322;
+        if (r4 < r2) goto L_0x0089;
+    L_0x0085:
+        r2 = 299; // 0x12b float:4.19E-43 double:1.477E-321;
+        if (r4 <= r2) goto L_0x00a2;
+    L_0x0089:
+        r2 = new java.io.IOException;	 Catch:{ SocketTimeoutException -> 0x008f, ConnectTimeoutException -> 0x00b0, MalformedURLException -> 0x00bf, IOException -> 0x013c }
+        r2.<init>();	 Catch:{ SocketTimeoutException -> 0x008f, ConnectTimeoutException -> 0x00b0, MalformedURLException -> 0x00bf, IOException -> 0x013c }
+        throw r2;	 Catch:{ SocketTimeoutException -> 0x008f, ConnectTimeoutException -> 0x00b0, MalformedURLException -> 0x00bf, IOException -> 0x013c }
+    L_0x008f:
+        r2 = move-exception;
+    L_0x0090:
+        r2 = "socket";
+        r3 = new com.android.volley.TimeoutError;
+        r3.<init>();
+        r0 = r19;
+        attemptRetryOnException(r2, r0, r3);
+        goto L_0x0004;
+    L_0x009e:
+        r2 = 0;
+        r11 = new byte[r2];	 Catch:{ SocketTimeoutException -> 0x013f, ConnectTimeoutException -> 0x0148, MalformedURLException -> 0x0145, IOException -> 0x0142 }
+        goto L_0x0074;
+    L_0x00a2:
+        r3 = new com.android.volley.NetworkResponse;	 Catch:{ SocketTimeoutException -> 0x008f, ConnectTimeoutException -> 0x00b0, MalformedURLException -> 0x00bf, IOException -> 0x013c }
+        r7 = 0;
+        r8 = android.os.SystemClock.elapsedRealtime();	 Catch:{ SocketTimeoutException -> 0x008f, ConnectTimeoutException -> 0x00b0, MalformedURLException -> 0x00bf, IOException -> 0x013c }
+        r8 = r8 - r16;
+        r5 = r11;
+        r3.<init>(r4, r5, r6, r7, r8);	 Catch:{ SocketTimeoutException -> 0x008f, ConnectTimeoutException -> 0x00b0, MalformedURLException -> 0x00bf, IOException -> 0x013c }
+        goto L_0x004a;
+    L_0x00b0:
+        r2 = move-exception;
+    L_0x00b1:
+        r2 = "connection";
+        r3 = new com.android.volley.TimeoutError;
+        r3.<init>();
+        r0 = r19;
+        attemptRetryOnException(r2, r0, r3);
+        goto L_0x0004;
+    L_0x00bf:
+        r2 = move-exception;
+    L_0x00c0:
+        r3 = r19.getUrl();
+        r3 = java.lang.String.valueOf(r3);
+        r4 = r3.length();
+        if (r4 == 0) goto L_0x00da;
+    L_0x00ce:
+        r4 = "Bad URL ";
+        r3 = r4.concat(r3);
+    L_0x00d4:
+        r4 = new java.lang.RuntimeException;
+        r4.<init>(r3, r2);
+        throw r4;
+    L_0x00da:
+        r3 = new java.lang.String;
+        r4 = "Bad URL ";
+        r3.<init>(r4);
+        goto L_0x00d4;
+    L_0x00e2:
+        r2 = move-exception;
+    L_0x00e3:
+        r5 = 0;
+        r14 = r3;
+    L_0x00e5:
+        if (r14 == 0) goto L_0x0129;
+    L_0x00e7:
+        r2 = r14.getStatusLine();
+        r4 = r2.getStatusCode();
+        r2 = "Unexpected response code %d for %s";
+        r3 = 2;
+        r3 = new java.lang.Object[r3];
+        r7 = 0;
+        r8 = java.lang.Integer.valueOf(r4);
+        r3[r7] = r8;
+        r7 = 1;
+        r8 = r19.getUrl();
+        r3[r7] = r8;
+        com.android.volley.VolleyLog.m17e(r2, r3);
+        if (r5 == 0) goto L_0x0135;
+    L_0x0107:
+        r3 = new com.android.volley.NetworkResponse;
+        r7 = 0;
+        r8 = android.os.SystemClock.elapsedRealtime();
+        r8 = r8 - r16;
+        r3.<init>(r4, r5, r6, r7, r8);
+        r2 = 401; // 0x191 float:5.62E-43 double:1.98E-321;
+        if (r4 == r2) goto L_0x011b;
+    L_0x0117:
+        r2 = 403; // 0x193 float:5.65E-43 double:1.99E-321;
+        if (r4 != r2) goto L_0x012f;
+    L_0x011b:
+        r2 = "auth";
+        r4 = new com.android.volley.AuthFailureError;
+        r4.<init>(r3);
+        r0 = r19;
+        attemptRetryOnException(r2, r0, r4);
+        goto L_0x0004;
+    L_0x0129:
+        r3 = new com.android.volley.NoConnectionError;
+        r3.<init>(r2);
+        throw r3;
+    L_0x012f:
+        r2 = new com.android.volley.ServerError;
+        r2.<init>(r3);
+        throw r2;
+    L_0x0135:
+        r2 = new com.android.volley.NetworkError;
+        r3 = 0;
+        r2.<init>(r3);
+        throw r2;
+    L_0x013c:
+        r2 = move-exception;
+        r5 = r11;
+        goto L_0x00e5;
+    L_0x013f:
+        r2 = move-exception;
+        goto L_0x0090;
+    L_0x0142:
+        r2 = move-exception;
+        r3 = r14;
+        goto L_0x00e3;
+    L_0x0145:
+        r2 = move-exception;
+        goto L_0x00c0;
+    L_0x0148:
+        r2 = move-exception;
+        goto L_0x00b1;
+        */
+        throw new UnsupportedOperationException("Method not decompiled: com.android.volley.toolbox.BasicNetwork.performRequest(com.android.volley.Request):com.android.volley.NetworkResponse");
+    }
+}

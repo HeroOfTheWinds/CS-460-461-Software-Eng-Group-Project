@@ -1,0 +1,4 @@
+{
+  "push_token_ttl": 604800,
+  "auto_register": true
+}

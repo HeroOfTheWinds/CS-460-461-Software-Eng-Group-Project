@@ -1,0 +1,40 @@
+!!brut.androlib.meta.MetaInfo
+apkFileName: com.nianticlabs.pokemongo_0.35.0-2016082200_minAPI19(armeabi-v7a)(nodpi)_apkmirror.com.apk
+compressionType: false
+doNotCompress:
+- arsc
+- resource
+- assets/bin/Data/sharedassets0.resource.split0
+- assets/bin/Data/sharedassets0.resource.split1
+- assets/bin/Data/sharedassets0.resource.split10
+- assets/bin/Data/sharedassets0.resource.split11
+- assets/bin/Data/sharedassets0.resource.split12
+- assets/bin/Data/sharedassets0.resource.split13
+- assets/bin/Data/sharedassets0.resource.split14
+- assets/bin/Data/sharedassets0.resource.split15
+- assets/bin/Data/sharedassets0.resource.split2
+- assets/bin/Data/sharedassets0.resource.split3
+- assets/bin/Data/sharedassets0.resource.split4
+- assets/bin/Data/sharedassets0.resource.split5
+- assets/bin/Data/sharedassets0.resource.split6
+- assets/bin/Data/sharedassets0.resource.split7
+- assets/bin/Data/sharedassets0.resource.split8
+- assets/bin/Data/sharedassets0.resource.split9
+- json
+isFrameworkApk: false
+packageInfo:
+  forcedPackageId: '127'
+  renameManifestPackage: null
+sdkInfo:
+  minSdkVersion: '19'
+  targetSdkVersion: '23'
+sharedLibrary: false
+unknownFiles: {}
+usesFramework:
+  ids:
+  - 1
+  tag: null
+version: 2.2.0
+versionInfo:
+  versionCode: '2016082200'
+  versionName: 0.35.0
