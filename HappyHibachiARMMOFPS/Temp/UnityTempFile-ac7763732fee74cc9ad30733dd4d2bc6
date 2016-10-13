@@ -1,0 +1,231 @@
+-debug
+-target:library
+-nowarn:0169
+-out:'Temp/Assembly-CSharp.dll'
+-r:'/Applications/Unity/Unity.app/Contents/Frameworks/Managed/UnityEngine.dll'
+-r:'Library/ScriptAssemblies/Assembly-CSharp-firstpass.dll'
+-r:'/Applications/Unity/Unity.app/Contents/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll'
+-r:'/Applications/Unity/Unity.app/Contents/UnityExtensions/Unity/Networking/UnityEngine.Networking.dll'
+-r:'/Applications/Unity/Unity.app/Contents/Frameworks/Managed/UnityEditor.dll'
+-r:'/Applications/Unity/Unity.app/Contents/PlaybackEngines/iOSSupport/UnityEditor.iOS.Extensions.Xcode.dll'
+-define:UNITY_5_2_5
+-define:UNITY_5_2
+-define:UNITY_5
+-define:ENABLE_NEW_BUGREPORTER
+-define:ENABLE_2D_PHYSICS
+-define:ENABLE_4_6_FEATURES
+-define:ENABLE_AUDIO
+-define:ENABLE_CACHING
+-define:ENABLE_CLOTH
+-define:ENABLE_FRAME_DEBUGGER
+-define:ENABLE_GENERICS
+-define:ENABLE_HOME_SCREEN
+-define:ENABLE_IMAGEEFFECTS
+-define:ENABLE_LIGHT_PROBES_LEGACY
+-define:ENABLE_MICROPHONE
+-define:ENABLE_MULTIPLE_DISPLAYS
+-define:ENABLE_PHYSICS
+-define:ENABLE_PLUGIN_INSPECTOR
+-define:ENABLE_SHADOWS
+-define:ENABLE_SINGLE_INSTANCE_BUILD_SETTING
+-define:ENABLE_SPRITES
+-define:ENABLE_TERRAIN
+-define:ENABLE_RAKNET
+-define:ENABLE_UNET
+-define:ENABLE_UNITYEVENTS
+-define:ENABLE_VR
+-define:ENABLE_WEBCAM
+-define:ENABLE_WWW
+-define:ENABLE_CLOUD_SERVICES
+-define:ENABLE_CLOUD_SERVICES_ADS
+-define:ENABLE_CLOUD_HUB
+-define:ENABLE_CLOUD_PROJECT_ID
+-define:ENABLE_CLOUD_SERVICES_ANALYTICS
+-define:ENABLE_CLOUD_SERVICES_UNET
+-define:ENABLE_CLOUD_SERVICES_BUILD
+-define:ENABLE_CLOUD_LICENSE
+-define:ENABLE_EDITOR_METRICS
+-define:ENABLE_REFLECTION_BUFFERS
+-define:INCLUDE_DYNAMIC_GI
+-define:INCLUDE_GI
+-define:INCLUDE_IL2CPP
+-define:INCLUDE_DIRECTX12
+-define:PLATFORM_SUPPORTS_MONO
+-define:RENDER_SOFTWARE_CURSOR
+-define:ENABLE_LOCALIZATION
+-define:ENABLE_ANDROID_ATLAS_ETC1_COMPRESSION
+-define:UNITY_ANDROID
+-define:UNITY_ANDROID_API
+-define:ENABLE_SUBSTANCE
+-define:ENABLE_TEXTUREID_MAP
+-define:ENABLE_EGL
+-define:ENABLE_NETWORK
+-define:ENABLE_RUNTIME_GI
+-define:ENABLE_CRUNCH_TEXTURE_COMPRESSION
+-define:ENABLE_LOG_MIXED_STACKTRACE
+-define:ENABLE_UNITYADS_RUNTIME
+-define:UNITY_UNITYADS_API
+-define:ENABLE_MONO
+-define:ENABLE_PROFILER
+-define:DEBUG
+-define:TRACE
+-define:UNITY_ASSERTIONS
+-define:UNITY_EDITOR
+-define:UNITY_EDITOR_64
+-define:UNITY_EDITOR_OSX
+-define:UNITY_TEAM_LICENSE
+-define:CROSS_PLATFORM_INPUT
+-define:MOBILE_INPUT
+'Assets/ARCamera.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/BingMapsLocationAPIExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/CacheTilesExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/CalcAreaExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/ChangeMapTextureExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/ChangeMarkerTextureExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/ChangePositionAndZoomEventsExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/ChangePositionUsingGyro.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/ChangeProviderAndTypeExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/CheckIntenetConnectionExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/ControlDataTrafficExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/CustomDownloadTileExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/DetectWaterByTextureExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/DistanceAndDirectionExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/DottedLineExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/DragMarkerAndTranslateMapExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/DragMarkerByLongPressExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/DrawingAPI_Example.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/DrawingElementEventsExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/FindAutocompleteExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/FindDirectionExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/FindLocationExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/FindLocationNameExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/FindPlacesExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/GPXExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/GetCenterPointOfMarkersExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/GetElevationExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/GroupMarkersExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/HereRoutingAPIExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/InertiaExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/InterceptElevationRequestExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/InterceptInputExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/LockPositionAndZoomExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/Marker3D_Example.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/Marker3D_GPS_Example.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/MarkerClickCountExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/MarkerClickExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/MarkerCustomDataExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/MarkerScaleByZoomExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/Marker_GPS_Example.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/ModifyTooltipStyleExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/MoveMarkerOnRouteExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/MoveMarkersExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/NGUI/NGUICustomMarkerExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/NGUI/NGUICustomMarkerSystemExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/NGUI/NGUICustomTooltipExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/OSMRequestExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/OnDrawTooltipExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/OnHoverExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/OpenRouteServiceExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/RealTilesetSizeExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/ResetCameraRotationExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/RotateCameraByCompassExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/RotateMapInsteadMarkerExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/SaveMapStateExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/SaveMarker3DExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/SaveMarkersExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/ScreenToGeoExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/ShowMarkerLabelsByZoomExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/SmoothMoveExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/TilesetMapTilerOverlayExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/TilesetMarkerDepthExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/TilesetOverlayExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/TooltipWithoutBackgroundExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/UpdateZoomOnSmoothZoomProcessExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/uGUI/uGUICustomMarkerEngineExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/uGUI/uGUICustomMarkerExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/uGUI/uGUICustomTooltipExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/uGUI/uGUICustomTooltipForAllMarkersExample.cs'
+'Assets/Infinity Code/Online maps/Examples (API usage)/uGUI/uGUISmoothZoomExample.cs'
+'Assets/Infinity Code/Online maps/Examples/Scripts/Aircraft.cs'
+'Assets/Infinity Code/Online maps/Examples/Scripts/AircraftWarning.cs'
+'Assets/Infinity Code/Online maps/Examples/Scripts/Demo.cs'
+'Assets/Infinity Code/Online maps/Examples/Scripts/ExampleGUI.cs'
+'Assets/Infinity Code/Online maps/Examples/Scripts/GUITextureSize.cs'
+'Assets/Infinity Code/Online maps/Scripts/Controls/OnlineMapsControlBase.cs'
+'Assets/Infinity Code/Online maps/Scripts/Controls/OnlineMapsControlBase2D.cs'
+'Assets/Infinity Code/Online maps/Scripts/Controls/OnlineMapsControlBase3D.cs'
+'Assets/Infinity Code/Online maps/Scripts/Controls/OnlineMapsDFGUITextureControl.cs'
+'Assets/Infinity Code/Online maps/Scripts/Controls/OnlineMapsGUITextureControl.cs'
+'Assets/Infinity Code/Online maps/Scripts/Controls/OnlineMapsIGUITextureControl.cs'
+'Assets/Infinity Code/Online maps/Scripts/Controls/OnlineMapsNGUITextureControl.cs'
+'Assets/Infinity Code/Online maps/Scripts/Controls/OnlineMapsSpriteRendererControl.cs'
+'Assets/Infinity Code/Online maps/Scripts/Controls/OnlineMapsTextureControl.cs'
+'Assets/Infinity Code/Online maps/Scripts/Controls/OnlineMapsTileSetControl.cs'
+'Assets/Infinity Code/Online maps/Scripts/Controls/OnlineMapsUIImageControl.cs'
+'Assets/Infinity Code/Online maps/Scripts/Controls/OnlineMapsUIRawImageControl.cs'
+'Assets/Infinity Code/Online maps/Scripts/Drawing/OnlineMapsDrawingElement.cs'
+'Assets/Infinity Code/Online maps/Scripts/Drawing/OnlineMapsDrawingLine.cs'
+'Assets/Infinity Code/Online maps/Scripts/Drawing/OnlineMapsDrawingPoly.cs'
+'Assets/Infinity Code/Online maps/Scripts/Drawing/OnlineMapsDrawingRect.cs'
+'Assets/Infinity Code/Online maps/Scripts/GoogleAPI/OnlineMapsBingMapsLocation.cs'
+'Assets/Infinity Code/Online maps/Scripts/GoogleAPI/OnlineMapsFindAutocomplete.cs'
+'Assets/Infinity Code/Online maps/Scripts/GoogleAPI/OnlineMapsFindDirection.cs'
+'Assets/Infinity Code/Online maps/Scripts/GoogleAPI/OnlineMapsFindDirectionAdvanced.cs'
+'Assets/Infinity Code/Online maps/Scripts/GoogleAPI/OnlineMapsFindLocation.cs'
+'Assets/Infinity Code/Online maps/Scripts/GoogleAPI/OnlineMapsFindPlaceDetails.cs'
+'Assets/Infinity Code/Online maps/Scripts/GoogleAPI/OnlineMapsFindPlaces.cs'
+'Assets/Infinity Code/Online maps/Scripts/GoogleAPI/OnlineMapsGetElevation.cs'
+'Assets/Infinity Code/Online maps/Scripts/GoogleAPI/OnlineMapsGoogleAPIQuery.cs'
+'Assets/Infinity Code/Online maps/Scripts/GoogleAPI/OnlineMapsHereRoutingAPI.cs'
+'Assets/Infinity Code/Online maps/Scripts/GoogleAPI/OnlineMapsOSMAPIQuery.cs'
+'Assets/Infinity Code/Online maps/Scripts/GoogleAPI/OnlineMapsOSMNominatim.cs'
+'Assets/Infinity Code/Online maps/Scripts/GoogleAPI/OnlineMapsOpenRouteService.cs'
+'Assets/Infinity Code/Online maps/Scripts/GoogleAPI/Results/OnlineMapsBingMapsLocationResult.cs'
+'Assets/Infinity Code/Online maps/Scripts/GoogleAPI/Results/OnlineMapsFindAutocompleteResult.cs'
+'Assets/Infinity Code/Online maps/Scripts/GoogleAPI/Results/OnlineMapsFindDirectionResult.cs'
+'Assets/Infinity Code/Online maps/Scripts/GoogleAPI/Results/OnlineMapsFindLocationResult.cs'
+'Assets/Infinity Code/Online maps/Scripts/GoogleAPI/Results/OnlineMapsFindPlaceDetailsResult.cs'
+'Assets/Infinity Code/Online maps/Scripts/GoogleAPI/Results/OnlineMapsFindPlacesResult.cs'
+'Assets/Infinity Code/Online maps/Scripts/GoogleAPI/Results/OnlineMapsGetElevationResult.cs'
+'Assets/Infinity Code/Online maps/Scripts/GoogleAPI/Results/OnlineMapsHereRoutingAPIResult.cs'
+'Assets/Infinity Code/Online maps/Scripts/GoogleAPI/Results/OnlineMapsOSMNominatimResult.cs'
+'Assets/Infinity Code/Online maps/Scripts/Markers/OnlineMapsMarker.cs'
+'Assets/Infinity Code/Online maps/Scripts/Markers/OnlineMapsMarker3D.cs'
+'Assets/Infinity Code/Online maps/Scripts/Markers/OnlineMapsMarker3DInstance.cs'
+'Assets/Infinity Code/Online maps/Scripts/Markers/OnlineMapsMarkerBase.cs'
+'Assets/Infinity Code/Online maps/Scripts/Markers/OnlineMapsMarkerBillboard.cs'
+'Assets/Infinity Code/Online maps/Scripts/Markers/OnlineMapsMarkerInstanceBase.cs'
+'Assets/Infinity Code/Online maps/Scripts/OnlineMaps.cs'
+'Assets/Infinity Code/Online maps/Scripts/OnlineMapsBuffer.cs'
+'Assets/Infinity Code/Online maps/Scripts/OnlineMapsEnums.cs'
+'Assets/Infinity Code/Online maps/Scripts/OnlineMapsPositionRange.cs'
+'Assets/Infinity Code/Online maps/Scripts/OnlineMapsProvider.cs'
+'Assets/Infinity Code/Online maps/Scripts/OnlineMapsRange.cs'
+'Assets/Infinity Code/Online maps/Scripts/OnlineMapsThreadManager.cs'
+'Assets/Infinity Code/Online maps/Scripts/OnlineMapsThreadWINRT.cs'
+'Assets/Infinity Code/Online maps/Scripts/OnlineMapsTile.cs'
+'Assets/Infinity Code/Online maps/Scripts/OnlineMapsUtils.cs'
+'Assets/Infinity Code/Online maps/Scripts/OnlineMapsVector2i.cs'
+'Assets/Infinity Code/Online maps/Scripts/OnlineMapsWWW.cs'
+'Assets/Infinity Code/Online maps/Scripts/Plugins/Buildings/OnlineMapsBuildingBase.cs'
+'Assets/Infinity Code/Online maps/Scripts/Plugins/Buildings/OnlineMapsBuildingBuiltIn.cs'
+'Assets/Infinity Code/Online maps/Scripts/Plugins/Buildings/OnlineMapsBuildingMaterial.cs'
+'Assets/Infinity Code/Online maps/Scripts/Plugins/Buildings/OnlineMapsBuildings.cs'
+'Assets/Infinity Code/Online maps/Scripts/Plugins/JSLoader/OnlineMapsJSLoader.cs'
+'Assets/Infinity Code/Online maps/Scripts/Plugins/OnlineMapsDirectionStep.cs'
+'Assets/Infinity Code/Online maps/Scripts/Plugins/OnlineMapsGPXObject.cs'
+'Assets/Infinity Code/Online maps/Scripts/Plugins/OnlineMapsJPEGDecoder.cs'
+'Assets/Infinity Code/Online maps/Scripts/Plugins/OnlineMapsLocationService.cs'
+'Assets/Infinity Code/Online maps/Scripts/Plugins/OnlineMapsRWTConnector.cs'
+'Assets/Infinity Code/Online maps/Scripts/Projections/OnlineMapsProjection.cs'
+'Assets/Infinity Code/Online maps/Scripts/Projections/OnlineMapsProjectionSphericalMercator.cs'
+'Assets/Infinity Code/Online maps/Scripts/Projections/OnlineMapsProjectionWGS84.cs'
+'Assets/Infinity Code/Online maps/Scripts/XML/OnlineMapsXML.cs'
+'Assets/Infinity Code/Online maps/Scripts/XML/OnlineMapsXMLEnum.cs'
+'Assets/Infinity Code/Online maps/Scripts/XML/OnlineMapsXMLList.cs'
+'Assets/Infinity Code/Online maps/Scripts/XML/OnlineMapsXMLListEnum.cs'
+'Assets/Infinity Code/Online maps/Scripts/XML/OnlineMapsXMLNamespaceManager.cs'
+'Assets/PlayerStatus.cs'
+'Assets/menuAppear.cs'
+-r:'/Applications/Unity/Unity.app/Contents/Frameworks/Mono/lib/mono/unity/System.Runtime.Serialization.dll'
+-r:'/Applications/Unity/Unity.app/Contents/Frameworks/Mono/lib/mono/unity/System.Xml.Linq.dll'
