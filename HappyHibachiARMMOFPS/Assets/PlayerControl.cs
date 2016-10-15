@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.Networking;
 
-public class PlayerControl : MonoBehaviour {
+public class PlayerControl : NetworkBehaviour {
 
     private Quaternion CameraRot;
 
@@ -15,6 +16,11 @@ public class PlayerControl : MonoBehaviour {
 
     // Update is called once per frame
     void Update () {
+        if(!isLocalPlayer)
+        {
+            return;
+        }
+
         Debug.Log(Input.acceleration);
         /*      
 
