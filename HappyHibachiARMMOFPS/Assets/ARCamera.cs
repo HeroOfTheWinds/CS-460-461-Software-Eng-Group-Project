@@ -25,7 +25,7 @@ public class ARCamera : MonoBehaviour {
             }
         }
 
-        WebCamTexture CameraTexture = new WebCamTexture(backCamName, 10000, 10000, 30);
+        WebCamTexture CameraTexture = new WebCamTexture(backCamName);//, 10000, 10000, 30);
         rawImage.texture = CameraTexture;
         rawImage.material.mainTexture = CameraTexture;
         CameraTexture.Play();

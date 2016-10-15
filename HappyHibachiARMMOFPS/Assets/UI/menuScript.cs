@@ -2,12 +2,11 @@
 using System.Collections;
 
 public class menuScript : MonoBehaviour {
-	private Canvas menu; // Assign in inspector
+	public Canvas menu; // Assign in inspector
 	private bool isShowing;
 	
 	// Use this for initialization
 	void Start () {
-		menu = ;
 		menu.enabled = false;
 	}
 	
