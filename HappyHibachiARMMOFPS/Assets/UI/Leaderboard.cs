@@ -11,11 +11,11 @@ public class Leaderboard : MonoBehaviour {
 	}
 
     // Update is called once per frame
-    IEnumerator getLeaderboard () {
+    public void getLeaderboard () {
         //assume www is the object and is yielded with the value from php bfore this step...
         Debug.Log("value1");
         WWW www = new WWW(url);
-        yield return www;
+        //yield return www;
         string[] temp = www.text.Split("*".ToCharArray());
 
         // and in the temp array you can use parse to get the value back...
