@@ -7,7 +7,7 @@ public class menuScript : MonoBehaviour {
 	
 	// Use this for initialization
 	void Start () {
-		menu = ;
+		//menu = ;
 		menu.enabled = false;
 	}
 	
