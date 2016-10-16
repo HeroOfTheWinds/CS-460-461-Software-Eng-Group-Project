@@ -37,21 +37,13 @@ public class PlayerControl : NetworkBehaviour {
 
         // This is sloppy, will use a more thought out method that includes rotation later
 
-        /*
-        // Ignore this
-        
-        Debug.Log(Input.acceleration);
-             
+        // Now rotate the camera based on gyroscope input
+        // Grab the reference matrix for quaternions, as a base
+        Quaternion referenceRotation = Quaternion.identity;
+        // Get the current rotation of the phone 
+        Quaternion deviceRotation = DeviceRotation.Get();
 
-        dir.x += Input.acceleration.x;
-        dir.z -= Input.acceleration.z;
-
-        dir *= Time.deltaTime;
-
-        transform.Translate(dir);
-        
-
-        ARCam.transform.Rotate(new Vector3(Input.acceleration.z, Input.acceleration.x, 0));//, Space.World);
-        */
+        // Rotate camera based on gyroscope
+        ARCam.transform.rotation = deviceRotation;
 	}
 }
