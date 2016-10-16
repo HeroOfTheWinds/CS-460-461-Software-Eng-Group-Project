@@ -1,27 +1,7 @@
-Base path: P:/Unity3D/Unity/Editor/Data
-Pipe name: \\.\pipe\UnityShaderCompiler-64bit-1-10044
+Base path: C:/Program Files (x86)/Unity/Editor/Data
+Pipe name: \\.\pipe\UnityShaderCompiler-64bit-1-5480
 Cmd: getPlatforms
 Cmd: preprocess
-  insize=862 outsize=1231 ok=1
-Cmd: compileSnippet
-  api=4 type=0 insize=6323 outsize=3061 kw=DIRECTIONAL SHADOWS_OFF LIGHTMAP_OFF DIRLIGHTMAP_OFF DYNAMICLIGHTMAP_OFF pd= ok=1
-Cmd: compileSnippet
-  api=4 type=1 insize=6323 outsize=908 kw=DIRECTIONAL SHADOWS_OFF LIGHTMAP_OFF DIRLIGHTMAP_OFF DYNAMICLIGHTMAP_OFF pd= ok=1
-Cmd: compileSnippet
-  api=4 type=0 insize=3402 outsize=2533 kw=POINT pd= ok=1
-Cmd: compileSnippet
-  api=4 type=1 insize=3402 outsize=1323 kw=POINT pd= ok=1
-Cmd: compileSnippet
-  api=4 type=0 insize=2907 outsize=1859 kw= pd= ok=1
-Cmd: compileSnippet
-  api=4 type=1 insize=2907 outsize=1136 kw= pd= ok=1
+  insize=948 outsize=1265 ok=1
 Cmd: preprocess
-  insize=2274 outsize=1042 ok=1
-Cmd: compileSnippet
-  api=4 type=0 insize=1534 outsize=1290 kw=SOFTPARTICLES_OFF pd= ok=1
-Cmd: compileSnippet
-  api=4 type=1 insize=1534 outsize=924 kw=SOFTPARTICLES_OFF pd= ok=1
-Cmd: compileSnippet
-  api=4 type=0 insize=3402 outsize=2533 kw=DIRECTIONAL pd= ok=1
-Cmd: compileSnippet
-  api=4 type=1 insize=3402 outsize=803 kw=DIRECTIONAL pd= ok=1
+  insize=2379 outsize=1092 ok=1
