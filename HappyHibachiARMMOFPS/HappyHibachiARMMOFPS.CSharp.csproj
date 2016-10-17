@@ -234,6 +234,13 @@
     <Compile Include="Assets\MoveShot.cs" />
     <Compile Include="Assets\PlayerControl.cs" />
     <Compile Include="Assets\PlayerStatus.cs" />
+    <Compile Include="Assets\Scripts\LandMarkerScripts\LandmarkCamera.cs" />
+    <Compile Include="Assets\Scripts\LandMarkerScripts\SendLandmark.cs" />
+    <Compile Include="Assets\Scripts\LandMarkerScripts\SetName.cs" />
+    <Compile Include="Assets\Scripts\LandMarkerScripts\display_coordinates.cs" />
+    <Compile Include="Assets\Scripts\LandMarkerScripts\get_coordinates.cs" />
+    <Compile Include="Assets\Scripts\LandMarkerScripts\take_picture.cs" />
+    <Compile Include="Assets\Scripts\LandMarkerScripts\testbutton.cs" />
     <Compile Include="Assets\UI\Leaderboard\LeaderboardScroll.cs" />
     <Compile Include="Assets\UI\button.cs" />
     <Compile Include="Assets\UI\menuAppear.cs" />
