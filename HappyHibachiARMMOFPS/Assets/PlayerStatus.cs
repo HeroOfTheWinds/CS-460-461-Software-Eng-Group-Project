@@ -12,22 +12,32 @@ public class PlayerStatus : MonoBehaviour {
 
     private float currentHP = 100f;
 
+    // Reference the HP bar above the player for updating size
+    public GameObject HPBar;
+
 	// Use this for initialization
 	void Start () {
-	
+        // Code for retrieving level from server should go here //
+
+        // Calculate stats based off received data
+        CalcStats();
 	}
 	
 	// Update is called once per frame
 	void Update () {
         // Should we let players invest points, or just do auto-level based points?
         // Should we change base growths for different factions?
-	
+
+        // Change HP Bar's width based on health remaining
+        HPBar.transform.localScale = new Vector3(currentHP / maxHP, 1f, 1f);
 	}
 
     public void TakeHP(float hp)
     {
         // Decrease player's current HP by given amount
         currentHP -= hp;
+        if (currentHP < 0)
+            currentHP = 0;
 
         // Check if HP <= 0, lose battle if so
     }
@@ -47,10 +57,10 @@ public class PlayerStatus : MonoBehaviour {
     private void CalcStats()
     {
         // Using linear for now, will do something robust later
-        maxHP = 100 + level * 21;
-        attack = 15 + level * 4;
-        defense = 10 + level * 3;
-        atkSpeed = 0.5f + 0.05f * level;
+        maxHP = 100 + (level - 1) * 21;
+        attack = 15 + (level - 1) * 4;
+        defense = 10 + (level - 1) * 3;
+        atkSpeed = 0.5f + 0.05f * (level - 1);
     }
 
     /*

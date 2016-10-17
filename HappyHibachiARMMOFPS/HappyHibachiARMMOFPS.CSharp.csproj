@@ -225,6 +225,7 @@
     <Compile Include="Assets\Infinity Code\Online maps\Scripts\XML\OnlineMapsXMLList.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Scripts\XML\OnlineMapsXMLListEnum.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Scripts\XML\OnlineMapsXMLNamespaceManager.cs" />
+    <Compile Include="Assets\MoveShot.cs" />
     <Compile Include="Assets\PlayerControl.cs" />
     <Compile Include="Assets\PlayerStatus.cs" />
     <Compile Include="Assets\UI\Leaderboard.cs" />
