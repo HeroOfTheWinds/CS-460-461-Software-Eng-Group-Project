@@ -19,12 +19,12 @@ public class SendLandmark : MonoBehaviour {
                 form.AddField("NameFromUnity", NameString.GetComponent<Text>().text);
                 form.AddField("LonFromUnity", LonString.GetComponent<Text>().text);
                 form.AddField("LatFromUnity", LatString.GetComponent<Text>().text);
-                WWW download = new WWW(url, form);
+                WWW upload = new WWW(url, form);
                 // yield return download;
                 //Debug.Log(download.error);
-                if (!string.IsNullOrEmpty(download.error))
+                if (!string.IsNullOrEmpty(upload.error))
                 {
-                    print(download.error);
+                    print(upload.error);
                 }
                 else
                 {
