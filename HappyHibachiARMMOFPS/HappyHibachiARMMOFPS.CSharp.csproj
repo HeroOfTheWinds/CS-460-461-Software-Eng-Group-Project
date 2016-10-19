@@ -58,12 +58,6 @@
     <Reference Include="UnityEngine.Networking">
       <HintPath>Library\UnityAssemblies\UnityEngine.Networking.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.Networking">
-      <HintPath>Library\UnityAssemblies\UnityEngine.Networking.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.UI">
-      <HintPath>Library\UnityAssemblies\UnityEngine.UI.dll</HintPath>
-    </Reference>
     <Reference Include="UnityEditor">
       <HintPath>Library\UnityAssemblies\UnityEditor.dll</HintPath>
     </Reference>
@@ -241,8 +235,8 @@
     <Compile Include="Assets\Scripts\LandMarkerScripts\get_coordinates.cs" />
     <Compile Include="Assets\Scripts\LandMarkerScripts\take_picture.cs" />
     <Compile Include="Assets\Scripts\LandMarkerScripts\testbutton.cs" />
+    <Compile Include="Assets\Scripts\Leaderboard\LeaderboardScroll.cs" />
     <Compile Include="Assets\Scripts\LoginScripts\Login.cs" />
-    <Compile Include="Assets\UI\Leaderboard\LeaderboardScroll.cs" />
     <Compile Include="Assets\UI\button.cs" />
     <Compile Include="Assets\UI\menuAppear.cs" />
     <Compile Include="Assets\UI\menuScript.cs" />

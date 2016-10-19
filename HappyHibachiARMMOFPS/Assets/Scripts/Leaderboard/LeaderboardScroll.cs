@@ -13,10 +13,11 @@ public class LeaderboardScroll : MonoBehaviour {
     {
         public override string ToString()
         {
-            return "NAME: " + name + "\nLEVEL: " + level + " | SCORE: " + score + "\n";
+            return "NAME: " + name + "   FACTION: " + faction + "\nLEVEL: " + level + " | SCORE: " + score + "\n";
         }
 
         public string name { get; set; }
+        public string faction { get; set; }
         public int level { get; set; }
         public int score { get; set; }
         
@@ -58,6 +59,7 @@ public class LeaderboardScroll : MonoBehaviour {
             {
                 Player p = new Player();
                 p.name = playerInfo.SelectSingleNode("name").InnerText;
+                p.faction = playerInfo.SelectSingleNode("faction").InnerText;
                 p.level = Convert.ToInt32(playerInfo.SelectSingleNode("level").InnerText);
                 p.score = Convert.ToInt32(playerInfo.SelectSingleNode("score").InnerText);
                 Debug.Log(p.ToString());
