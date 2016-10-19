@@ -21,7 +21,7 @@ public class PlayerControl : NetworkBehaviour {
     public float Cooldown = 0.5f; // Kinda fast, but not broken. Half a second is no gatling gun.
     private float LastShotTime; // Counter since last shot, referenced against Cooldown.
 
-    public float RotSpeed = 0.0001f; // Speed of camera rotation using touch
+    public float RotSpeed = 75f; // Speed of camera rotation using touch, degrees/sec
 
     // Use this for initialization
     void Start()
@@ -53,9 +53,6 @@ public class PlayerControl : NetworkBehaviour {
         float hor = CrossPlatformInputManager.GetAxis("Horizontal");
         float vert = CrossPlatformInputManager.GetAxis("Vertical");
 
-        //Create transform vector in world space
-        Vector3 worldTransform = /*transform.TransformDirection(*/new Vector3(hor, 0f, vert);//);
-        
         // Move player based on input and speed
         player.SimpleMove(transform.forward * vert * MoveSpeed);
         player.SimpleMove(transform.right * hor * MoveSpeed);
@@ -80,8 +77,8 @@ public class PlayerControl : NetworkBehaviour {
         float rotX = CrossPlatformInputManager.GetAxis("CamHorizontal");
         
         // Only rotate on Y axis (Prevents camera clip issues)
-        cam.transform.Rotate(new Vector3(0f, -rotX * RotSpeed, 0f));
-        transform.Rotate(new Vector3(0f, -rotX * RotSpeed, 0f));
+        cam.transform.Rotate(new Vector3(0f, -rotX * RotSpeed * Time.deltaTime, 0f));
+        transform.Rotate(new Vector3(0f, -rotX * RotSpeed * Time.deltaTime, 0f));
         
         // ------------- Firing shots ----------------
 
