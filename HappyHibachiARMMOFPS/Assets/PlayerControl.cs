@@ -6,10 +6,12 @@ using UnityStandardAssets.CrossPlatformInput;
 public class PlayerControl : NetworkBehaviour {
 
 
-    public GameObject ARCam; // Link to the main camera
+    //public GameObject ARCam; // Link to the main camera
     public GameObject shotPrefab; // What does the bullet look like?
 
+    //Camera for game view
     public Camera cam;
+    //Camera offset
     public Vector3 offset;
 
     // Movement speed for AR Off mode
@@ -25,12 +27,17 @@ public class PlayerControl : NetworkBehaviour {
     void Start()
     {
         LastShotTime = Cooldown; // Make it so player can fire as soon as they're ready after scene loads
+        //Set to main camera
         cam = Camera.main;
+        //Set offset to head of player
         offset = new Vector3(0f, 2.8f, 0f);
+        
     }
 
     // Update is called once per frame
     void Update () {
+
+        //Checks if trying to move local player, else returns (can't move other player)
         if(!isLocalPlayer)
         {
             return;
@@ -45,14 +52,36 @@ public class PlayerControl : NetworkBehaviour {
         // Get touch joystick input as horizontal and vertical components
         float hor = CrossPlatformInputManager.GetAxis("Horizontal");
         float vert = CrossPlatformInputManager.GetAxis("Vertical");
+
+        //Create transform vector in world space
+        Vector3 worldTransform = transform.TransformDirection(new Vector3(hor, 0f, vert));
         
         // Move player based on input and speed
-        player.SimpleMove(new Vector3(hor, 0f, vert) * MoveSpeed);
+        player.SimpleMove(worldTransform * MoveSpeed);
 
         //Move camera with player
-        cam.transform.position = transform.position + offset; //Move camera
-        Vector3 v = transform.rotation.eulerAngles; //Get player euler angles
-        cam.transform.rotation = Quaternion.Euler(v.x, v.y + 180f, v.z); //Rotate camera to face forward
+        cam.transform.position = transform.position + offset;
+
+        // ------------- Camera rotation based on gyroscope input ----------------
+
+        // Grab the reference matrix for quaternions, as a base
+        Quaternion referenceRotation = Quaternion.identity;
+        // Get the current rotation of the phone 
+        Vector3 deviceRotation = DeviceRotation.Get().eulerAngles;
+
+        // Rotate camera based on gyroscope
+        transform.Rotate(deviceRotation);
+
+        // ------------- Alternate camera controls: swipe to rotate --------------
+
+        float rotX = CrossPlatformInputManager.GetAxis("Mouse X");
+        float rotY = CrossPlatformInputManager.GetAxis("Mouse Y");
+        Vector3 v = transform.rotation.eulerAngles;
+
+        transform.Rotate(new Vector3(rotY * RotSpeed, -rotX * RotSpeed, 0f));
+
+        //Rotates camera to face forward
+        cam.transform.rotation = transform.rotation;
 
         // This is sloppy, will use a more thought out method that includes rotation later
 
@@ -62,9 +91,10 @@ public class PlayerControl : NetworkBehaviour {
         if (CrossPlatformInputManager.GetButtonDown("Fire") && LastShotTime >= Cooldown)
         {
             // Fire a shot by instantiating a bullet and calculating with a raycast
-            // First get orientation of camera
-            Vector3 shotPos = ARCam.transform.position;
-            Quaternion shotRot = ARCam.transform.rotation;
+            // First get orientation of camera and adjust laser's start position so it's outside the player's collider
+            Vector3 shotPos = transform.TransformDirection(1f, -0.5f, 1f) + cam.transform.position;
+            Quaternion shotRot = cam.transform.rotation;
+            
 
             // Make a raycast from the camera to check for target hit
             RaycastHit hit; // Var to store info on what got hit
@@ -91,10 +121,7 @@ public class PlayerControl : NetworkBehaviour {
                 }
             }
 
-            // Adjust laser's start position so it's outside the player's collider
-            shotPos.x += 1f;
-            shotPos.y += -0.5f;
-            shotPos.z += 1f;
+            
                 
             // Instantiate shot where camera is
             GameObject shot = (GameObject) Instantiate(shotPrefab, shotPos, shotRot);
@@ -109,21 +136,6 @@ public class PlayerControl : NetworkBehaviour {
             LastShotTime = 0f;
         }
 
-        // ------------- Camera rotation based on gyroscope input ----------------
-
-        // Grab the reference matrix for quaternions, as a base
-        Quaternion referenceRotation = Quaternion.identity;
-        // Get the current rotation of the phone 
-        Quaternion deviceRotation = DeviceRotation.Get();
-
-        // Rotate camera based on gyroscope
-        ARCam.transform.rotation = deviceRotation;
-
-        // ------------- Alternate camera controls: swipe to rotate --------------
-
-        float rotX = CrossPlatformInputManager.GetAxis("Mouse X");
-        float rotY = CrossPlatformInputManager.GetAxis("Mouse Y");
         
-        ARCam.transform.Rotate(new Vector3(rotY * RotSpeed, -rotX * RotSpeed, 0f));
-	}
+    }
 }
