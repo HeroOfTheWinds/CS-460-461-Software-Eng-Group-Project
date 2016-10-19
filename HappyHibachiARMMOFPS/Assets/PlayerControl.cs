@@ -9,6 +9,9 @@ public class PlayerControl : NetworkBehaviour {
     public GameObject ARCam; // Link to the main camera
     public GameObject shotPrefab; // What does the bullet look like?
 
+    public Camera cam;
+    public Vector3 offset;
+
     // Movement speed for AR Off mode
     public float MoveSpeed = 5.0f; // Normal walking speed is around 1.8 m/s, up to 2.5 m/s
 
@@ -22,6 +25,8 @@ public class PlayerControl : NetworkBehaviour {
     void Start()
     {
         LastShotTime = Cooldown; // Make it so player can fire as soon as they're ready after scene loads
+        cam = Camera.main;
+        offset = new Vector3(0f, 2.8f, 0f);
     }
 
     // Update is called once per frame
@@ -43,6 +48,12 @@ public class PlayerControl : NetworkBehaviour {
         
         // Move player based on input and speed
         player.SimpleMove(new Vector3(hor, 0f, vert) * MoveSpeed);
+
+        //Move camera with player
+        cam.transform.position = transform.position + offset; //Move camera
+        Vector3 v = transform.rotation.eulerAngles; //Get player euler angles
+        cam.transform.rotation = Quaternion.Euler(v.x, v.y + 180f, v.z); //Rotate camera to face forward
+
         // This is sloppy, will use a more thought out method that includes rotation later
 
         // ------------- Firing shots ----------------
