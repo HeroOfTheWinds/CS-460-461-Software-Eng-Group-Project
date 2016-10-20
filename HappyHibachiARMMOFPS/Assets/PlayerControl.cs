@@ -38,6 +38,25 @@ public class PlayerControl : NetworkBehaviour {
         
     }
 
+    // Called when player gets spawned on the server.  Only affects local player
+    public override void OnStartLocalPlayer()
+    {
+        // Check if this player is at second spawn point
+        // This method should be corrected later, as it's easily broken in its current state
+        if (gameObject.transform.position.z > 10f)
+        {
+            // Rotate the main camera to match
+            Camera.main.transform.Rotate(new Vector3(0f, 180f, 0f), Space.World);
+        }
+
+        // Set the camera to render the HUD to
+        // Find the HUD among children first
+        Canvas HUD = gameObject.GetComponentInChildren<Canvas>();
+
+        // Set camera
+        HUD.worldCamera = Camera.main;
+    }
+
     // Update is called once per frame
     void Update () {
 
@@ -102,7 +121,6 @@ public class PlayerControl : NetworkBehaviour {
             // First get orientation of camera and adjust laser's start position so it's outside the player's collider
             Vector3 shotPos = transform.TransformDirection(1f, -0.5f, 1f) + cam.transform.position;
             Quaternion shotRot = cam.transform.rotation;
-            
 
             // Make a raycast from the camera to check for target hit
             RaycastHit hit; // Var to store info on what got hit

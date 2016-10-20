@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.UI;
 
 public class PlayerStatus : MonoBehaviour {
 
@@ -14,6 +15,8 @@ public class PlayerStatus : MonoBehaviour {
 
     // Reference the HP bar above the player for updating size
     public GameObject HPBar;
+    // HP Bar on the HUD
+    public Image InnerHPBar;
 
 	// Use this for initialization
 	void Start () {
@@ -30,6 +33,9 @@ public class PlayerStatus : MonoBehaviour {
 
         // Change HP Bar's width based on health remaining
         HPBar.transform.localScale = new Vector3(currentHP / maxHP, 1f, 1f);
+
+        // Do same for HP Bar on HUD
+        InnerHPBar.rectTransform.localScale = new Vector3(currentHP / maxHP, 1f, 1f);
 	}
 
     public void TakeHP(float hp)
