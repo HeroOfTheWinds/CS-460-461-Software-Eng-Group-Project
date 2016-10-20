@@ -17,6 +17,7 @@ public class LeaderboardScroll : MonoBehaviour {
         }
 
         public string name { get; set; }
+
         public string faction { get; set; }
         public int level { get; set; }
         public int score { get; set; }

@@ -21,7 +21,7 @@ public class PlayerControl : NetworkBehaviour {
     public float Cooldown = 0.5f; // Kinda fast, but not broken. Half a second is no gatling gun.
     private float LastShotTime; // Counter since last shot, referenced against Cooldown.
 
-    public float RotSpeed = 10f; // Speed of camera rotation using touch
+    public float RotSpeed = 75f; // Speed of camera rotation using touch, degrees/sec
 
     // Use this for initialization
     void Start()
@@ -53,11 +53,9 @@ public class PlayerControl : NetworkBehaviour {
         float hor = CrossPlatformInputManager.GetAxis("Horizontal");
         float vert = CrossPlatformInputManager.GetAxis("Vertical");
 
-        //Create transform vector in world space
-        Vector3 worldTransform = transform.TransformDirection(new Vector3(hor, 0f, vert));
-        
         // Move player based on input and speed
-        player.SimpleMove(worldTransform * MoveSpeed);
+        player.SimpleMove(transform.forward * vert * MoveSpeed);
+        player.SimpleMove(transform.right * hor * MoveSpeed);
 
         //Move camera with player
         cam.transform.position = transform.position + offset;
@@ -69,22 +67,19 @@ public class PlayerControl : NetworkBehaviour {
         // Get the current rotation of the phone 
         Vector3 deviceRotation = DeviceRotation.Get().eulerAngles;
 
-        // Rotate camera based on gyroscope
-        transform.Rotate(deviceRotation);
+        // Rotate player based on gyroscope
+        transform.Rotate(new Vector3(0f, deviceRotation.y, 0f));
+        // Rotate Camera based on gyroscope (more free)
+        cam.transform.Rotate(deviceRotation);
 
         // ------------- Alternate camera controls: swipe to rotate --------------
 
-        float rotX = CrossPlatformInputManager.GetAxis("Mouse X");
-        float rotY = CrossPlatformInputManager.GetAxis("Mouse Y");
-        Vector3 v = transform.rotation.eulerAngles;
-
-        transform.Rotate(new Vector3(rotY * RotSpeed, -rotX * RotSpeed, 0f));
-
-        //Rotates camera to face forward
-        cam.transform.rotation = transform.rotation;
-
-        // This is sloppy, will use a more thought out method that includes rotation later
-
+        float rotX = CrossPlatformInputManager.GetAxis("CamHorizontal");
+        
+        // Only rotate on Y axis (Prevents camera clip issues)
+        cam.transform.Rotate(new Vector3(0f, -rotX * RotSpeed * Time.deltaTime, 0f));
+        transform.Rotate(new Vector3(0f, -rotX * RotSpeed * Time.deltaTime, 0f));
+        
         // ------------- Firing shots ----------------
 
         // Check if player pressed Fire, and cooldown has expired
