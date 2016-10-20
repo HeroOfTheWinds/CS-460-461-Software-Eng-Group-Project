@@ -41,13 +41,7 @@ public class PlayerControl : NetworkBehaviour {
     // Called when player gets spawned on the server.  Only affects local player
     public override void OnStartLocalPlayer()
     {
-        // Check if this player is at second spawn point
-        // This method should be corrected later, as it's easily broken in its current state
-        if (gameObject.transform.position.z > 10f)
-        {
-            // Rotate the main camera to match
-            Camera.main.transform.Rotate(new Vector3(0f, 180f, 0f), Space.World);
-        }
+        Camera.main.transform.rotation = transform.rotation;
 
         // Set the camera to render the HUD to
         // Find the HUD among children first
