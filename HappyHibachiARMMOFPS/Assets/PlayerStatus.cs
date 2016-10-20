@@ -40,6 +40,23 @@ public class PlayerStatus : MonoBehaviour {
             currentHP = 0;
 
         // Check if HP <= 0, lose battle if so
+        if (currentHP <= 0)
+        {
+            gameObject.GetComponent<PlayerControl>().DisplayLoss();
+
+            // Search for all players
+            GameObject[] playerList;
+            playerList = GameObject.FindGameObjectsWithTag("Player");
+            foreach (GameObject player in playerList)
+            {
+                // Make sure we don't send message to ourselves
+                if (player.GetInstanceID() != gameObject.GetInstanceID())
+                {
+                    // Call the function to display the win screen
+                    player.BroadcastMessage("DisplayWin");
+                }
+            }
+        }
     }
 
     public void RestoreHP(float hp)

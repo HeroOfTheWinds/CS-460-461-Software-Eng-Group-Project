@@ -23,6 +23,10 @@ public class PlayerControl : NetworkBehaviour {
 
     public float RotSpeed = 75f; // Speed of camera rotation using touch, degrees/sec
 
+    // Prefabs containing win and lose canvas graphics to display at end of battle
+    public GameObject WinCanvas;
+    public GameObject LoseCanvas;
+
     // Use this for initialization
     void Start()
     {
@@ -65,12 +69,21 @@ public class PlayerControl : NetworkBehaviour {
         // Grab the reference matrix for quaternions, as a base
         Quaternion referenceRotation = Quaternion.identity;
         // Get the current rotation of the phone 
-        Vector3 deviceRotation = DeviceRotation.Get().eulerAngles;
+        Quaternion deviceRotation = DeviceRotation.Get();
 
-        // Rotate player based on gyroscope
-        transform.Rotate(new Vector3(0f, deviceRotation.y, 0f));
-        // Rotate Camera based on gyroscope (more free)
-        cam.transform.Rotate(deviceRotation);
+        if (Input.gyro.enabled)
+        {
+            // Rotate Camera based on gyroscope (more free)
+            cam.transform.rotation = deviceRotation;
+
+            // Rotate the player's Y axis to match the camera's
+            Quaternion newRot = transform.rotation;
+            Vector3 euler = newRot.eulerAngles;
+            euler.y = deviceRotation.eulerAngles.y;
+            newRot.eulerAngles = euler;
+            transform.rotation = newRot;
+            // This wouldn't be so wasteful if Unity let you actually edit returned quaternions directly
+        }
 
         // ------------- Alternate camera controls: swipe to rotate --------------
 
@@ -114,9 +127,7 @@ public class PlayerControl : NetworkBehaviour {
                         // Other cases to consider: wall, arena border, ground
                         break;
                 }
-            }
-
-            
+            }            
                 
             // Instantiate shot where camera is
             GameObject shot = (GameObject) Instantiate(shotPrefab, shotPos, shotRot);
@@ -130,7 +141,23 @@ public class PlayerControl : NetworkBehaviour {
             // Reset time since last shot to enforce cooldown
             LastShotTime = 0f;
         }
+    }
 
-        
+    public void DisplayLoss()
+    {
+        // Battle was lost, so create a lose screen overlay
+        GameObject loss = (GameObject)Instantiate(LoseCanvas);
+
+        // Set it to render over the local Main Camera
+        loss.GetComponent<Canvas>().worldCamera = Camera.main;
+    }
+
+    public void DisplayWin()
+    {
+        // Battle was won, so create a win screen overlay
+        GameObject win = (GameObject)Instantiate(WinCanvas);
+
+        // Set it to render over the local Main Camera
+        win.GetComponent<Canvas>().worldCamera = Camera.main;
     }
 }

@@ -1,6 +1,6 @@
 5.2.5f1:2.3.0.0
-WP8Player
-C:\Program Files (x86)\Unity\Editor\Data\PlaybackEngines\wp8support/Tools/UnityEngine.dll
+Android
+C:/Program Files (x86)/Unity/Editor/Data/Managed/UnityEngine.dll
 C:/Program Files (x86)/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll
 C:/Program Files (x86)/Unity/Editor/Data/UnityExtensions/Unity/Networking/UnityEngine.Networking.dll
 C:/Program Files (x86)/Unity/Editor/Data/Managed/UnityEditor.dll
