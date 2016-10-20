@@ -12,4 +12,10 @@ public class start : MonoBehaviour {
 	void Update () {
 	
 	}
+
+	public void openGame()
+	{
+		Application.LoadLevel ("Battle");
+	}
+
 }
