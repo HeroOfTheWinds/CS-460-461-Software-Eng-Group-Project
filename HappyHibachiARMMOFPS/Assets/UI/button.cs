@@ -13,9 +13,9 @@ public class button : MonoBehaviour {
 	
 	}
 
-	public void Test()
+	public void openOverworld()
 	{
-		Debug.Log("Button was pressed");
+		Application.LoadLevel ("Overworld");
 	}
 
 }
