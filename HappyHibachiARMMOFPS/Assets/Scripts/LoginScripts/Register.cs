@@ -95,14 +95,28 @@ public class Register : MonoBehaviour {
     }
     private bool validateUsername(string username)
     {
+        if (username.Length == 0)
+        {
+            Debug.Log("Username empty");
+            return false;
+        }
         return true;
     }
     private bool validatePassword(string password1)
     {
+        if (password1.Length == 0)
+        {
+            Debug.Log("Password empty");
+            return false;
+        }
         return true;
     }
     private bool comparePasswords(string password1, string password2)
     {
-        return true;
+        if (password1 == password2)
+        {
+            return true;
+        }
+        return false;
     }
 }
