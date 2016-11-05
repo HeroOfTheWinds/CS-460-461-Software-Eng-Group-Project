@@ -52,17 +52,11 @@
     <Reference Include="UnityEngine">
       <HintPath>Library\UnityAssemblies\UnityEngine.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.Advertisements">
-      <HintPath>Library\UnityAssemblies\UnityEngine.Advertisements.dll</HintPath>
-    </Reference>
     <Reference Include="UnityEngine.UI">
       <HintPath>Library\UnityAssemblies\UnityEngine.UI.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.Networking">
       <HintPath>Library\UnityAssemblies\UnityEngine.Networking.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.Analytics">
-      <HintPath>Library\UnityAssemblies\UnityEngine.Analytics.dll</HintPath>
     </Reference>
     <Reference Include="UnityEditor">
       <HintPath>Library\UnityAssemblies\UnityEditor.dll</HintPath>
@@ -236,6 +230,7 @@
     <Compile Include="Assets\PlayerControl.cs" />
     <Compile Include="Assets\PlayerStatus.cs" />
     <Compile Include="Assets\Scripts\LandMarkerScripts\LandmarkCamera.cs" />
+    <Compile Include="Assets\Scripts\LandMarkerScripts\LandmarkClass.cs" />
     <Compile Include="Assets\Scripts\LandMarkerScripts\SendLandmark.cs" />
     <Compile Include="Assets\Scripts\LandMarkerScripts\SetName.cs" />
     <Compile Include="Assets\Scripts\LandMarkerScripts\display_coordinates.cs" />
@@ -246,6 +241,7 @@
     <Compile Include="Assets\Scripts\Leaderboard\LeaderboardScroll.cs" />
     <Compile Include="Assets\Scripts\LoginScripts\Login.cs" />
     <Compile Include="Assets\Scripts\LoginScripts\Register.cs" />
+    <Compile Include="Assets\Scripts\ViewLandmark.cs" />
     <Compile Include="Assets\UI\button.cs" />
     <Compile Include="Assets\UI\menuAppear.cs" />
     <Compile Include="Assets\UI\menuScript.cs" />
