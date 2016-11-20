@@ -64,6 +64,12 @@
     <Reference Include="Mono.Cecil">
       <HintPath>Library\UnityAssemblies\Mono.Cecil.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEditor.iOS.Extensions.Xcode">
+      <HintPath>Library\UnityAssemblies\UnityEditor.iOS.Extensions.Xcode.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEditor.iOS.Extensions.Common">
+      <HintPath>Library\UnityAssemblies\UnityEditor.iOS.Extensions.Common.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="HappyHibachiARMMOFPS.CSharp.Plugins.csproj">
@@ -237,8 +243,8 @@
     <Compile Include="Assets\Scripts\LandMarkerScripts\testbutton.cs" />
     <Compile Include="Assets\Scripts\Leaderboard\LeaderboardFilter.cs" />
     <Compile Include="Assets\Scripts\Leaderboard\LeaderboardScroll.cs" />
-    <Compile Include="Assets\Scripts\LoginScripts\Login.cs" />
-    <Compile Include="Assets\Scripts\LoginScripts\Register.cs" />
+    <Compile Include="Assets\Scripts\Login.cs" />
+    <Compile Include="Assets\Scripts\Register.cs" />
     <Compile Include="Assets\Scripts\ViewLandmark.cs" />
     <Compile Include="Assets\UI\button.cs" />
     <Compile Include="Assets\UI\menuAppear.cs" />

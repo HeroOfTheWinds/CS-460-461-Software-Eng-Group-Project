@@ -3,18 +3,16 @@ using System.Collections;
 using System;
 
 
-public class ViewLandmark : MonoBehaviour {
+public class ViewLandmark : MonoBehaviour
+{
     public double lat, lon;
     public struct location
     {
         public double lat, lon;
     }
-    //public double lon, lat;
-    //public LandmarkClass a;
-    location CH13;
     location myLocation;
     private location landmark;
-    
+
     public void checkproximity()
     {
         //have location be pulled from phones location
@@ -22,13 +20,13 @@ public class ViewLandmark : MonoBehaviour {
         myLocation.lon = -155.080990; //currently set to ch13
 
         landmark.lat = lat;
-        //Debug.Log(landmark.lat);
+        Debug.Log(landmark.lat);
         landmark.lon = lon;
-        //Debug.Log(landmark.lon);
+        Debug.Log(landmark.lon);
         isClose(myLocation, landmark);
 
     }
-	bool isClose(location myLocation, location landmark) //need to convert to feet
+    bool isClose(location myLocation, location landmark) //need to convert to feet
     {
         var R = 6371; // km
         var dLat = ConvertToRadians(landmark.lat - myLocation.lat);
@@ -40,8 +38,8 @@ public class ViewLandmark : MonoBehaviour {
                 Math.Sin(dLon / 2) * Math.Sin(dLon / 2) * Math.Cos(lat1) * Math.Cos(lat2);
         var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
         var distance = R * c;
-        
-        Debug.Log("Landmark is " + distance +  "km away");
+
+        Debug.Log("Landmark is " + distance + "km away");
         if (distance <= 1) //convert km to feet
         {
             Debug.Log("10 Exp earned.");
