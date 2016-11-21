@@ -1,31 +1,29 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 public class Login : MonoBehaviour {
     private string username, password;
-    public Text userInput, passwordInput, ErrorText;
+    public InputField userInput, passwordInput;
+    public Text ErrorText;
     private string url = "http://132.160.49.90:7001/login.php";
+    void Start()
+    {
+        userInput.text = Register.username;
+    }
     public void checkLogin()
     {
+        
         username = userInput.text;
         password = passwordInput.text;
         var form = new WWWForm();
         form.AddField("usernameFromUnity", username);
         form.AddField("passwordFromUnity", password);
         WWW send = new WWW(url, form);
-        StartCoroutine(WaitForRequest(send));
-        
-       
-
-       // WWW recieve = new WWW(url);
-        //StartCoroutine(WaitForRequest(recieve));
-        //Debug.Log(recieve.text.ToString());
-        
-
-        
-        
+        StartCoroutine(WaitForRequest(send));        
     }
+
     IEnumerator WaitForRequest(WWW www)
     {
         yield return www;
@@ -39,6 +37,7 @@ public class Login : MonoBehaviour {
                 Debug.Log("Logged In");
                 ErrorText.text = "Welcome, " + username;
                 //go to next scene
+                SceneManager.LoadScene("Overworld");
             }
 
             if (text == "1")
@@ -58,5 +57,9 @@ public class Login : MonoBehaviour {
         {
             Debug.Log("Connection error.");
         }
+    }
+    public void goToRegister()
+    {
+        SceneManager.LoadScene("Register");
     }
 }

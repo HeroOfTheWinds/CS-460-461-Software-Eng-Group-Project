@@ -1,9 +1,11 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 public class Register : MonoBehaviour {
-    private string email, username, password1, password2; 
+    private string email, password1, password2; 
+    public static string username;
     public Text ErrorText; //input fields
     public InputField emailInput, userInput, passwordInput1, passwordInput2;
     private string url = "http://132.160.49.90:7001/register.php"; //script to check email + username in database
@@ -64,6 +66,7 @@ public class Register : MonoBehaviour {
                 Debug.Log("Registration successful");
                 ErrorText.text = "Welcome, " + username;
                 //go to login scene to log in
+                SceneManager.LoadScene("Login");
             }
 
             if (text == "1")
