@@ -1,9 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
-using UnityEngine.Networking;
 using UnityStandardAssets.CrossPlatformInput;
+using System;
+using System.Net;
+using System.Net.Sockets;
 
-public class PlayerControl : NetworkBehaviour {
+public class PlayerControl : MonoBehaviour {
 
 
     //public GameObject ARCam; // Link to the main camera
@@ -27,6 +29,25 @@ public class PlayerControl : NetworkBehaviour {
     public GameObject WinCanvas;
     public GameObject LoseCanvas;
 
+
+    //flags, least sig to most sig bit
+    private bool battleEnd = false;
+    private bool win = false;
+
+    private bool sf = false;
+    private bool hpr = false;
+    private bool mp = false;
+    private bool mso = false;
+
+    private float sfx = 0;
+    private float sfz = 0;
+    private float sfr = 0;
+
+    private float mpx = 0;
+    private float mpy = 0;
+
+
+
     // Use this for initialization
     void Start()
     {
@@ -37,7 +58,7 @@ public class PlayerControl : NetworkBehaviour {
         offset = new Vector3(0f, 2.8f, 0f);
         
     }
-
+    /*
     // Called when player gets spawned on the server.  Only affects local player
     public override void OnStartLocalPlayer()
     {
@@ -50,15 +71,9 @@ public class PlayerControl : NetworkBehaviour {
         // Set camera
         HUD.worldCamera = Camera.main;
     }
-
+    */
     // Update is called once per frame
     void Update () {
-
-        //Checks if trying to move local player, else returns (can't move other player)
-        if(!isLocalPlayer)
-        {
-            return;
-        }
 
         // Add time since last frame to LastShotTime to advance the cooldown
         LastShotTime += Time.deltaTime;
@@ -132,7 +147,7 @@ public class PlayerControl : NetworkBehaviour {
                 {
                     case "Player":
                         // Get that player's stats and take off some HP
-                        hit.collider.gameObject.GetComponent<PlayerStatus>().TakeHP(8f);
+                        hit.collider.gameObject.GetComponent<EnemyStatus>().TakeHP(8f);
                         Debug.Log("Hit player");
                         break;
                     default:
@@ -171,5 +186,149 @@ public class PlayerControl : NetworkBehaviour {
 
         // Set it to render over the local Main Camera
         win.GetComponent<Canvas>().worldCamera = Camera.main;
+    }
+
+    //getters and setters
+    public bool BattleEnd
+    {
+        get
+        {
+            return battleEnd;
+        }
+
+        set
+        {
+            battleEnd = value;
+        }
+    }
+
+    public bool Win
+    {
+        get
+        {
+            return win;
+        }
+
+        set
+        {
+            win = value;
+        }
+    }
+
+    public bool Sf
+    {
+        get
+        {
+            return sf;
+        }
+
+        set
+        {
+            sf = value;
+        }
+    }
+
+    public bool Hpr
+    {
+        get
+        {
+            return hpr;
+        }
+
+        set
+        {
+            hpr = value;
+        }
+    }
+
+    public bool Mp
+    {
+        get
+        {
+            return mp;
+        }
+
+        set
+        {
+            mp = value;
+        }
+    }
+
+    public bool Mso
+    {
+        get
+        {
+            return mso;
+        }
+
+        set
+        {
+            mso = value;
+        }
+    }
+
+    public float Sfx
+    {
+        get
+        {
+            return sfx;
+        }
+
+        set
+        {
+            sfx = value;
+        }
+    }
+
+    public float Sfz
+    {
+        get
+        {
+            return sfz;
+        }
+
+        set
+        {
+            sfz = value;
+        }
+    }
+
+    public float Sfr
+    {
+        get
+        {
+            return sfr;
+        }
+
+        set
+        {
+            sfr = value;
+        }
+    }
+
+    public float Mpx
+    {
+        get
+        {
+            return mpx;
+        }
+
+        set
+        {
+            mpx = value;
+        }
+    }
+
+    public float Mpy
+    {
+        get
+        {
+            return mpy;
+        }
+
+        set
+        {
+            mpy = value;
+        }
     }
 }

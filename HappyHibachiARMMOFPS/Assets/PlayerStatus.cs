@@ -50,19 +50,16 @@ public class PlayerStatus : MonoBehaviour {
         {
             gameObject.GetComponent<PlayerControl>().DisplayLoss();
 
-            // Search for all players
-            GameObject[] playerList;
-            playerList = GameObject.FindGameObjectsWithTag("Player");
-            foreach (GameObject player in playerList)
-            {
-                // Make sure we don't send message to ourselves
-                if (player.GetInstanceID() != gameObject.GetInstanceID())
-                {
-                    // Call the function to display the win screen
-                    player.BroadcastMessage("DisplayWin");
-                }
-            }
+            PlayerControl controller = gameObject.GetComponent<PlayerControl>();
+            controller.BattleEnd = true;
+            controller.Win = false;
         }
+        /*
+        else if(GameObject.FindGameObjectWithTag("Enemy").GetComponent<EnemyStatus>().getHP() <= 0)
+        {
+            gameObject.GetComponent<PlayerControl>().DisplayWin();
+        }
+        */
     }
 
     public void RestoreHP(float hp)
@@ -73,6 +70,7 @@ public class PlayerStatus : MonoBehaviour {
         // If new HP exceeds max, truncate
         if (currentHP > maxHP)
             currentHP = maxHP;
+
     }
 
     // Function to calculate current stats based off current level
