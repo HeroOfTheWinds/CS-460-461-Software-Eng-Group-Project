@@ -5,7 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 
-public class BattleNetManager// : MonoBehaviour
+public class BattleNetManager //: ScriptableObject
 {
 
     private static Guid testGUID = new Guid();
