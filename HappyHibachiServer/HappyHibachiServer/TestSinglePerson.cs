@@ -11,7 +11,7 @@ namespace HappyHibachiServer
         //possible race conditions for socket writes???
         public const int UPDATE_SIZE = 33;
         public const int BATTLE_PORT = 2224;
-        public static readonly IPAddress IP = IPAddress.Parse("127.0.0.1");
+        public static readonly IPAddress IP = IPAddress.Parse("10.10.10.103");
 
         // Thread signal.
         private static ManualResetEventSlim connectionFound = new ManualResetEventSlim();
@@ -128,40 +128,45 @@ namespace HappyHibachiServer
 
         public static void readUpdate(IAsyncResult ar)
         {
-            bool battleEnd;
-            bool win;
-
-            //STORE HP AND LOCATIONS IN STATE, UPDATE AND USE FOR THINGS
-
-            // Retrieve the state object and the handler socket
-            // from the asynchronous state object.
-            State state = (State)ar.AsyncState;
-            Socket handler = state.ClientSocket;
-
-            //NEED TO DEAL WITH SIZES AND STUFF, MAYBE SEND A MESSAGE WITH THE SIZE
-            //for now everything sent as 33 bytes
-            ar.AsyncWaitHandle.WaitOne();
-            handler.EndReceive(ar);
-
-
-            byte flags = state.Update[0];
-
-            battleEnd = (flags & 1) == 1 ? true : false;
-            win = ((flags >> 1) & 1) == 1 ? true : false;
-
-            send(state);
-
-            if (!battleEnd)
+            try
             {
-                handler.BeginReceive(state.Update, 0, UPDATE_SIZE, 0, new AsyncCallback(readUpdate), state);
-            }
-            else
-            {
-                //handle winner stuff
+                bool battleEnd;
+                bool win;
 
-                handler.Shutdown(SocketShutdown.Both);
-                handler.Close();
+                //STORE HP AND LOCATIONS IN STATE, UPDATE AND USE FOR THINGS
+
+                // Retrieve the state object and the handler socket
+                // from the asynchronous state object.
+                State state = (State)ar.AsyncState;
+                Socket handler = state.ClientSocket;
+
+                //NEED TO DEAL WITH SIZES AND STUFF, MAYBE SEND A MESSAGE WITH THE SIZE
+                //for now everything sent as 33 bytes
+                ar.AsyncWaitHandle.WaitOne();
+                handler.EndReceive(ar);
+
+
+                byte flags = state.Update[0];
+
+                battleEnd = (flags & 1) == 1 ? true : false;
+                win = ((flags >> 1) & 1) == 1 ? true : false;
+
+                send(state);
+
+                if (!battleEnd)
+                {
+                    handler.BeginReceive(state.Update, 0, UPDATE_SIZE, 0, new AsyncCallback(readUpdate), state);
+                }
+                else
+                {
+                    //handle winner stuff
+
+                    handler.Shutdown(SocketShutdown.Both);
+                    handler.Close();
+                }
             }
+            //stop gracefully
+            catch (Exception) { }
         }
 
         private static void send(State state)

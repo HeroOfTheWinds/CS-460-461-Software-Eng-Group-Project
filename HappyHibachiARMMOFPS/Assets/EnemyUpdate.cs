@@ -27,7 +27,10 @@ public class EnemyUpdate : MonoBehaviour
 
     public void runUpdate()
     {
-        //CODE TO UPDATE BASED ON VALUES
+        gameObject.transform.position.Set(xPos, 0, ZPos);
+        gameObject.transform.rotation.Set(0, rot, 0, 0);
+
+        //deal with shots and mines and whatnot
     }
 
 

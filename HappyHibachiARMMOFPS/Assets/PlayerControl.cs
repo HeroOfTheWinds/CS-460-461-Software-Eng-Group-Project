@@ -126,6 +126,11 @@ public class PlayerControl : MonoBehaviour {
         // Check if player pressed Fire, and cooldown has expired
         if (CrossPlatformInputManager.GetButtonDown("Fire") && LastShotTime >= Cooldown)
         {
+            sf = true;
+            sfx = transform.position.x;
+            sfz = transform.position.z;
+            sfr = transform.rotation.y;
+
             // Fire a shot by instantiating a bullet and calculating with a raycast
             // First get orientation of camera and adjust laser's start position so it's outside the player's collider
             Vector3 shotPos = transform.TransformDirection(1f, -0.5f, 1f) + cam.transform.position;

@@ -5,16 +5,19 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 
-public class BattleNetManager //: ScriptableObject
+public class BattleNetManager : MonoBehaviour
 {
 
     private static Guid testGUID = new Guid();
-    private static readonly IPAddress testIP = IPAddress.Parse("127.0.0.1");
+    private static readonly IPAddress testIP = IPAddress.Parse("10.10.10.103");
     public const int BATTLE_PORT = 2224;
     public const int UPDATE_SIZE = 33;
 
     private byte[] isClient;
     private ManualResetEvent getClient = new ManualResetEvent(false);
+    private Socket client;
+    private GameObject player;
+    private PlayerControl controller;
 
     // Use this for initialization
     void Start()
@@ -24,7 +27,7 @@ public class BattleNetManager //: ScriptableObject
             IPEndPoint remoteEP = new IPEndPoint(testIP, BATTLE_PORT);
 
             // Create a TCP/IP socket.
-            Socket client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
             // Connect to the remote endpoint.
             client.Connect(remoteEP);
@@ -33,8 +36,8 @@ public class BattleNetManager //: ScriptableObject
 
             Debug.Log("Connect Successful");
 
-            GameObject player = GameObject.FindGameObjectWithTag("Player");
-            PlayerControl controller = player.GetComponent<PlayerControl>();
+            player = GameObject.FindGameObjectWithTag("Player");
+            controller = player.GetComponent<PlayerControl>();
 
             client.Send(testGUID.ToByteArray());
 
@@ -44,19 +47,6 @@ public class BattleNetManager //: ScriptableObject
             client.Send(getUpdate());
 
             Debug.Log("Send Update Successful");
-
-            while (!controller.BattleEnd)
-            {
-                getClient.Reset();
-                client.BeginReceive(isClient, 0, 1, 0, new AsyncCallback(dataHandle), client);
-                Debug.Log("BeginReceive Successful");
-                getClient.WaitOne();
-            }
-                
-            // Release the socket.
-            client.Shutdown(SocketShutdown.Both);
-            client.Close();
-            Debug.Log("Disconnected");
         }
 
         catch (Exception e)
@@ -66,17 +56,35 @@ public class BattleNetManager //: ScriptableObject
         }
     }
 
-    private void dataHandle(IAsyncResult ar)
+    private void Update()
     {
-        Socket client = (Socket)ar.AsyncState;
-        ar.AsyncWaitHandle.WaitOne();
-        client.EndReceive(ar);
+        if(!controller.BattleEnd)
+        {
+            //getClient.Reset();
+            client.Receive(isClient, 1, 0);
+            dataHandle(client);
+            Debug.Log("Receive Successful");
+            //getClient.WaitOne();
+        }
+        else
+        {
+            // Release the socket.
+            client.Shutdown(SocketShutdown.Both);
+            client.Close();
+            Debug.Log("Disconnected");
+        }
+        
+    }
+
+    private void dataHandle(Socket client)
+    {
 
         if(isClient[0] == 1)
         {
             Debug.Log("isClient Successful");
-            getClient.Set();
+            //getClient.Set();
             client.Send(getUpdate());
+            reset();
         }
         else
         {
@@ -99,6 +107,14 @@ public class BattleNetManager //: ScriptableObject
 
     }
 
+    private void reset()
+    {
+        bool sf = false;
+        bool hpr = false;
+        bool mp = false;
+        bool mso = false;
+}
+
     private void updateOpponent(IAsyncResult ar)
     {
         State state = (State)ar.AsyncState;
@@ -114,15 +130,16 @@ public class BattleNetManager //: ScriptableObject
     private void unpackUpdate(State state)
     {
         EnemyUpdate enemy = state.Enemy.GetComponent<EnemyUpdate>();
+        
         //UNPACK UPDATE INTO ENEMY
     }
 
-    //STILL NEED TO ACTUALLY UPDATE VALUES IN PLAYER CONTROLLER
+    
     public byte[] getUpdate()
     {
         byte[] update = new byte[UPDATE_SIZE];
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
-        PlayerControl controller = player.GetComponent<PlayerControl>();
+        //GameObject player = GameObject.FindGameObjectWithTag("Player");
+        //PlayerControl controller = player.GetComponent<PlayerControl>();
         float xPos = player.transform.position.x;
         float zPos = player.transform.position.z;
         float rot = player.transform.rotation.y;
