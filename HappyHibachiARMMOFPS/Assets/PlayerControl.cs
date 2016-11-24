@@ -10,6 +10,7 @@ public class PlayerControl : MonoBehaviour {
 
     //public GameObject ARCam; // Link to the main camera
     public GameObject shotPrefab; // What does the bullet look like?
+    public GameObject minePrefab; // Object containing the landmine
 
     //Camera for game view
     public Camera cam;
@@ -172,6 +173,50 @@ public class PlayerControl : MonoBehaviour {
             
             // Reset time since last shot to enforce cooldown
             LastShotTime = 0f;
+        }
+    }
+
+    // Function to check how many of a given item the player has in their inventory
+    // If they do, return true to proceed using the item, and tell server to remove one from inventory
+    public bool CheckUseItem(string name)
+    {
+        // Code to connect to server goes here
+
+        // Checks if item is available
+        if (true)
+        {
+            // Tell server to decrement amount held by one
+
+            // Return true to allow user to use the item
+            return true;
+        }
+        else
+        {
+            // User doesn't have the item
+            return false;
+        }
+    }
+
+    // Function to try placing a landmine where the player stands
+    // Won't work if player has none in inventory
+    public void PlaceLandmine()
+    {
+        // First check if the player has any landmines
+        if (CheckUseItem("Landmine"))
+        {
+            // Instantiate a landmine at the player's feet
+            GameObject mine = (GameObject) Instantiate(minePrefab, transform.position, transform.rotation);
+
+            // Tell the Landmine who placed it so it doesn't instantly blow up in their face (literally)
+            // We're using the instance ID so that it is a unique identifier
+            mine.GetComponent<Landmine>().placer = gameObject.GetInstanceID();
+
+            return;
+        }
+        else
+        {
+            // No good, return empty handed
+            return;
         }
     }
 
