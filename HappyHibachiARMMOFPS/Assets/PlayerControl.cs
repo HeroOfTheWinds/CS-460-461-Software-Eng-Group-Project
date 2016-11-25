@@ -119,7 +119,7 @@ public class PlayerControl : MonoBehaviour {
         float rotX = CrossPlatformInputManager.GetAxis("CamHorizontal");
         
         // Only rotate on Y axis (Prevents camera clip issues)
-        cam.transform.Rotate(new Vector3(0f, -rotX * RotSpeed * Time.deltaTime, 0f));
+        //cam.transform.Rotate(new Vector3(0f, -rotX * RotSpeed * Time.deltaTime, 0f));
         transform.Rotate(new Vector3(0f, -rotX * RotSpeed * Time.deltaTime, 0f));
         
         // ------------- Firing shots ----------------
@@ -143,11 +143,11 @@ public class PlayerControl : MonoBehaviour {
             Vector3 endPoint = Vector3.zero;
 
             // Test if the raycast hits anything
-            if (Physics.Raycast(shotPos, Vector3.forward, out hit, 200f))
+            if (Physics.Raycast(shotPos, transform.forward, out hit, 200f))
             {
                 // Retrieve endpoint
                 endPoint = hit.point;
-
+                
                 // Check what we hit and act accordingly
                 switch (hit.collider.tag)
                 {
@@ -160,8 +160,11 @@ public class PlayerControl : MonoBehaviour {
                         // Other cases to consider: wall, arena border, ground
                         break;
                 }
-            }            
-                
+            }
+
+            // Change origin of shot to make it look like it's coming from the gun
+            //shotPos = transform.TransformDirection(1f, -0.5f, 1f) + cam.transform.position;
+
             // Instantiate shot where camera is
             GameObject shot = (GameObject) Instantiate(shotPrefab, shotPos, shotRot);
 
