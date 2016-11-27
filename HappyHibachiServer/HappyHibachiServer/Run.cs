@@ -11,8 +11,8 @@ namespace HappyHibachiServer
         static void Main(string[] args)
         {
             Console.WriteLine("Hit Ctrl-C to exit.");
-            //BattleServer.startServer();
-            TestSinglePerson.startServer();
+            BattleServer.startServer();
+            //TestSinglePerson.startServer();
         }
     }
 }

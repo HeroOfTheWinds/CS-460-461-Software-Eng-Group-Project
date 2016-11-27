@@ -2,7 +2,7 @@
 using System.Collections;
 using UnityStandardAssets.CrossPlatformInput;
 
-public class EnemyUpdate : MonoBehaviour
+public class EnemyUpdate
 {
     private float xPos;
     private float zPos;
@@ -25,12 +25,12 @@ public class EnemyUpdate : MonoBehaviour
     private float mpy = 0;
 
 
-    public void runUpdate()
+    public void runUpdate(GameObject enemy)
     {
-        gameObject.transform.position.Set(xPos, 0, ZPos);
-        gameObject.transform.rotation.Set(0, rot, 0, 0);
+        enemy.transform.position.Set(xPos, 0, ZPos);
+        enemy.transform.rotation.Set(0, rot, 0, 0);
 
-        //deal with shots and mines and whatnot
+        //deal with shots and mines and whatnot later, for now ensure motion working
     }
 
 

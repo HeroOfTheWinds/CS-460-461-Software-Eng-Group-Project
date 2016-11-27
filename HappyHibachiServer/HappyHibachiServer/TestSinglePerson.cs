@@ -165,8 +165,11 @@ namespace HappyHibachiServer
                     handler.Close();
                 }
             }
-            //stop gracefully
-            catch (Exception) { }
+            //stop gracefully if player disconnects before battle ends
+            catch (Exception)
+            {
+                Console.WriteLine("\nPlayer disconnected");
+            }
         }
 
         private static void send(State state)

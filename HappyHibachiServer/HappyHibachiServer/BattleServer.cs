@@ -129,7 +129,7 @@ namespace HappyHibachiServer
             bool battleEnd;
             bool win;
 
-            //STORE HP AND LOCATIONS IN STATE, UPDATE AND USE FOR THINGS
+            //STORE HP AND LOCATIONS IN STATE, UPDATE AND USE FOR THINGS (anti-cheat stuff)
 
             // Retrieve the state object and the handler socket
             // from the asynchronous state object.
@@ -155,7 +155,7 @@ namespace HappyHibachiServer
             }
             else
             {
-                //handle winner stuff
+                //handle winner stuff (DB stuff, etc)
 
                 handler.Shutdown(SocketShutdown.Both);
                 handler.Close();
