@@ -32,6 +32,7 @@ public class PlayerControl : MonoBehaviour {
 
 
     //flags, least sig to most sig bit
+    //need to set these in the code
     private bool battleEnd = false;
     private bool win = false;
 

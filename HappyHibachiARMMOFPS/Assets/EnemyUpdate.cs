@@ -4,9 +4,9 @@ using UnityStandardAssets.CrossPlatformInput;
 
 public class EnemyUpdate
 {
-    private float xPos;
-    private float zPos;
-    private float rot;
+    private float xPos = 0;
+    private float zPos = 12;
+    private float rot = 180;
     
     //flags, least sig to most sig bit
     private bool battleEnd = false;
@@ -27,8 +27,17 @@ public class EnemyUpdate
 
     public void runUpdate(GameObject enemy)
     {
-        enemy.transform.position.Set(xPos, 0, ZPos);
-        enemy.transform.rotation.Set(0, rot, 0, 0);
+        //Debug.Log(xPos);
+        //set is a method on vector 3, your setting a copy, so the actual isnt updating
+        //enemy.transform.position.Set(xPos, 0, ZPos);
+        //Debug.Log(enemy.transform.position.x);
+        //enemy.transform.rotation.Set(0, rot, 0, 0);
+
+        Vector3 updateVector = new Vector3(xPos, 0, zPos + 12);
+        Quaternion updateQuat = new Quaternion(0, rot + 180, 0, 0);
+
+        enemy.transform.position = updateVector;
+        enemy.transform.rotation = updateQuat;
 
         //deal with shots and mines and whatnot later, for now ensure motion working
     }

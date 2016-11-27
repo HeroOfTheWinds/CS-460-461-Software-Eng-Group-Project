@@ -61,15 +61,15 @@ public class BattleNetManager : MonoBehaviour
 
             client.Send(testGUID.ToByteArray());
 
-            Debug.Log("Send GUID Successful");
+            //Debug.Log("Send GUID Successful");
 
             //initial update
             client.Send(getUpdate());
             
-            Debug.Log("Send Update Successful");
+            //Debug.Log("Send Update Successful");
 
             client.BeginReceive(isClient, 0, 1, 0, new AsyncCallback(updateDriver), null);
-            Debug.Log("Start async successful");
+            //Debug.Log("Start async successful");
         }
 
         catch (Exception e)
@@ -89,14 +89,11 @@ public class BattleNetManager : MonoBehaviour
         {
 
             
-            //gonna have to signal to main thread and do actual update in Update() method
-
             
-            Debug.Log("BeginReceive Successful");
             //getClient.WaitOne();
             if (isClient[0] == 1)
             {
-                Debug.Log("ack");
+                //Debug.Log("ack");
                 //getClient.Set();
 
 
@@ -106,7 +103,7 @@ public class BattleNetManager : MonoBehaviour
             }
             else
             {
-                Debug.Log("update");
+                //Debug.Log("update");
                 /*
                 State state = new State();
                 state.ClientSocket = client;
@@ -117,6 +114,10 @@ public class BattleNetManager : MonoBehaviour
                 */
 
                 //MIGHT NEED TO BLOCK ON THESE CALLS UNTIL FINISHED READING (ANY SIMILAR CASE)
+                //Debug.Log("What?");
+
+                //SOMETHING WEIRD WITH THE SERVER ON DC (not properly shutting down socket?)
+
                 client.BeginReceive(update, 0, UPDATE_SIZE, 0, new AsyncCallback(unpackUpdate), null);
                 
 
@@ -178,6 +179,7 @@ public class BattleNetManager : MonoBehaviour
         {
             //send current information on player position
             client.Send(getUpdate());
+            Debug.Log("Update sent");
             //reset flags
             //reset();
         }
@@ -185,6 +187,7 @@ public class BattleNetManager : MonoBehaviour
         {
             //run the stored update on the opponent
             eUpdate.runUpdate(opponent);
+            Debug.Log("Update run");
         }
         receiveUpdate = false;
         sendUpdate = false;
