@@ -145,8 +145,10 @@ public class PlayerControl : MonoBehaviour {
             // Location in world space of the ray's endpoint
             Vector3 endPoint = Vector3.zero;
 
+            //Debug.DrawRay(cam.transform.position, cam.transform.forward*200f, Color.red, 20f, true);
+
             // Test if the raycast hits anything
-            if (Physics.Raycast(shotPos, transform.forward, out hit, 200f))
+            if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, 200f))
             {
                 // Retrieve endpoint
                 endPoint = hit.point;
@@ -154,10 +156,10 @@ public class PlayerControl : MonoBehaviour {
                 // Check what we hit and act accordingly
                 switch (hit.collider.tag)
                 {
-                    case "Player":
+                    case "Enemy":
                         // Get that player's stats and take off some HP
                         hit.collider.gameObject.GetComponent<EnemyStatus>().TakeHP(8f);
-                        Debug.Log("Hit player");
+                        Debug.Log("Hit enemy");
                         break;
                     default:
                         // Other cases to consider: wall, arena border, ground
