@@ -114,15 +114,17 @@ public class PlayerControl : MonoBehaviour {
             transform.rotation = newRot;
             // This wouldn't be so wasteful if Unity let you actually edit returned quaternions directly
         }
+        //don't want both
+        else
+        {
+            // ------------- Alternate camera controls: swipe to rotate --------------
 
-        // ------------- Alternate camera controls: swipe to rotate --------------
+            float rotX = CrossPlatformInputManager.GetAxis("CamHorizontal");
 
-        float rotX = CrossPlatformInputManager.GetAxis("CamHorizontal");
-        
-        // Only rotate on Y axis (Prevents camera clip issues)
-        //cam.transform.Rotate(new Vector3(0f, -rotX * RotSpeed * Time.deltaTime, 0f));
-        transform.Rotate(new Vector3(0f, -rotX * RotSpeed * Time.deltaTime, 0f));
-        
+            // Only rotate on Y axis (Prevents camera clip issues)
+            //cam.transform.Rotate(new Vector3(0f, -rotX * RotSpeed * Time.deltaTime, 0f));
+            transform.Rotate(new Vector3(0f, -rotX * RotSpeed * Time.deltaTime, 0f));
+        }
         // ------------- Firing shots ----------------
 
         // Check if player pressed Fire, and cooldown has expired

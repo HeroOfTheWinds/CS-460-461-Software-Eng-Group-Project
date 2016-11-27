@@ -27,17 +27,21 @@ public class EnemyUpdate
 
     public void runUpdate(GameObject enemy)
     {
-        //Debug.Log(xPos);
+        //Debug.Log("update run start");
         //set is a method on vector 3, your setting a copy, so the actual isnt updating
         //enemy.transform.position.Set(xPos, 0, ZPos);
         //Debug.Log(enemy.transform.position.x);
         //enemy.transform.rotation.Set(0, rot, 0, 0);
 
+        //Debug.Log(rot);
+
         Vector3 updateVector = new Vector3(xPos, 0, zPos + 12);
-        Quaternion updateQuat = new Quaternion(0, rot + 180, 0, 0);
+        Quaternion updateQuat = Quaternion.Euler(0, rot + 180, 0);
 
         enemy.transform.position = updateVector;
         enemy.transform.rotation = updateQuat;
+
+        //Debug.Log("update run end");
 
         //deal with shots and mines and whatnot later, for now ensure motion working
     }

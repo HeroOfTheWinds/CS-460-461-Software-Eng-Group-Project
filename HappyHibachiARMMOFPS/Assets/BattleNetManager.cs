@@ -7,11 +7,13 @@ using System.Threading;
 
 public class BattleNetManager : MonoBehaviour
 {
-    
+    //RACE CONDITION SOMEWHERE
     private static Guid testGUID = new Guid("dddddddddddddddddddddddddddddddd");
     private static readonly IPAddress testIP = IPAddress.Parse("10.10.10.103");
     public const int BATTLE_PORT = 2224;
     public const int UPDATE_SIZE = 33;
+
+    private static readonly object flagLock = new object();
 
     //buffer to receive whether incoming message is a client ack or enemy update
     private byte[] isClient;
@@ -19,7 +21,7 @@ public class BattleNetManager : MonoBehaviour
     //buffer to receive incoming updates
     private byte[] update;
 
-    //private ManualResetEvent getClient = new ManualResetEvent(false);
+    private ManualResetEvent updateFin;
 
     //double check for race conditions on data, ensure everything resynced
     private Socket client;
@@ -57,6 +59,8 @@ public class BattleNetManager : MonoBehaviour
             receiveUpdate = false;
             sendUpdate = false;
 
+            updateFin = new ManualResetEvent(false);
+
             eUpdate = new EnemyUpdate();
 
             client.Send(testGUID.ToByteArray());
@@ -84,12 +88,15 @@ public class BattleNetManager : MonoBehaviour
     {
         client.EndReceive(ar);
 
+        //Debug.Log(controller.BattleEnd);
+
         //if says something about not being able to access enemy transform outside main thread, send signal to main thread and update in Update function
         if(!controller.BattleEnd)
         {
+            //Debug.Log("begin update");
 
-            
-            
+            //Debug.Log(isClient[0]);
+
             //getClient.WaitOne();
             if (isClient[0] == 1)
             {
@@ -98,7 +105,11 @@ public class BattleNetManager : MonoBehaviour
 
 
                 //need to delegate to main thread
-                sendUpdate = true;
+                lock(flagLock)
+                {
+                    sendUpdate = true;
+                }
+                
                 
             }
             else
@@ -120,10 +131,13 @@ public class BattleNetManager : MonoBehaviour
 
                 client.BeginReceive(update, 0, UPDATE_SIZE, 0, new AsyncCallback(unpackUpdate), null);
                 
+                updateFin.WaitOne();
+                updateFin.Reset();
 
             }
             //recursively check isClient while battle is going
             client.BeginReceive(isClient, 0, 1, 0, new AsyncCallback(updateDriver), null);
+            //Debug.Log("end update");
         }
         else
         {
@@ -141,7 +155,10 @@ public class BattleNetManager : MonoBehaviour
 
     private void unpackUpdate(IAsyncResult ar)
     {
+        //Debug.Log("begin unpack");
         client.EndReceive(ar);
+        updateFin.Set();
+        
 
         byte flags = update[0];
 
@@ -163,7 +180,12 @@ public class BattleNetManager : MonoBehaviour
         eUpdate.Mpy = BitConverter.ToSingle(update, 29);
 
         //signal to main thread to update opponent
-        receiveUpdate = true;
+        lock(flagLock)
+        {
+            receiveUpdate = true;
+        }
+        
+        //Debug.Log("end unpack");
     }
 
 
@@ -175,22 +197,28 @@ public class BattleNetManager : MonoBehaviour
 
     private void Update()
     {
-        if(sendUpdate)
+        lock (flagLock)
         {
-            //send current information on player position
-            client.Send(getUpdate());
-            Debug.Log("Update sent");
-            //reset flags
-            //reset();
-        }
-        if(receiveUpdate)
-        {
-            //run the stored update on the opponent
-            eUpdate.runUpdate(opponent);
-            Debug.Log("Update run");
-        }
-        receiveUpdate = false;
-        sendUpdate = false;
+            //Debug.Log(client.IsBound);
+            if (sendUpdate)
+            {
+                //send current information on player position
+                client.Send(getUpdate());
+                //Debug.Log("Update sent");
+                //reset flags
+                //reset();
+            }
+            if(receiveUpdate)
+            {
+                //run the stored update on the opponent
+                eUpdate.runUpdate(opponent);
+                //Debug.Log("Update run");
+            }
+        
+                receiveUpdate = false;
+                sendUpdate = false;
+            }
+        
     }
 
     /*
@@ -257,29 +285,32 @@ public class BattleNetManager : MonoBehaviour
     
     public byte[] getUpdate()
     {
-        byte[] sendUpdate = new byte[UPDATE_SIZE];
+        byte[] up = new byte[UPDATE_SIZE];
         //GameObject player = GameObject.FindGameObjectWithTag("Player");
         //PlayerControl controller = player.GetComponent<PlayerControl>();
         float xPos = player.transform.position.x;
         float zPos = player.transform.position.z;
-        float rot = player.transform.rotation.y;
+        float rot = player.transform.rotation.eulerAngles.y;
+
+        //Debug.Log(rot);
 
         //can send less data in certain cases, deal with this later, much later
-        sendUpdate[0] = setFlags();
+        up[0] = setFlags();
 
-        BitConverter.GetBytes(xPos).CopyTo(sendUpdate, 1);
-        BitConverter.GetBytes(zPos).CopyTo(sendUpdate, 5);
-        BitConverter.GetBytes(rot).CopyTo(sendUpdate, 9);
+        BitConverter.GetBytes(xPos).CopyTo(up, 1);
+        BitConverter.GetBytes(zPos).CopyTo(up, 5);
+        BitConverter.GetBytes(rot).CopyTo(up, 9);
 
-        BitConverter.GetBytes(controller.Sfx).CopyTo(sendUpdate, 13);
-        BitConverter.GetBytes(controller.Sfz).CopyTo(sendUpdate, 17);
-        BitConverter.GetBytes(controller.Sfr).CopyTo(sendUpdate, 21);
+        BitConverter.GetBytes(controller.Sfx).CopyTo(up, 13);
+        BitConverter.GetBytes(controller.Sfz).CopyTo(up, 17);
+        BitConverter.GetBytes(controller.Sfr).CopyTo(up, 21);
 
-        BitConverter.GetBytes(controller.Mpx).CopyTo(sendUpdate, 25);
-        BitConverter.GetBytes(controller.Mpy).CopyTo(sendUpdate, 29);
+        BitConverter.GetBytes(controller.Mpx).CopyTo(up, 25);
+        BitConverter.GetBytes(controller.Mpy).CopyTo(up, 29);
 
+        //Debug.Log(BitConverter.ToSingle(up, 9));
 
-        return sendUpdate;
+        return up;
     }
 
     private byte setFlags()
