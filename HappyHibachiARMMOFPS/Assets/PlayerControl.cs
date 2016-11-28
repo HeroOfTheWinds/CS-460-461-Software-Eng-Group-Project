@@ -48,7 +48,9 @@ public class PlayerControl : MonoBehaviour {
 
     private float sfx = 0;
     private float sfz = 0;
-    private float sfr = 0;
+    private float sfrx = 0;
+    private float sfry = 0;
+    private float sfrz = 0;
 
     private float mpx = 0;
     private float mpy = 0;
@@ -106,8 +108,9 @@ public class PlayerControl : MonoBehaviour {
         // Get the current rotation of the phone 
         Quaternion deviceRotation = DeviceRotation.Get();
 
+        //never mind (keep for now just in case)
         //offset device rotation's y axis by -90 degrees because it defaults to a 90 degree rotation for some reason
-        deviceRotation.eulerAngles.Set(deviceRotation.eulerAngles.x, deviceRotation.eulerAngles.y - 90, deviceRotation.eulerAngles.z);
+        //deviceRotation.eulerAngles.Set(deviceRotation.eulerAngles.x, deviceRotation.eulerAngles.y - 90, deviceRotation.eulerAngles.z);
 
         if (Input.gyro.enabled)
         {
@@ -140,9 +143,11 @@ public class PlayerControl : MonoBehaviour {
         if (CrossPlatformInputManager.GetButtonDown("Fire") && LastShotTime >= Cooldown)
         {
             sf = true;
-            sfx = transform.position.x;
-            sfz = transform.position.z;
-            sfr = transform.rotation.y;
+            sfx = cam.transform.position.x;
+            sfz = cam.transform.position.z;
+            sfrx = cam.transform.rotation.eulerAngles.x;
+            sfry = cam.transform.rotation.eulerAngles.y;
+            sfrz = cam.transform.rotation.eulerAngles.z;
 
             // Fire a shot by instantiating a bullet and calculating with a raycast
             // First get orientation of camera and adjust laser's start position so it's outside the player's collider
@@ -255,6 +260,18 @@ public class PlayerControl : MonoBehaviour {
         win.GetComponent<Canvas>().worldCamera = Camera.main;
     }
 
+    //used to draw enemy shots
+    public void makeShot(Vector3 shotPos, Quaternion shotRot, Vector3 endPoint)
+    {
+        GameObject shot = (GameObject)Instantiate(shotPrefab, shotPos, shotRot);
+
+        // Re-orient shot to travel toward hit point, if applicable
+        if (endPoint != Vector3.zero)
+        {
+            shot.transform.LookAt(endPoint);
+        }
+    }
+
     //getters and setters
     public bool BattleEnd
     {
@@ -360,19 +377,6 @@ public class PlayerControl : MonoBehaviour {
         }
     }
 
-    public float Sfr
-    {
-        get
-        {
-            return sfr;
-        }
-
-        set
-        {
-            sfr = value;
-        }
-    }
-
     public float Mpx
     {
         get
@@ -396,6 +400,45 @@ public class PlayerControl : MonoBehaviour {
         set
         {
             mpy = value;
+        }
+    }
+
+    public float Sfrx
+    {
+        get
+        {
+            return sfrx;
+        }
+
+        set
+        {
+            sfrx = value;
+        }
+    }
+
+    public float Sfry
+    {
+        get
+        {
+            return sfry;
+        }
+
+        set
+        {
+            sfry = value;
+        }
+    }
+
+    public float Sfrz
+    {
+        get
+        {
+            return sfrz;
+        }
+
+        set
+        {
+            sfrz = value;
         }
     }
 }

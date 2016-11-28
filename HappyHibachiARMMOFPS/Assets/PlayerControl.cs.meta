@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: 27e032695032d414197b7e5ffd1967a6
-timeCreated: 1476928928
+timeCreated: 1480315744
 licenseType: Free
 MonoImporter:
   serializedVersion: 2
@@ -9,7 +9,7 @@ MonoImporter:
   - cam: {instanceID: 0}
   - WinCanvas: {fileID: 139960, guid: 2c261ad5ec294f840acbc5e413ed0db8, type: 2}
   - LoseCanvas: {fileID: 116040, guid: 76e265ea711f34247ad623fe9279440e, type: 2}
-  executionOrder: 0
+  executionOrder: 100
   icon: {instanceID: 0}
   userData: 
   assetBundleName: 

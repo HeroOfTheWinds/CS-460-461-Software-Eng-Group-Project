@@ -73,6 +73,7 @@ public class PlayerStatus : MonoBehaviour {
 
     }
 
+
     // Function to calculate current stats based off current level
     // Very much WIP, gotta decide growth functions
     private void CalcStats()
