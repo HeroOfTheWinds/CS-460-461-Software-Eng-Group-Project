@@ -4,6 +4,7 @@ using System.Collections;
 public class itemScript : MonoBehaviour {
 
 	public Canvas itemMenu;
+    public GameObject player;
 
 	void Start()
 	{
@@ -33,4 +34,12 @@ public class itemScript : MonoBehaviour {
 		//Code for OK button in items menu
 	}
 
+    public void placeMine()
+    {
+        // Call function to place mine using the player
+        player.GetComponent<PlayerControl>().PlaceLandmine();
+
+        // Auto-close menu
+        itemMenu.enabled = false;
+    }
 }

@@ -42,6 +42,10 @@ public class Landmine : MonoBehaviour {
                 {
                     hitPlayers[i].gameObject.GetComponent<PlayerStatus>().TakeHP(damage);
                 }
+                else if (hitPlayers[i].tag == "Enemy")
+                {
+                    hitPlayers[i].gameObject.GetComponent<EnemyStatus>().TakeHP(damage);
+                }
             }
 
             // Now remove the landmine
