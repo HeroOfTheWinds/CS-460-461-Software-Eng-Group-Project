@@ -35,8 +35,8 @@ public class EnemyUpdate
 
         //Debug.Log(rot);
 
-        Vector3 updateVector = new Vector3(xPos, 0, zPos + 12);
-        Quaternion updateQuat = Quaternion.Euler(0, rot + 180, 0);
+        Vector3 updateVector = new Vector3(xPos, 0, zPos);
+        Quaternion updateQuat = Quaternion.Euler(0, rot, 0);
 
         enemy.transform.position = updateVector;
         enemy.transform.rotation = updateQuat;

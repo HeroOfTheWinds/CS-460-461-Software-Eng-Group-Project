@@ -7,16 +7,25 @@ using System.Threading;
 
 public class BattleNetManager : MonoBehaviour
 {
-    //RACE CONDITION SOMEWHERE
+    //RACE CONDITION SOMEWHERE, OR SOMETHING...
     private static Guid testGUID = new Guid("dddddddddddddddddddddddddddddddd");
     private static readonly IPAddress testIP = IPAddress.Parse("10.10.10.103");
     public const int BATTLE_PORT = 2224;
     public const int UPDATE_SIZE = 33;
 
+    private static readonly Spawn[] spawns = new Spawn[2]
+    {
+        new Spawn(new Vector3(0, 0, 0), Quaternion.Euler(0, 0, 0)),
+        new Spawn(new Vector3(0, 0, 12), Quaternion.Euler(0, 180, 0))
+    };
+
     private static readonly object flagLock = new object();
 
     //buffer to receive whether incoming message is a client ack or enemy update
     private byte[] isClient;
+
+    //buffer for receiving which spawn to use
+    private byte[] spawn;
 
     //buffer to receive incoming updates
     private byte[] update;
@@ -48,6 +57,7 @@ public class BattleNetManager : MonoBehaviour
             client.Connect(remoteEP);
 
             isClient = new byte[1];
+            spawn = new byte[1];
             update = new byte[UPDATE_SIZE];
 
             Debug.Log("Connect Successful");
@@ -64,6 +74,17 @@ public class BattleNetManager : MonoBehaviour
             eUpdate = new EnemyUpdate();
 
             client.Send(testGUID.ToByteArray());
+
+            //gets which spawn to use
+            client.Receive(spawn, 1, 0);
+            //get player spawn info from index of player given by server
+            player.transform.position = spawns[spawn[0]].SpawnPos;
+            player.transform.rotation = spawns[spawn[0]].SpawnRot;
+            //spawn opponent at the other location
+            opponent.transform.position = spawns[(spawn[0] + 1) % 2].SpawnPos;
+            opponent.transform.rotation = spawns[(spawn[0] + 1) % 2].SpawnRot;
+
+            
 
             //Debug.Log("Send GUID Successful");
 

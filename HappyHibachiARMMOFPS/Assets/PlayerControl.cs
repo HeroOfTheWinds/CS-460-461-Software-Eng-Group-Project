@@ -8,6 +8,8 @@ using System.Net.Sockets;
 public class PlayerControl : MonoBehaviour {
 
 
+    
+
     //public GameObject ARCam; // Link to the main camera
     public GameObject shotPrefab; // What does the bullet look like?
     public GameObject minePrefab; // Object containing the landmine
@@ -29,6 +31,9 @@ public class PlayerControl : MonoBehaviour {
     // Prefabs containing win and lose canvas graphics to display at end of battle
     public GameObject WinCanvas;
     public GameObject LoseCanvas;
+
+
+    
 
 
     //flags, least sig to most sig bit
@@ -101,8 +106,12 @@ public class PlayerControl : MonoBehaviour {
         // Get the current rotation of the phone 
         Quaternion deviceRotation = DeviceRotation.Get();
 
+        //offset device rotation's y axis by -90 degrees because it defaults to a 90 degree rotation for some reason
+        deviceRotation.eulerAngles.Set(deviceRotation.eulerAngles.x, deviceRotation.eulerAngles.y - 90, deviceRotation.eulerAngles.z);
+
         if (Input.gyro.enabled)
         {
+
             // Rotate Camera based on gyroscope (more free)
             cam.transform.rotation = deviceRotation;
 
@@ -387,6 +396,45 @@ public class PlayerControl : MonoBehaviour {
         set
         {
             mpy = value;
+        }
+    }
+}
+
+public class Spawn
+{
+    private Vector3 spawnPos;
+    private Quaternion spawnRot;
+
+    public Spawn(Vector3 spawnPos, Quaternion spawnRot)
+    {
+        this.spawnPos = spawnPos;
+        this.spawnRot = spawnRot;
+    }
+
+
+    public Vector3 SpawnPos
+    {
+        get
+        {
+            return spawnPos;
+        }
+
+        set
+        {
+            spawnPos = value;
+        }
+    }
+
+    public Quaternion SpawnRot
+    {
+        get
+        {
+            return spawnRot;
+        }
+
+        set
+        {
+            spawnRot = value;
         }
     }
 }

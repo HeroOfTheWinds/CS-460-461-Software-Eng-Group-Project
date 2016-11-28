@@ -67,12 +67,14 @@ namespace HappyHibachiServer
             byte[] guid = new byte[16];
             Guid battleGUID;
 
+            byte[] spawn = new byte[1];
+
             State state = new State();
 
-            // Signal the main thread to continue.
+            //connection finished, allow others to connect
             connectionFound.Set();
 
-            // Get the socket that handles the client request.
+            //get socket for client
             Socket listener = (Socket)ar.AsyncState;
             Socket handler = listener.EndAccept(ar);
 
@@ -103,24 +105,29 @@ namespace HappyHibachiServer
                 //set this client's opponent to the first client in wait
                 state.OpponentSocket = wait.Socket1;
                 //set event indicating both clients are connected
-
-                //add some sort of timeout
                 wait.setWait();
+                //indicate to client to spawn at second location
+                spawn[0] = 1;
             }
             else
             {
+                //add some sort of timeout?
                 //wait until second client connects
                 wait.Wait.Wait();
                 //set this client's opponent to the second client in wait
                 state.OpponentSocket = wait.Socket2;
                 //both clients are connected, remove from waiting
                 waiting.Remove(battleGUID);
+                //indicate to client to spawn at first location;
+                spawn[0] = 0;
             }
 
             //set client's socket in state object
             state.ClientSocket = handler;
             //initialize buffer
             state.Update = new byte[UPDATE_SIZE];
+
+            handler.Send(spawn, 1, 0);
 
             handler.BeginReceive(state.Update, 0, UPDATE_SIZE, 0, new AsyncCallback(readUpdate), state);
         }
