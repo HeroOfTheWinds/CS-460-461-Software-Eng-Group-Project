@@ -53,6 +53,8 @@ public class EnemyUpdate
             Vector3 sPos = new Vector3(sfx, Camera.main.transform.position.y, sfz); //camera y axis should be identical for each player
             //get rotation of shot
             Quaternion shotRot = Quaternion.Euler(sfrx, sfry, sfrz);
+            // Get direction of raycast
+            Vector3 shotDir = new Vector3(sfrx, sfry, sfrz);
 
             // Fire a shot by instantiating a bullet and calculating with a raycast
             // First get orientation of camera and adjust laser's start position so it's outside the player's collider
@@ -67,7 +69,7 @@ public class EnemyUpdate
             //Debug.DrawRay(cam.transform.position, cam.transform.forward*200f, Color.red, 20f, true);
 
             // Test if the raycast hits anything
-            if (Physics.Raycast(sPos, shotRot * shotPos, out hit, 200f))
+            if (Physics.Raycast(sPos, shotDir, out hit, 200f))  //if (Physics.Raycast(sPos, shotRot * shotPos, out hit, 200f))
             {
                 // Retrieve endpoint
                 endPoint = hit.point;

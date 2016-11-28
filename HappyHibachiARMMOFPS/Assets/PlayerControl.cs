@@ -145,9 +145,9 @@ public class PlayerControl : MonoBehaviour {
             sf = true;
             sfx = cam.transform.position.x;
             sfz = cam.transform.position.z;
-            sfrx = cam.transform.rotation.eulerAngles.x;
-            sfry = cam.transform.rotation.eulerAngles.y;
-            sfrz = cam.transform.rotation.eulerAngles.z;
+            sfrx = cam.transform.forward.x; //cam.transform.rotation.eulerAngles.x;
+            sfry = cam.transform.forward.y; //cam.transform.rotation.eulerAngles.y;
+            sfrz = cam.transform.forward.z; //cam.transform.rotation.eulerAngles.z;
 
             // Fire a shot by instantiating a bullet and calculating with a raycast
             // First get orientation of camera and adjust laser's start position so it's outside the player's collider
