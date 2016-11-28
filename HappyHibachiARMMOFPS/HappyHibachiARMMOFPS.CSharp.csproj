@@ -64,6 +64,12 @@
     <Reference Include="Mono.Cecil">
       <HintPath>Library\UnityAssemblies\Mono.Cecil.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEditor.iOS.Extensions.Xcode">
+      <HintPath>Library\UnityAssemblies\UnityEditor.iOS.Extensions.Xcode.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEditor.iOS.Extensions.Common">
+      <HintPath>Library\UnityAssemblies\UnityEditor.iOS.Extensions.Common.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="HappyHibachiARMMOFPS.CSharp.Plugins.csproj">
@@ -226,11 +232,13 @@
     <Compile Include="Assets\Infinity Code\Online maps\Scripts\XML\OnlineMapsXMLListEnum.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Scripts\XML\OnlineMapsXMLNamespaceManager.cs" />
     <Compile Include="Assets\Landmine.cs" />
+    <Compile Include="Assets\Login.cs" />
     <Compile Include="Assets\MoveShot.cs" />
     <Compile Include="Assets\NetworkManagerCustom.cs" />
     <Compile Include="Assets\Player.cs" />
     <Compile Include="Assets\PlayerControl.cs" />
     <Compile Include="Assets\PlayerStatus.cs" />
+    <Compile Include="Assets\Register.cs" />
     <Compile Include="Assets\Scripts\LandMarkerScripts\LandmarkCamera.cs" />
     <Compile Include="Assets\Scripts\LandMarkerScripts\LandmarkClass.cs" />
     <Compile Include="Assets\Scripts\LandMarkerScripts\SendLandmark.cs" />
@@ -241,13 +249,12 @@
     <Compile Include="Assets\Scripts\LandMarkerScripts\testbutton.cs" />
     <Compile Include="Assets\Scripts\Leaderboard\LeaderboardFilter.cs" />
     <Compile Include="Assets\Scripts\Leaderboard\LeaderboardScroll.cs" />
-    <Compile Include="Assets\Scripts\Login.cs" />
-    <Compile Include="Assets\Scripts\Register.cs" />
-    <Compile Include="Assets\Scripts\ViewLandmark.cs" />
+    <Compile Include="Assets\ShowPlayerInfo.cs" />
     <Compile Include="Assets\UI\button.cs" />
     <Compile Include="Assets\UI\menuAppear.cs" />
     <Compile Include="Assets\UI\menuScript.cs" />
     <Compile Include="Assets\UI\start.cs" />
+    <Compile Include="Assets\ViewLandmark.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Infinity Code\Online maps\Shaders\TilesetCutoutShader.shader" />
