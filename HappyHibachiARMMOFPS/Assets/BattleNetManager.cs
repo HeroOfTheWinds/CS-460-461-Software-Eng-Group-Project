@@ -11,7 +11,7 @@ public class BattleNetManager : MonoBehaviour
     private static Guid testGUID = new Guid("dddddddddddddddddddddddddddddddd");
     private static readonly IPAddress testIP = IPAddress.Parse("10.10.10.103");
     public const int BATTLE_PORT = 2224;
-    public const int UPDATE_SIZE = 33;
+    public const int UPDATE_SIZE = 41;
 
     private static readonly Spawn[] spawns = new Spawn[2]
     {
@@ -116,7 +116,7 @@ public class BattleNetManager : MonoBehaviour
         {
             //Debug.Log("begin update");
 
-            //Debug.Log(isClient[0]);
+            Debug.Log(isClient[0]);
 
             //getClient.WaitOne();
             if (isClient[0] == 1)
@@ -196,9 +196,11 @@ public class BattleNetManager : MonoBehaviour
         eUpdate.Rot = BitConverter.ToSingle(update, 9);
         eUpdate.Sfx = BitConverter.ToSingle(update, 13);
         eUpdate.Sfz = BitConverter.ToSingle(update, 17);
-        eUpdate.Sfr = BitConverter.ToSingle(update, 21);
-        eUpdate.Mpx = BitConverter.ToSingle(update, 25);
-        eUpdate.Mpy = BitConverter.ToSingle(update, 29);
+        eUpdate.Sfrx = BitConverter.ToSingle(update, 21);
+        eUpdate.Sfry = BitConverter.ToSingle(update, 25);
+        eUpdate.Sfrz = BitConverter.ToSingle(update, 29);
+        eUpdate.Mpx = BitConverter.ToSingle(update, 33);
+        eUpdate.Mpy = BitConverter.ToSingle(update, 37);
 
         //signal to main thread to update opponent
         lock(flagLock)
@@ -225,20 +227,22 @@ public class BattleNetManager : MonoBehaviour
             {
                 //send current information on player position
                 client.Send(getUpdate());
-                //Debug.Log("Update sent");
+                Debug.Log("Update sent");
+
                 //reset flags
-                //reset();
+                //might have to do something to make sure it doesnt overwrite flags if set this cycle
+                reset();
             }
             if(receiveUpdate)
             {
                 //run the stored update on the opponent
-                eUpdate.runUpdate(opponent);
-                //Debug.Log("Update run");
+                eUpdate.runUpdate(controller, opponent);
+                Debug.Log("Update run");
             }
         
-                receiveUpdate = false;
-                sendUpdate = false;
-            }
+            receiveUpdate = false;
+            sendUpdate = false;
+        }
         
     }
 
@@ -277,8 +281,8 @@ public class BattleNetManager : MonoBehaviour
         }
 
     }
+    */
     
-    //why do you need this?
     private void reset()
     {
         controller.Sf = false;
@@ -287,7 +291,7 @@ public class BattleNetManager : MonoBehaviour
         controller.Mso = false;
     }
     
-
+    /*
     private void updateOpponent()
     {
         //State state = (State)ar.AsyncState;
@@ -324,10 +328,12 @@ public class BattleNetManager : MonoBehaviour
 
         BitConverter.GetBytes(controller.Sfx).CopyTo(up, 13);
         BitConverter.GetBytes(controller.Sfz).CopyTo(up, 17);
-        BitConverter.GetBytes(controller.Sfr).CopyTo(up, 21);
+        BitConverter.GetBytes(controller.Sfrx).CopyTo(up, 21);
+        BitConverter.GetBytes(controller.Sfrx).CopyTo(up, 25);
+        BitConverter.GetBytes(controller.Sfrx).CopyTo(up, 29);
 
-        BitConverter.GetBytes(controller.Mpx).CopyTo(up, 25);
-        BitConverter.GetBytes(controller.Mpy).CopyTo(up, 29);
+        BitConverter.GetBytes(controller.Mpx).CopyTo(up, 33);
+        BitConverter.GetBytes(controller.Mpy).CopyTo(up, 37);
 
         //Debug.Log(BitConverter.ToSingle(up, 9));
 

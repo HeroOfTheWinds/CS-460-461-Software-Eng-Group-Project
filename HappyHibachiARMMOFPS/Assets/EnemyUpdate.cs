@@ -19,13 +19,15 @@ public class EnemyUpdate
 
     private float sfx = 0;
     private float sfz = 0;
-    private float sfr = 0;
+    private float sfrx = 0;
+    private float sfry = 0;
+    private float sfrz = 0;
 
     private float mpx = 0;
     private float mpy = 0;
 
 
-    public void runUpdate(GameObject enemy)
+    public void runUpdate(PlayerControl controller, GameObject enemy)
     {
         //Debug.Log("update run start");
         //set is a method on vector 3, your setting a copy, so the actual isnt updating
@@ -43,7 +45,59 @@ public class EnemyUpdate
 
         //Debug.Log("update run end");
 
-        //deal with shots and mines and whatnot later, for now ensure motion working
+
+        if (sf)
+        {
+            //NEED TO SEND X AND Z ROTATION AXIS AS WELL FOR CAMERA
+            //get position of shot
+            Vector3 sPos = new Vector3(sfx, Camera.main.transform.position.y, sfz); //camera y axis should be identical for each player
+            //get rotation of shot
+            Quaternion shotRot = Quaternion.Euler(sfrx, sfry, sfrz);
+            // Get direction of raycast
+            Vector3 shotDir = new Vector3(sfrx, sfry, sfrz);
+
+            // Fire a shot by instantiating a bullet and calculating with a raycast
+            // First get orientation of camera and adjust laser's start position so it's outside the player's collider
+            Vector3 shotPos = enemy.transform.TransformDirection(1f, -0.5f, 1f) + sPos;
+            
+
+            // Make a raycast from the camera to check for target hit
+            RaycastHit hit; // Var to store info on what got hit
+            // Location in world space of the ray's endpoint
+            Vector3 endPoint = Vector3.zero;
+
+            //Debug.DrawRay(cam.transform.position, cam.transform.forward*200f, Color.red, 20f, true);
+
+            // Test if the raycast hits anything
+            if (Physics.Raycast(sPos, shotDir, out hit, 200f))  //if (Physics.Raycast(sPos, shotRot * shotPos, out hit, 200f))
+            {
+                // Retrieve endpoint
+                endPoint = hit.point;
+
+                // Check what we hit and act accordingly
+                switch (hit.collider.tag)
+                {
+                    case "Player":
+                        // Get that player's stats and take off some HP
+                        hit.collider.gameObject.GetComponent<PlayerStatus>().TakeHP(8f);
+                        Debug.Log("Player hit");
+                        break;
+                    default:
+                        // Other cases to consider: wall, arena border, ground
+                        break;
+                }
+            }
+
+            // Change origin of shot to make it look like it's coming from the gun
+            //shotPos = transform.TransformDirection(1f, -0.5f, 1f) + cam.transform.position;
+
+            // Instantiate shot
+            controller.makeShot(shotPos, shotRot, endPoint);
+
+        }
+
+
+        //deal with mines and whatnot later
     }
 
 
@@ -152,19 +206,6 @@ public class EnemyUpdate
         }
     }
 
-    public float Sfr
-    {
-        get
-        {
-            return sfr;
-        }
-
-        set
-        {
-            sfr = value;
-        }
-    }
-
     public float Mpx
     {
         get
@@ -227,6 +268,45 @@ public class EnemyUpdate
         set
         {
             rot = value;
+        }
+    }
+
+    public float Sfrx
+    {
+        get
+        {
+            return sfrx;
+        }
+
+        set
+        {
+            sfrx = value;
+        }
+    }
+
+    public float Sfry
+    {
+        get
+        {
+            return sfry;
+        }
+
+        set
+        {
+            sfry = value;
+        }
+    }
+
+    public float Sfrz
+    {
+        get
+        {
+            return sfrz;
+        }
+
+        set
+        {
+            sfrz = value;
         }
     }
 }
