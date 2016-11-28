@@ -1,4 +1,6 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using System.Collections;
 
 public class start : MonoBehaviour {
@@ -15,7 +17,7 @@ public class start : MonoBehaviour {
 
 	public void openGame()
 	{
-		Application.LoadLevel ("Battle");
+		SceneManager.LoadScene ("Battle");
 	}
 
 }

@@ -1,4 +1,6 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using System.Collections;
 
 public class button : MonoBehaviour {
@@ -15,7 +17,8 @@ public class button : MonoBehaviour {
 
 	public void openOverworld()
 	{
-		Application.LoadLevel ("Overworld");
+		//Application.LoadLevel ("Overworld");
+		SceneManager.LoadScene ("Overworld");
 	}
 
 }
