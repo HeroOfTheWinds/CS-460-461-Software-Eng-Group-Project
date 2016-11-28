@@ -13,7 +13,6 @@ public class Login : MonoBehaviour
     public InputField userInput, passwordInput;
     public Text ErrorText;
     private string url = "http://132.160.49.90:7001/login.php";
-    private string pullPlayerDataurl = "http://132.160.49.90:7001/playerInfo.php";
 
     void Start()
     {
@@ -75,55 +74,10 @@ public class Login : MonoBehaviour
         Player.faction = int.Parse(splitString[3]);
         Player.factionEXP = int.Parse(splitString[4]);
         Player.factionLevel = int.Parse(splitString[5]);
-        Debug.Log(Player.playername);
-        Debug.Log(Player.EXP);
     }
-    //public static void savePlayer(Player player)
-    //{
-    //    //#if UNITY_WP8 || UNITY_WP8_1 || UNITY_WSA || UNITY_WSA_8_0 || UNITY_WSA_8_1 || UNITY_WSA_10_0
-    //    //var serializer = new SharpSerializer(mode) //use sharp serializer
-    //    //#else
-    //    BinaryFormatter bf = new BinaryFormatter();                 //use built-in serializer
-    //    //#endif
-
-    //    FileStream stream = new FileStream(Application.persistentDataPath + "/playerInfo.hibachiproject", FileMode.Create);
-
-
-    //    PlayerData data = new PlayerData(player);
-    //    bf.Serialize(stream, data);
-    //    stream.Close();
-    //    Debug.Log("Player data successfull pulled from Database");
-    //}
-
+    
     public void goToRegister()
     {
         SceneManager.LoadScene("Register");
     }
 }
-
-//[Serializable]
-//public class PlayerData
-//{
-//    public string playername;
-//    public int EXP;
-//    public int level;
-//    public int faction;
-//    public int factionEXP;
-//    public int factionLevel;
-//    public int[] stats;
-
-//    public PlayerData(Player player)
-//    {
-//        playername = Player.playername;
-//        EXP = player.EXP;
-//        level = player.level;
-//        faction = player.faction;
-//        factionEXP = player.factionEXP;
-//        factionLevel = player.factionLevel;
-//        stats = new int[4];
-//        stats[0] = player.maxHealthStat;
-//        stats[1] = player.attackStat;
-//        stats[2] = player.defenseStat;
-//        stats[3] = player.shotSpeedStat;
-//    }
-//}
