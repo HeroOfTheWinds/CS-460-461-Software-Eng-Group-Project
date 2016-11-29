@@ -51,10 +51,10 @@ public class EnemyUpdate
             //NEED TO SEND X AND Z ROTATION AXIS AS WELL FOR CAMERA
             //get position of shot
             Vector3 sPos = new Vector3(sfx, Camera.main.transform.position.y, sfz); //camera y axis should be identical for each player
-            //get rotation of shot
-            Quaternion shotRot = Quaternion.Euler(sfrx, sfry, sfrz);
             // Get direction of raycast
             Vector3 shotDir = new Vector3(sfrx, sfry, sfrz);
+            //get rotation of shot
+            Quaternion shotRot = Quaternion.FromToRotation(sPos, shotDir);
 
             // Fire a shot by instantiating a bullet and calculating with a raycast
             // First get orientation of camera and adjust laser's start position so it's outside the player's collider

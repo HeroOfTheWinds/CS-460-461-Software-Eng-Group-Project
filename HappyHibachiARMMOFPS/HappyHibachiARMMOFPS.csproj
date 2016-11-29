@@ -248,6 +248,7 @@
     <Compile Include="Assets\Scripts\Leaderboard\LeaderboardScroll.cs" />
     <Compile Include="Assets\ShowPlayerInfo.cs" />
     <Compile Include="Assets\UI\button.cs" />
+    <Compile Include="Assets\UI\itemScript.cs" />
     <Compile Include="Assets\UI\menuAppear.cs" />
     <Compile Include="Assets\UI\menuScript.cs" />
     <Compile Include="Assets\UI\start.cs" />
