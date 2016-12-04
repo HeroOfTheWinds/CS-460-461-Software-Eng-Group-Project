@@ -7,17 +7,23 @@ using System.Threading;
 
 public class BattleNetManager : MonoBehaviour
 {
+    //temp guid until dynamic ones are generated on battle start
     private static Guid testGUID = new Guid("dddddddddddddddddddddddddddddddd");
-    private static readonly IPAddress testIP = IPAddress.Parse("10.10.10.103");
+    //ip address to connect to
+    private static readonly IPAddress IP = IPAddress.Parse("10.10.10.103");
+    //port to connect to
     public const int BATTLE_PORT = 2227;
+    //size of update packets in bytes
     public const int UPDATE_SIZE = 41;
 
+    //possible spawn locations
     private static readonly Spawn[] spawns = new Spawn[2]
     {
         new Spawn(new Vector3(0, 0, 0), Quaternion.Euler(0, 0, 0)),
         new Spawn(new Vector3(0, 0, 12), Quaternion.Euler(0, 180, 0))
     };
 
+    
     private static readonly object UPDATE_LOCK = new object();
     private static readonly object I_FLAG_LOCK = new object();
     //public static readonly object O_FLAG_LOCK = new object();
@@ -34,16 +40,21 @@ public class BattleNetManager : MonoBehaviour
     private ManualResetEvent readUpdate;
     private ManualResetEvent updateFin;
 
-    //double check for race conditions on data, ensure everything resynced
+    //connected socket
     private Socket client;
+    //local player
     private GameObject player;
+    //opponent
     private GameObject opponent;
+    //player components
     private PlayerControl controller;
     private PlayerStatus pstatus;
     private PlayerStatus estatus;
+    //stores incoming updates and pushes updates for the enemy
     private EnemyUpdate eUpdate;
     //signal to main thread that an update has been prepared
     private bool receiveUpdate;
+    //signal that an update should be sent
     private bool sendUpdate;
 
 
@@ -52,14 +63,16 @@ public class BattleNetManager : MonoBehaviour
     {
         try
         {
-            IPEndPoint remoteEP = new IPEndPoint(testIP, BATTLE_PORT);
+            //remote endpoint of the server
+            IPEndPoint remoteEP = new IPEndPoint(IP, BATTLE_PORT);
 
-            // Create a TCP/IP socket.
+            //create TCP socket
             client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
-            // Connect to the remote endpoint.
+            //connect to remote endpoint
             client.Connect(remoteEP);
 
+            //initializations
             isClient = new byte[1];
             spawn = new byte[1];
             update = new byte[UPDATE_SIZE];
@@ -80,6 +93,7 @@ public class BattleNetManager : MonoBehaviour
 
             eUpdate = new EnemyUpdate();
 
+            //send the battle guid to the client in order to connect to opponent
             client.Send(testGUID.ToByteArray());
 
             //gets which spawn to use
@@ -100,10 +114,11 @@ public class BattleNetManager : MonoBehaviour
             
             //Debug.Log("Send Update Successful");
 
+            //start receiving updates from server
             client.BeginReceive(isClient, 0, 1, 0, new AsyncCallback(updateDriver), null);
             //Debug.Log("Start async successful");
         }
-
+        //catch exception if fail to connect
         catch (Exception e)
         {
             Debug.Log(e.ToString());
@@ -114,6 +129,7 @@ public class BattleNetManager : MonoBehaviour
 
     private void updateDriver(IAsyncResult ar)
     {
+        //complete async data read
         client.EndReceive(ar);
 
         //Debug.Log(controller.BattleEnd);
@@ -122,16 +138,16 @@ public class BattleNetManager : MonoBehaviour
         if(!(eUpdate.BattleEnd && controller.BattleEnd))
         {
             //Debug.Log("begin update");
-
             //Debug.Log(isClient[0]);
 
+            //check if message from server is an acknowledgement or an update from the enemy
             if (isClient[0] == 1)
             {
                 //Debug.Log("ack");
                 //getClient.Set();
 
-
-                //need to delegate to main thread
+                //need to delegate to main thread in order to update Unity objects
+                //indicate an new update should be sent
                 lock(UPDATE_LOCK)
                 {
                     sendUpdate = true;
@@ -141,16 +157,18 @@ public class BattleNetManager : MonoBehaviour
             }
             else
             {
+                //make sure previous update has completed before overwriting
+                //add a buffer later for increased performance over phone networks with high jitter
                 updateFin.WaitOne();
                 updateFin.Reset();
-
+                //asynchronously reveive and handle new update
                 client.BeginReceive(update, 0, UPDATE_SIZE, 0, new AsyncCallback(unpackUpdate), null);
-                
+                //wait until data read before reading more data
                 readUpdate.WaitOne();
                 readUpdate.Reset();
 
             }
-            //recursively check isClient while battle is going
+            //recursively read data while battle is going
             client.BeginReceive(isClient, 0, 1, 0, new AsyncCallback(updateDriver), null);
             //Debug.Log("end update");
         }
@@ -172,11 +190,14 @@ public class BattleNetManager : MonoBehaviour
     private void unpackUpdate(IAsyncResult ar)
     {
         //Debug.Log("begin unpack");
+        //complete reading data
         client.EndReceive(ar);
+        //signal update read has completed
         readUpdate.Set();
 
+        //first byte contains flags
         byte flags = update[0];
-
+        //ensure not overwriting an update being performed (probably unnecessary due to updateFin, just to be safe)
         lock (I_FLAG_LOCK)
         {
             //unpack update into EnemyUpdate object
@@ -218,17 +239,22 @@ public class BattleNetManager : MonoBehaviour
 
     private void Update()
     {
+        //make sure update flags aren't toggled between use and reset
         lock (UPDATE_LOCK)
         {
             //Debug.Log(client.IsBound);
-            
+            //ensure update isn't overwritten
             lock(I_FLAG_LOCK)
             {
+                //run update if available
                 if (receiveUpdate)
                 {
                     //run the stored update on the opponent
                     eUpdate.runUpdate(controller, opponent);
+
                     //Debug.Log("Update run");
+
+                    //signal that the update has been run
                     updateFin.Set();
 
                 }
@@ -242,57 +268,22 @@ public class BattleNetManager : MonoBehaviour
                     client.Send(getUpdate());
                     //Debug.Log("Update sent");
                 }
+                //catch exception if opponent disconnects
                 catch (Exception) { }
 
                 //reset flags
-                //might have to do something to make sure it doesnt overwrite flags if set this cycle
                 reset();
             }
             
-
+            //reset flags
             receiveUpdate = false;
             sendUpdate = false;
         }
         
     }
 
-    /*
-    private void dataHandle(IAsyncResult ar)
-    {
-       
-        //getClient.Reset();
-        client.Receive(isClient, 1, 0);
-        dataHandle(client);
-        Debug.Log("Receive Successful");
-        //getClient.WaitOne();
-        client.EndReceive(ar);
-        if (isClient[0] == 1)
-        {
-            Debug.Log("isClient Successful");
-            //getClient.Set();
-            client.Send(getUpdate());
-            reset();
-        }
-        else
-        {
-            //State state = new State();
-            //state.ClientSocket = client;
-            //state.Update = new byte[UPDATE_SIZE];
 
-            //GameObject player = GameObject.FindGameObjectWithTag("Player");
-            //PlayerControl controller = player.GetComponent<PlayerControl>();
-
-            //state.Player = player;
-            //state.Enemy = GameObject.FindGameObjectWithTag("Enemy");
-
-            //receiveUpdate
-            client.BeginReceive(update, 0, UPDATE_SIZE, 0, new AsyncCallback(updateOpponent), update);
-
-        }
-
-    }
-    */
-    
+    //reset update flags
     private void reset()
     {
         controller.Sf = false;
@@ -301,38 +292,26 @@ public class BattleNetManager : MonoBehaviour
         controller.Mso = false;
         controller.Ehit = false;
     }
-    
-    /*
-    private void updateOpponent()
-    {
-        //State state = (State)ar.AsyncState;
-        //ar.AsyncWaitHandle.WaitOne();
-        //state.ClientSocket.EndReceive(ar);
-
-        //getClient.Set();
-
-        unpackUpdate(state);
-        //state.Enemy.GetComponent<EnemyUpdate>().runUpdate();
-    }
-
-    */
 
     
-    
+    //get update for this player
+    //what happened since last update?
     public byte[] getUpdate()
     {
+        //array to store update
         byte[] up = new byte[UPDATE_SIZE];
-        //GameObject player = GameObject.FindGameObjectWithTag("Player");
-        //PlayerControl controller = player.GetComponent<PlayerControl>();
+        //players current position
         float xPos = player.transform.position.x;
         float zPos = player.transform.position.z;
+        //players rotation
         float rot = player.transform.rotation.eulerAngles.y;
 
         //Debug.Log(rot);
 
-        //can send less data in certain cases, deal with this later, much later
+        //can send less data in certain cases, deal with this later
+        //set up flags in first byte
         up[0] = setFlags();
-
+        //populate update
         BitConverter.GetBytes(xPos).CopyTo(up, 1);
         BitConverter.GetBytes(zPos).CopyTo(up, 5);
         BitConverter.GetBytes(rot).CopyTo(up, 9);
@@ -351,10 +330,11 @@ public class BattleNetManager : MonoBehaviour
         return up;
     }
 
+    //set up flags for update
     private byte setFlags()
     {
         byte flags = 0;
-
+        //convert flags into a byte
         if (controller.BattleEnd) flags += 1;
         if (controller.Win) flags += (1 << 1);
         if (controller.Sf) flags += (1 << 2);
@@ -366,68 +346,4 @@ public class BattleNetManager : MonoBehaviour
         return flags;
     }
 }
-
-/*
-internal class State
-{
-    private GameObject player;
-    private GameObject enemy;
-
-    private Socket clientSocket;
-    // Receive buffer.
-    private byte[] update;
-
-    public Socket ClientSocket
-    {
-        get
-        {
-            return clientSocket;
-        }
-
-        set
-        {
-            clientSocket = value;
-        }
-    }
-
-    public byte[] Update
-    {
-        get
-        {
-            return update;
-        }
-
-        set
-        {
-            update = value;
-        }
-    }
-
-    public GameObject Player
-    {
-        get
-        {
-            return player;
-        }
-
-        set
-        {
-            player = value;
-        }
-    }
-
-    public GameObject Enemy
-    {
-        get
-        {
-            return enemy;
-        }
-
-        set
-        {
-            enemy = value;
-        }
-    }
-}
-    */
 

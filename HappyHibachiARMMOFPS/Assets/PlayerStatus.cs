@@ -56,12 +56,6 @@ public class PlayerStatus : MonoBehaviour {
             Debug.Log(currentHP);
         }
         Debug.Log(currentHP);
-        /*
-        else if(GameObject.FindGameObjectWithTag("Enemy").GetComponent<EnemyStatus>().getHP() <= 0)
-        {
-            gameObject.GetComponent<PlayerControl>().DisplayWin();
-        }
-        */
     }
 
     public void RestoreHP(float hp)

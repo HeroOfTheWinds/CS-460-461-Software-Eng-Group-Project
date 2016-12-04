@@ -43,6 +43,7 @@ public class itemScript : MonoBehaviour {
             // Call function to place mine at player's feet
             PlayerControl controller = player.GetComponent<PlayerControl>();
             controller.PlaceLandmine(player.transform.position, player.transform.rotation, player.GetInstanceID());
+            //indicate a mine was placed and where
             controller.Mp = true;
             controller.Mpx = player.transform.position.x;
             controller.Mpz = player.transform.position.z;

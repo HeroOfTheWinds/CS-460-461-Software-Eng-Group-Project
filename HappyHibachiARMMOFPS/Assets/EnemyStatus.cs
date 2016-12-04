@@ -47,13 +47,14 @@ public class EnemyStatus : MonoBehaviour
         currentHP -= hp;
         if (currentHP < 0)
             currentHP = 0;
-
+        //is the enemy dead?
         if (currentHP <= 0)
         {
             GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerControl>().DisplayWin();
 
             GameObject player = GameObject.FindGameObjectWithTag("Player");
             PlayerControl controller = player.GetComponent<PlayerControl>();
+            //indicate the battle's over
             controller.BattleEnd = true;
             controller.Win = true;
         }

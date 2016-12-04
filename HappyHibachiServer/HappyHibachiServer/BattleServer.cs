@@ -6,15 +6,20 @@ using System.Collections.Generic;
 
 namespace HappyHibachiServer
 {
+    //server for running battles
     public class BattleServer
     {
+        //size of updates in bytes
         public const int UPDATE_SIZE = 41;
+        //port to listen on
         public const int BATTLE_PORT = 2227;
+        //server ip address
         public static readonly IPAddress IP = IPAddress.Parse("10.10.10.103");
 
-        // Thread signal.
+        //signal for connections
         private static ManualResetEventSlim connectionFound = new ManualResetEventSlim();
 
+        //stores waiting connections until second player connects
         private static Dictionary<Guid, WaitConnection> waiting = new Dictionary<Guid, WaitConnection>();
 
         private static readonly object DICT_LOCK = new object();
@@ -27,28 +32,29 @@ namespace HappyHibachiServer
             //IPAddress ipAddress = Dns.GetHostEntry("localhost").AddressList[0];
             IPEndPoint localEndPoint = new IPEndPoint(IP, BATTLE_PORT);
 
-            // Create a TCP/IP socket.
+            //create tcp listener
             Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
-            // Bind the socket to the local endpoint and listen for incoming connections.
             try
             {
+                //bind the socket to the endpoint and listen for connections
                 listener.Bind(localEndPoint);
                 listener.Listen(100);
-
+                //connect to clients forever
                 while (true)
                 {
-                    // Set the event to nonsignaled state.
+                    //reset connection signal
                     connectionFound.Reset();
 
                     //asynchronously get connections
                     listener.BeginAccept(new AsyncCallback(connect), listener);
 
-                    // Wait until a connection is made before continuing.
+                    //wait for connection to be made
                     connectionFound.Wait();
                 }
 
             }
+            //catch connection errors
             catch (Exception e)
             {
                 Console.WriteLine(e.ToString());
@@ -59,17 +65,19 @@ namespace HappyHibachiServer
 
         }
 
+        //async method for connecting to clients
         public static void connect(IAsyncResult ar)
         {
             try
             {
                 Console.WriteLine("\nPlayer connected");
+                //hold data about the incoming request
                 WaitConnection wait;
                 byte[] guid = new byte[16];
                 Guid battleGUID;
-
+                //tell player which spawn to use
                 byte[] spawn = new byte[1];
-
+                //stores items for communications
                 State state = new State();
 
                 //connection finished, allow others to connect
@@ -91,7 +99,7 @@ namespace HappyHibachiServer
                     //check if battle guid is already in disctionary, and save the value to wait if it is
                     //that is, check if this is the first client to connect to the battle
                     inDict = waiting.TryGetValue(battleGUID, out wait);
-                    //if it is not, add it to the dictionary with a waitconnection object holding this client's socket
+                    //if this is the first player, add the guid to the dictionary with a waitconnection object holding this client's socket
                     if (!inDict)
                     {
                         wait = new WaitConnection(handler);
@@ -117,6 +125,7 @@ namespace HappyHibachiServer
                     //add some sort of timeout?
                     //wait until second client connects
                     wait.Wait.Wait();
+                    //pass lock to both clients for writing to each others socket
                     state.WriteLock = wait.WriteLock;
                     //set this client's opponent to the second client in wait
                     state.OpponentSocket = wait.Socket2;
@@ -132,20 +141,24 @@ namespace HappyHibachiServer
                 //initialize buffer
                 state.Update = new byte[UPDATE_SIZE];
 
+                //lock write operations on the socket
                 lock(state.WriteLock)
                 {
+                    //tell the client where to spawn
                     handler.Send(spawn, 1, 0);
                 }
                 
-
+                //start receiving client updates
                 handler.BeginReceive(state.Update, 0, UPDATE_SIZE, 0, new AsyncCallback(readUpdate), state);
             }
+            //catch connection errors
             catch(Exception)
             {
                 Console.WriteLine("\nPlayer disconnected");
             }
         }
 
+        //read updates from clients
         public static void readUpdate(IAsyncResult ar)
         {
             Socket handler = null;
@@ -156,8 +169,7 @@ namespace HappyHibachiServer
 
                 //STORE HP AND LOCATIONS IN STATE, UPDATE AND USE FOR THINGS (anti-cheat stuff)
 
-                // Retrieve the state object and the handler socket
-                // from the asynchronous state object.
+                //retreive the state object and socket
                 State state = (State)ar.AsyncState;
                 handler = state.ClientSocket;
 
@@ -169,15 +181,17 @@ namespace HappyHibachiServer
 
                 byte flags = state.Update[0];
 
+                //determine winner and if battle ended, change so can't cheat
                 battleEnd = (flags & 1) == 1 ? true : false;
                 win = ((flags >> 1) & 1) == 1 ? true : false;
 
+                //lock write operations and pass along and acknowledge update
                 lock(state.WriteLock)
                 {
                     send(state);
                 }
                 
-
+                //recursively read updates until the battle is over
                 if (!battleEnd)
                 {
                     handler.BeginReceive(state.Update, 0, UPDATE_SIZE, 0, new AsyncCallback(readUpdate), state);
@@ -186,12 +200,13 @@ namespace HappyHibachiServer
                 {
                     //handle winner stuff (DB stuff, etc)
 
+                    //clean up
                     handler.Shutdown(SocketShutdown.Both);
                     handler.Close();
                     Console.WriteLine("\nPlayer disconnected");
                 }
             }
-            //stop gracefully if player disconnects before battle ends
+            //end communications gracefully if player disconnects before battle ends
             catch (Exception)
             {
                 Console.WriteLine("\nPlayer disconnected");
@@ -199,23 +214,30 @@ namespace HappyHibachiServer
             }
         }
 
+        //send updates and acknowledgements
         private static void send(State state)
         {
+            //indicate this is an update for the opponent
             byte[] isClient = new byte[1] { 0 };
-
+            //send update to opponent
             state.OpponentSocket.Send(isClient);
             state.OpponentSocket.Send(state.Update);
 
-
+            //indicate this is an acknowledgement for an update sent
             isClient[0] = 1;
+            //send ack
             state.ClientSocket.Send(isClient);
         }
     }
 
+    //stores information about a waiting battle
     internal class WaitConnection
     {
+        //lock for write operations after connection
         private object writeLock;
+        //blocks until both players connect
         private ManualResetEventSlim wait;
+        //sockets of the clients in the battle
         private Socket socket1;
         private Socket socket2;
 
@@ -224,12 +246,14 @@ namespace HappyHibachiServer
             wait = new ManualResetEventSlim();
         }
 
+        //set up a wait connection with the specified player socket
         public WaitConnection(Socket socket)
         {
             wait = new ManualResetEventSlim();
             socket1 = socket;
         }
 
+        //getters and setters
         public Socket Socket1
         {
             get
@@ -292,12 +316,16 @@ namespace HappyHibachiServer
     // State object for reading client data asynchronously
     internal class State
     {
+        //lock for asyncronous write operations
         private object writeLock;
+        //client's socket
         private Socket clientSocket;
+        //opponents socket
         private Socket opponentSocket;
-        // Receive buffer.
+        //buffer for updates
         private byte[] update;
 
+        //getters and setters
         public Socket ClientSocket
         {
             get

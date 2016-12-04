@@ -33,26 +33,35 @@ public class PlayerControl : MonoBehaviour {
     public GameObject LoseCanvas;
 
 
-    
+
 
 
     //flags, least sig to most sig bit
-    //need to set these in the code
+    //is the battle over?
     private bool battleEnd = false;
+    //did the player win? (unused)
     private bool win = false;
 
+    //was a shot fired?
     private bool sf = false;
+    //was hp regenerated?
     private bool hpr = false;
+    //was a mine placed?
     private bool mp = false;
+    //was a mine set off? (unused)
     private bool mso = false;
+    //did a shot hit the player?
     private bool ehit = false;
 
+    //where was the player when it fired the shot?
+    //x and z coords
     private float sfx = 0;
     private float sfz = 0;
+    //camera rotation
     private float sfrx = 0;
     private float sfry = 0;
     private float sfrz = 0;
-
+    //where was the player when it placed the mine?
     private float mpx = 0;
     private float mpz = 0;
 
@@ -68,20 +77,8 @@ public class PlayerControl : MonoBehaviour {
         offset = new Vector3(0f, 2.8f, 0f);
         
     }
-    /*
-    // Called when player gets spawned on the server.  Only affects local player
-    public override void OnStartLocalPlayer()
-    {
-        Camera.main.transform.rotation = transform.rotation;
 
-        // Set the camera to render the HUD to
-        // Find the HUD among children first
-        Canvas HUD = gameObject.GetComponentInChildren<Canvas>();
 
-        // Set camera
-        HUD.worldCamera = Camera.main;
-    }
-    */
     // Update is called once per frame
     void Update () {
 

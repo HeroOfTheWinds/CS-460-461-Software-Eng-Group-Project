@@ -4,26 +4,37 @@ using UnityStandardAssets.CrossPlatformInput;
 
 public class EnemyUpdate
 {
+    //where was the opponent when it sent the update?
     private float xPos = 0;
-    private float zPos = 12;
-    private float rot = 180;
+    private float zPos = 0;
+    private float rot = 0;
     
     //flags, least sig to most sig bit
+    //is the battle over?
     private bool battleEnd = false;
+    //did the enemy win? (unused)
     private bool win = false;
 
+    //was a shot fired?
     private bool sf = false;
+    //was hp regenerated?
     private bool hpr = false;
+    //was a mine placed?
     private bool mp = false;
+    //was a mine set off? (unused)
     private bool mso = false;
+    //did a shot hit the player?
     private bool phit = false;
 
+    //where was the opponent when it fired the shot?
+    //x and z coords
     private float sfx = 0;
     private float sfz = 0;
+    //camera rotation
     private float sfrx = 0;
     private float sfry = 0;
     private float sfrz = 0;
-
+    //where was the opponent when it placed the mine?
     private float mpx = 0;
     private float mpz = 0;
 
@@ -32,22 +43,19 @@ public class EnemyUpdate
     {
         //Debug.Log(battleEnd);
         //Debug.Log("update run start");
-        //set is a method on vector 3, your setting a copy, so the actual isnt updating
-        //enemy.transform.position.Set(xPos, 0, ZPos);
-        //Debug.Log(enemy.transform.position.x);
-        //enemy.transform.rotation.Set(0, rot, 0, 0);
-
         //Debug.Log(rot);
 
+        //set up enemy's position and rotation from update
         Vector3 updateVector = new Vector3(xPos, 0, zPos);
         Quaternion updateQuat = Quaternion.Euler(0, rot, 0);
 
+        //set enemy position and rotation
         enemy.transform.position = updateVector;
         enemy.transform.rotation = updateQuat;
 
         //Debug.Log("update run end");
 
-
+        //check if enemy fired a shot
         if (sf)
         {
             //get position of shot
@@ -58,11 +66,11 @@ public class EnemyUpdate
             Quaternion shotRot = Quaternion.FromToRotation(sPos, shotDir);
 
             // Fire a shot by instantiating a bullet and calculating with a raycast
-            // First get orientation of camera and adjust laser's start position so it's outside the player's collider
+            // First get orientation of enemy and adjust laser's start position so it's outside the player's collider
             Vector3 shotPos = enemy.transform.TransformDirection(1f, -0.5f, 1f) + sPos;
             
 
-            // Make a raycast from the camera to check for target hit
+            // Make a raycast from the enemy to check for target hit
             RaycastHit hit; // Var to store info on what got hit
             // Location in world space of the ray's endpoint
             Vector3 endPoint = Vector3.zero;
@@ -89,9 +97,6 @@ public class EnemyUpdate
                         break;
                 }
             }
-
-            // Change origin of shot to make it look like it's coming from the gun
-            //shotPos = transform.TransformDirection(1f, -0.5f, 1f) + cam.transform.position;
 
             // Instantiate shot
             controller.makeShot(shotPos, shotRot, endPoint);

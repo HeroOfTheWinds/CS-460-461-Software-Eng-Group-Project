@@ -6,9 +6,11 @@ using System.Collections.Generic;
 
 namespace HappyHibachiServer
 {
+    //for preliminary testing with a single person
+    //may contain race conditions unfixed at time of creation
     public class TestSinglePerson
     {
-        //possible race conditions for socket writes???
+        
         public const int UPDATE_SIZE = 33;
         public const int BATTLE_PORT = 2224;
         public static readonly IPAddress IP = IPAddress.Parse("10.10.10.103");
