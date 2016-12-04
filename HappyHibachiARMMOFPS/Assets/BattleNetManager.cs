@@ -7,7 +7,6 @@ using System.Threading;
 
 public class BattleNetManager : MonoBehaviour
 {
-    //RACE CONDITION SOMEWHERE, OR SOMETHING...
     private static Guid testGUID = new Guid("dddddddddddddddddddddddddddddddd");
     private static readonly IPAddress testIP = IPAddress.Parse("10.10.10.103");
     public const int BATTLE_PORT = 2227;
@@ -19,7 +18,9 @@ public class BattleNetManager : MonoBehaviour
         new Spawn(new Vector3(0, 0, 12), Quaternion.Euler(0, 180, 0))
     };
 
-    private static readonly object flagLock = new object();
+    private static readonly object UPDATE_LOCK = new object();
+    private static readonly object I_FLAG_LOCK = new object();
+    //public static readonly object O_FLAG_LOCK = new object();
 
     //buffer to receive whether incoming message is a client ack or enemy update
     private byte[] isClient;
@@ -30,6 +31,7 @@ public class BattleNetManager : MonoBehaviour
     //buffer to receive incoming updates
     private byte[] update;
 
+    private ManualResetEvent readUpdate;
     private ManualResetEvent updateFin;
 
     //double check for race conditions on data, ensure everything resynced
@@ -73,7 +75,8 @@ public class BattleNetManager : MonoBehaviour
             receiveUpdate = false;
             sendUpdate = false;
 
-            updateFin = new ManualResetEvent(false);
+            readUpdate = new ManualResetEvent(false);
+            updateFin = new ManualResetEvent(true);
 
             eUpdate = new EnemyUpdate();
 
@@ -116,7 +119,7 @@ public class BattleNetManager : MonoBehaviour
         //Debug.Log(controller.BattleEnd);
 
         //send updates until both players verify the battle is over, then disconnect
-        if(!eUpdate.BattleEnd && !controller.BattleEnd)
+        if(!(eUpdate.BattleEnd && controller.BattleEnd))
         {
             //Debug.Log("begin update");
 
@@ -129,7 +132,7 @@ public class BattleNetManager : MonoBehaviour
 
 
                 //need to delegate to main thread
-                lock(flagLock)
+                lock(UPDATE_LOCK)
                 {
                     sendUpdate = true;
                 }
@@ -138,11 +141,13 @@ public class BattleNetManager : MonoBehaviour
             }
             else
             {
+                updateFin.WaitOne();
+                updateFin.Reset();
 
                 client.BeginReceive(update, 0, UPDATE_SIZE, 0, new AsyncCallback(unpackUpdate), null);
                 
-                updateFin.WaitOne();
-                updateFin.Reset();
+                readUpdate.WaitOne();
+                readUpdate.Reset();
 
             }
             //recursively check isClient while battle is going
@@ -155,6 +160,7 @@ public class BattleNetManager : MonoBehaviour
             client.Shutdown(SocketShutdown.Both);
             client.Close();
             Debug.Log("Disconnected");
+            
         }
 
 
@@ -167,35 +173,37 @@ public class BattleNetManager : MonoBehaviour
     {
         //Debug.Log("begin unpack");
         client.EndReceive(ar);
-        updateFin.Set();
-        
+        readUpdate.Set();
 
         byte flags = update[0];
 
-        //unpack update into EnemyUpdate object
-        eUpdate.BattleEnd = (flags & 1) == 1 ? true : false;
-        eUpdate.Win = ((flags >> 1) & 1) == 1 ? true : false;
-        eUpdate.Sf = ((flags >> 2) & 1) == 1 ? true : false;
-        eUpdate.Hpr = ((flags >> 3) & 1) == 1 ? true : false;
-        eUpdate.Mp = ((flags >> 4) & 1) == 1 ? true : false;
-        eUpdate.Mso = ((flags >> 5) & 1) == 1 ? true : false;
-        eUpdate.Phit = ((flags >> 6) & 1) == 1 ? true : false;
-
-        eUpdate.XPos = BitConverter.ToSingle(update, 1);
-        eUpdate.ZPos = BitConverter.ToSingle(update, 5);
-        eUpdate.Rot = BitConverter.ToSingle(update, 9);
-        eUpdate.Sfx = BitConverter.ToSingle(update, 13);
-        eUpdate.Sfz = BitConverter.ToSingle(update, 17);
-        eUpdate.Sfrx = BitConverter.ToSingle(update, 21);
-        eUpdate.Sfry = BitConverter.ToSingle(update, 25);
-        eUpdate.Sfrz = BitConverter.ToSingle(update, 29);
-        eUpdate.Mpx = BitConverter.ToSingle(update, 33);
-        eUpdate.Mpz = BitConverter.ToSingle(update, 37);
-
-        //signal to main thread to update opponent
-        lock(flagLock)
+        lock (I_FLAG_LOCK)
         {
-            receiveUpdate = true;
+            //unpack update into EnemyUpdate object
+            eUpdate.BattleEnd = (flags & 1) == 1 ? true : false;
+            eUpdate.Win = ((flags >> 1) & 1) == 1 ? true : false;
+            eUpdate.Sf = ((flags >> 2) & 1) == 1 ? true : false;
+            eUpdate.Hpr = ((flags >> 3) & 1) == 1 ? true : false;
+            eUpdate.Mp = ((flags >> 4) & 1) == 1 ? true : false;
+            eUpdate.Mso = ((flags >> 5) & 1) == 1 ? true : false;
+            eUpdate.Phit = ((flags >> 6) & 1) == 1 ? true : false;
+
+            eUpdate.XPos = BitConverter.ToSingle(update, 1);
+            eUpdate.ZPos = BitConverter.ToSingle(update, 5);
+            eUpdate.Rot = BitConverter.ToSingle(update, 9);
+            eUpdate.Sfx = BitConverter.ToSingle(update, 13);
+            eUpdate.Sfz = BitConverter.ToSingle(update, 17);
+            eUpdate.Sfrx = BitConverter.ToSingle(update, 21);
+            eUpdate.Sfry = BitConverter.ToSingle(update, 25);
+            eUpdate.Sfrz = BitConverter.ToSingle(update, 29);
+            eUpdate.Mpx = BitConverter.ToSingle(update, 33);
+            eUpdate.Mpz = BitConverter.ToSingle(update, 37);
+
+            //signal to main thread to update opponent
+            lock (UPDATE_LOCK)
+            {
+                receiveUpdate = true;
+            }
         }
         
         //Debug.Log("end unpack");
@@ -210,26 +218,38 @@ public class BattleNetManager : MonoBehaviour
 
     private void Update()
     {
-        lock (flagLock)
+        lock (UPDATE_LOCK)
         {
             //Debug.Log(client.IsBound);
+            
+            lock(I_FLAG_LOCK)
+            {
+                if (receiveUpdate)
+                {
+                    //run the stored update on the opponent
+                    eUpdate.runUpdate(controller, opponent);
+                    //Debug.Log("Update run");
+                    updateFin.Set();
+
+                }
+            }
+            
             if (sendUpdate)
             {
-                //send current information on player position
-                client.Send(getUpdate());
-                //Debug.Log("Update sent");
+                try
+                {
+                    //send current information on player position
+                    client.Send(getUpdate());
+                    //Debug.Log("Update sent");
+                }
+                catch (Exception) { }
 
                 //reset flags
                 //might have to do something to make sure it doesnt overwrite flags if set this cycle
                 reset();
             }
-            if(receiveUpdate)
-            {
-                //run the stored update on the opponent
-                eUpdate.runUpdate(controller, opponent);
-                //Debug.Log("Update run");
-            }
-        
+            
+
             receiveUpdate = false;
             sendUpdate = false;
         }

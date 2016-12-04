@@ -30,6 +30,7 @@ public class EnemyUpdate
 
     public void runUpdate(PlayerControl controller, GameObject enemy)
     {
+        //Debug.Log(battleEnd);
         //Debug.Log("update run start");
         //set is a method on vector 3, your setting a copy, so the actual isnt updating
         //enemy.transform.position.Set(xPos, 0, ZPos);
