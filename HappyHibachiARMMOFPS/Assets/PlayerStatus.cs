@@ -53,7 +53,9 @@ public class PlayerStatus : MonoBehaviour {
             PlayerControl controller = gameObject.GetComponent<PlayerControl>();
             controller.BattleEnd = true;
             controller.Win = false;
+            Debug.Log(currentHP);
         }
+        Debug.Log(currentHP);
         /*
         else if(GameObject.FindGameObjectWithTag("Enemy").GetComponent<EnemyStatus>().getHP() <= 0)
         {

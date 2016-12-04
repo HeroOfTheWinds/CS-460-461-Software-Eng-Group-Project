@@ -9,7 +9,7 @@ namespace HappyHibachiServer
     public class BattleServer
     {
         public const int UPDATE_SIZE = 41;
-        public const int BATTLE_PORT = 2224;
+        public const int BATTLE_PORT = 2227;
         public static readonly IPAddress IP = IPAddress.Parse("10.10.10.103");
 
         // Thread signal.
@@ -132,7 +132,11 @@ namespace HappyHibachiServer
                 //initialize buffer
                 state.Update = new byte[UPDATE_SIZE];
 
-                handler.Send(spawn, 1, 0);
+                lock(state.WriteLock)
+                {
+                    handler.Send(spawn, 1, 0);
+                }
+                
 
                 handler.BeginReceive(state.Update, 0, UPDATE_SIZE, 0, new AsyncCallback(readUpdate), state);
             }

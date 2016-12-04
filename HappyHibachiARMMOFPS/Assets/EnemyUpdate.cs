@@ -16,6 +16,7 @@ public class EnemyUpdate
     private bool hpr = false;
     private bool mp = false;
     private bool mso = false;
+    private bool phit = false;
 
     private float sfx = 0;
     private float sfz = 0;
@@ -24,7 +25,7 @@ public class EnemyUpdate
     private float sfrz = 0;
 
     private float mpx = 0;
-    private float mpy = 0;
+    private float mpz = 0;
 
 
     public void runUpdate(PlayerControl controller, GameObject enemy)
@@ -48,7 +49,6 @@ public class EnemyUpdate
 
         if (sf)
         {
-            //NEED TO SEND X AND Z ROTATION AXIS AS WELL FOR CAMERA
             //get position of shot
             Vector3 sPos = new Vector3(sfx, Camera.main.transform.position.y, sfz); //camera y axis should be identical for each player
             // Get direction of raycast
@@ -79,7 +79,8 @@ public class EnemyUpdate
                 {
                     case "Player":
                         // Get that player's stats and take off some HP
-                        hit.collider.gameObject.GetComponent<PlayerStatus>().TakeHP(8f);
+                        //USING PHIT TO TELL IF HIT FOR NOW (until raycasting bugs fixed)
+                        //hit.collider.gameObject.GetComponent<PlayerStatus>().TakeHP(8f);
                         Debug.Log("Player hit");
                         break;
                     default:
@@ -94,10 +95,22 @@ public class EnemyUpdate
             // Instantiate shot
             controller.makeShot(shotPos, shotRot, endPoint);
 
+            //was the player hit?
+            if(phit)
+            {
+                controller.hit();
+            }
+
         }
+        //rotation of mine doesnt really matter, so just use current rotation
+        //instantiate mine if placed by enemy
+        if (mp)
+        {
+            controller.PlaceLandmine(new Vector3(mpx, 0, mpz), updateQuat, enemy.GetInstanceID());
 
-
-        //deal with mines and whatnot later
+        }
+        
+        //deal with healing when implemented
     }
 
 
@@ -219,16 +232,16 @@ public class EnemyUpdate
         }
     }
 
-    public float Mpy
+    public float Mpz
     {
         get
         {
-            return mpy;
+            return mpz;
         }
 
         set
         {
-            mpy = value;
+            mpz = value;
         }
     }
 
@@ -307,6 +320,19 @@ public class EnemyUpdate
         set
         {
             sfrz = value;
+        }
+    }
+
+    public bool Phit
+    {
+        get
+        {
+            return phit;
+        }
+
+        set
+        {
+            phit = value;
         }
     }
 }

@@ -10,7 +10,7 @@ public class BattleNetManager : MonoBehaviour
     //RACE CONDITION SOMEWHERE, OR SOMETHING...
     private static Guid testGUID = new Guid("dddddddddddddddddddddddddddddddd");
     private static readonly IPAddress testIP = IPAddress.Parse("10.10.10.103");
-    public const int BATTLE_PORT = 2224;
+    public const int BATTLE_PORT = 2227;
     public const int UPDATE_SIZE = 41;
 
     private static readonly Spawn[] spawns = new Spawn[2]
@@ -37,6 +37,8 @@ public class BattleNetManager : MonoBehaviour
     private GameObject player;
     private GameObject opponent;
     private PlayerControl controller;
+    private PlayerStatus pstatus;
+    private PlayerStatus estatus;
     private EnemyUpdate eUpdate;
     //signal to main thread that an update has been prepared
     private bool receiveUpdate;
@@ -65,6 +67,8 @@ public class BattleNetManager : MonoBehaviour
             player = GameObject.FindGameObjectWithTag("Player");
             opponent = GameObject.FindGameObjectWithTag("Enemy");
             controller = player.GetComponent<PlayerControl>();
+            pstatus = player.GetComponent<PlayerStatus>();
+            estatus = opponent.GetComponent<PlayerStatus>();
 
             receiveUpdate = false;
             sendUpdate = false;
@@ -111,14 +115,13 @@ public class BattleNetManager : MonoBehaviour
 
         //Debug.Log(controller.BattleEnd);
 
-        //if says something about not being able to access enemy transform outside main thread, send signal to main thread and update in Update function
-        if(!controller.BattleEnd)
+        //send updates until both players verify the battle is over, then disconnect
+        if(!eUpdate.BattleEnd && !controller.BattleEnd)
         {
             //Debug.Log("begin update");
 
-            Debug.Log(isClient[0]);
+            //Debug.Log(isClient[0]);
 
-            //getClient.WaitOne();
             if (isClient[0] == 1)
             {
                 //Debug.Log("ack");
@@ -135,20 +138,6 @@ public class BattleNetManager : MonoBehaviour
             }
             else
             {
-                //Debug.Log("update");
-                /*
-                State state = new State();
-                state.ClientSocket = client;
-                state.Update = new byte[UPDATE_SIZE];
-
-                state.Player = player;
-                state.Enemy = GameObject.FindGameObjectWithTag("Enemy");
-                */
-
-                //MIGHT NEED TO BLOCK ON THESE CALLS UNTIL FINISHED READING (ANY SIMILAR CASE)
-                //Debug.Log("What?");
-
-                //SOMETHING WEIRD WITH THE SERVER ON DC (not properly shutting down socket?)
 
                 client.BeginReceive(update, 0, UPDATE_SIZE, 0, new AsyncCallback(unpackUpdate), null);
                 
@@ -190,6 +179,7 @@ public class BattleNetManager : MonoBehaviour
         eUpdate.Hpr = ((flags >> 3) & 1) == 1 ? true : false;
         eUpdate.Mp = ((flags >> 4) & 1) == 1 ? true : false;
         eUpdate.Mso = ((flags >> 5) & 1) == 1 ? true : false;
+        eUpdate.Phit = ((flags >> 6) & 1) == 1 ? true : false;
 
         eUpdate.XPos = BitConverter.ToSingle(update, 1);
         eUpdate.ZPos = BitConverter.ToSingle(update, 5);
@@ -200,7 +190,7 @@ public class BattleNetManager : MonoBehaviour
         eUpdate.Sfry = BitConverter.ToSingle(update, 25);
         eUpdate.Sfrz = BitConverter.ToSingle(update, 29);
         eUpdate.Mpx = BitConverter.ToSingle(update, 33);
-        eUpdate.Mpy = BitConverter.ToSingle(update, 37);
+        eUpdate.Mpz = BitConverter.ToSingle(update, 37);
 
         //signal to main thread to update opponent
         lock(flagLock)
@@ -227,7 +217,7 @@ public class BattleNetManager : MonoBehaviour
             {
                 //send current information on player position
                 client.Send(getUpdate());
-                Debug.Log("Update sent");
+                //Debug.Log("Update sent");
 
                 //reset flags
                 //might have to do something to make sure it doesnt overwrite flags if set this cycle
@@ -237,7 +227,7 @@ public class BattleNetManager : MonoBehaviour
             {
                 //run the stored update on the opponent
                 eUpdate.runUpdate(controller, opponent);
-                Debug.Log("Update run");
+                //Debug.Log("Update run");
             }
         
             receiveUpdate = false;
@@ -289,6 +279,7 @@ public class BattleNetManager : MonoBehaviour
         controller.Hpr = false;
         controller.Mp = false;
         controller.Mso = false;
+        controller.Ehit = false;
     }
     
     /*
@@ -333,7 +324,7 @@ public class BattleNetManager : MonoBehaviour
         BitConverter.GetBytes(controller.Sfrx).CopyTo(up, 29);
 
         BitConverter.GetBytes(controller.Mpx).CopyTo(up, 33);
-        BitConverter.GetBytes(controller.Mpy).CopyTo(up, 37);
+        BitConverter.GetBytes(controller.Mpz).CopyTo(up, 37);
 
         //Debug.Log(BitConverter.ToSingle(up, 9));
 
@@ -350,6 +341,7 @@ public class BattleNetManager : MonoBehaviour
         if (controller.Hpr) flags += (1 << 3);
         if (controller.Mp) flags += (1 << 4);
         if (controller.Mso) flags += (1 << 5);
+        if (controller.Ehit) flags += (1 << 6);
 
         return flags;
     }

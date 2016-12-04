@@ -45,6 +45,7 @@ public class PlayerControl : MonoBehaviour {
     private bool hpr = false;
     private bool mp = false;
     private bool mso = false;
+    private bool ehit = false;
 
     private float sfx = 0;
     private float sfz = 0;
@@ -53,7 +54,7 @@ public class PlayerControl : MonoBehaviour {
     private float sfrz = 0;
 
     private float mpx = 0;
-    private float mpy = 0;
+    private float mpz = 0;
 
 
 
@@ -173,6 +174,7 @@ public class PlayerControl : MonoBehaviour {
                     case "Enemy":
                         // Get that player's stats and take off some HP
                         hit.collider.gameObject.GetComponent<EnemyStatus>().TakeHP(8f);
+                        ehit = true;
                         Debug.Log("Hit enemy");
                         break;
                     default:
@@ -185,61 +187,27 @@ public class PlayerControl : MonoBehaviour {
             //shotPos = transform.TransformDirection(1f, -0.5f, 1f) + cam.transform.position;
 
             // Instantiate shot where camera is
-            GameObject shot = (GameObject) Instantiate(shotPrefab, shotPos, shotRot);
-
-            // Re-orient shot to travel toward hit point, if applicable
-            if (endPoint != Vector3.zero)
-            {
-                shot.transform.LookAt(endPoint);
-            }
+            makeShot(shotPos, shotRot, endPoint);
             
             // Reset time since last shot to enforce cooldown
             LastShotTime = 0f;
         }
     }
 
-    // Function to check how many of a given item the player has in their inventory
-    // If they do, return true to proceed using the item, and tell server to remove one from inventory
-    public bool CheckUseItem(string name)
-    {
-        // Code to connect to server goes here
-
-        // Checks if item is available
-        if (true)
-        {
-            // Tell server to decrement amount held by one
-
-            // Return true to allow user to use the item
-            return true;
-        }
-        else
-        {
-            // User doesn't have the item
-            return false;
-        }
-    }
+    
 
     // Function to try placing a landmine where the player stands
     // Won't work if player has none in inventory
-    public void PlaceLandmine()
+    //returns landmine object
+    public void PlaceLandmine(Vector3 position, Quaternion rotation, int placerID)
     {
-        // First check if the player has any landmines
-        if (CheckUseItem("Landmine"))
-        {
-            // Instantiate a landmine at the player's feet
-            GameObject mine = (GameObject) Instantiate(minePrefab, transform.position, transform.rotation);
+        
+            // Instantiate a landmine at specified location
+            GameObject mine = (GameObject) Instantiate(minePrefab, position, rotation);
 
             // Tell the Landmine who placed it so it doesn't instantly blow up in their face (literally)
             // We're using the instance ID so that it is a unique identifier
-            mine.GetComponent<Landmine>().placer = gameObject.GetInstanceID();
-
-            return;
-        }
-        else
-        {
-            // No good, return empty handed
-            return;
-        }
+            mine.GetComponent<Landmine>().placer = placerID;
     }
 
     public void DisplayLoss()
@@ -271,6 +239,13 @@ public class PlayerControl : MonoBehaviour {
             shot.transform.LookAt(endPoint);
         }
     }
+
+    //temp function for hitting player
+    public void hit()
+    {
+        gameObject.GetComponent<PlayerStatus>().TakeHP(8f);
+    }
+
 
     //getters and setters
     public bool BattleEnd
@@ -390,16 +365,16 @@ public class PlayerControl : MonoBehaviour {
         }
     }
 
-    public float Mpy
+    public float Mpz
     {
         get
         {
-            return mpy;
+            return mpz;
         }
 
         set
         {
-            mpy = value;
+            mpz = value;
         }
     }
 
@@ -439,6 +414,19 @@ public class PlayerControl : MonoBehaviour {
         set
         {
             sfrz = value;
+        }
+    }
+
+    public bool Ehit
+    {
+        get
+        {
+            return ehit;
+        }
+
+        set
+        {
+            ehit = value;
         }
     }
 }
