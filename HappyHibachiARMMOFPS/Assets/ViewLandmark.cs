@@ -4,11 +4,11 @@ using System;
 
 
 public class ViewLandmark : MonoBehaviour
-{
+{  
     public double lat, lon;
     public struct location
     {
-        public double lat, lon;
+        public double lat, lon; //landmark
     }
     location myLocation;
     private location landmark;
@@ -26,6 +26,7 @@ public class ViewLandmark : MonoBehaviour
         isClose(myLocation, landmark);
 
     }
+    //proximity using haversine formula
     bool isClose(location myLocation, location landmark) //need to convert to feet
     {
         var R = 6371; // km
@@ -43,6 +44,8 @@ public class ViewLandmark : MonoBehaviour
         if (distance <= 1) //convert km to feet
         {
             Debug.Log("10 Exp earned.");
+            //increase player exp
+            //if item is at landmark add item to inventory
             return true;
         }
         else

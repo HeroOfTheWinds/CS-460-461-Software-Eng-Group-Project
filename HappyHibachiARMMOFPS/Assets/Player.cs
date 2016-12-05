@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class Player{
+    //player attributes
     public static string playername;
     public static int EXP;
     public static int level;
@@ -14,14 +15,17 @@ public class Player{
     public static int defenseStat;
     public static int shotSpeedStat;
 
+    // map to hold player items
     public static Dictionary<string, int> Items = new Dictionary<string, int>();
 
+    //function to increase player EXP
     public void addEXP(int value)
     {
         EXP += value;
         updatelevel();
     }
 
+    //function to increse player level based on EXP, tenative 
     public void updatelevel()
     {
         if(EXP > 0 && EXP < 100)
@@ -42,6 +46,7 @@ public class Player{
         }
     }
 
+    //function to increase/decrease faction EXP based on action, tenative
     public void addFactionEXP(int action_type, int value)
     {
         if (action_type == faction) //increase faction EXP
@@ -55,12 +60,14 @@ public class Player{
         updateFaction(action_type);
     }
 
+    //functin to add item to inventory, if item already exist amount is incresed
     public static void addItem(string i)
     {
         if (Items.ContainsKey(i)) Items[i] += 1;
         else Items.Add(i, 1);
     }
 
+    //prints inventory
     public static void itemToString()
     {
         Debug.Log("Items now in inventory:");
@@ -71,11 +78,13 @@ public class Player{
         }
     }
 
+    //function to increase level by one
     public static void increaseLevel()
     {
         level++;
     }
 
+    //function to update faction, if action causes faction EXP to become neg, faction is changed to action type, else stays null
     public static void updateFaction(int action_type)
     {
         if (factionEXP < 0)
@@ -88,6 +97,7 @@ public class Player{
         }
     }
 
+    //functions to change plaer battle stats
     public static void changeMaxHP(int value)
     {
         maxHealthStat += value;
