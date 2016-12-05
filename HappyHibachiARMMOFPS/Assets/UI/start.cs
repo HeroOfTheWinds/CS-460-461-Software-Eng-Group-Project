@@ -15,8 +15,10 @@ public class start : MonoBehaviour {
 	
 	}
 
+	//Opens the game
 	public void openGame()
 	{
+		//Loads the battle scence
 		SceneManager.LoadScene ("Battle");
 	}
 

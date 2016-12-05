@@ -3,12 +3,18 @@ using System.Collections;
 
 public class itemScript : MonoBehaviour {
 
+	//Used to store the items menu
 	public Canvas itemMenu;
+	//Used for the items in
     public GameObject player;
 
+
+	//This runs at the start of the program
 	void Start()
 	{
+		//Links the items menu canvas
 		itemMenu = itemMenu.GetComponent<Canvas>();
+		//Disables the items menu
 		itemMenu.enabled = false;
 	}
 	
@@ -17,15 +23,18 @@ public class itemScript : MonoBehaviour {
 	 
 	}
 
-
+	//Function to open the items menu
 	public void itemMenuShow()
 	{
+		//enables the items menu
 		itemMenu.enabled = true;
 
 	}
 
+	//Function to hide the items menu
 	public void itemMenuHide()
 	{
+		//Disables the items menu
 		itemMenu.enabled = false;
 	}
 
@@ -34,6 +43,8 @@ public class itemScript : MonoBehaviour {
 		//Code for OK button in items menu
 	}
 
+
+	//Function to set the land mines
     public void placeMine()
     {
 

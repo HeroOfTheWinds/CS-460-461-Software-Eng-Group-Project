@@ -15,9 +15,12 @@ public class button : MonoBehaviour {
 	
 	}
 
+
+	//Function to open overworld
 	public void openOverworld()
 	{
 		//Application.LoadLevel ("Overworld");
+		//This opens the overworld
 		SceneManager.LoadScene ("Overworld");
 	}
 
