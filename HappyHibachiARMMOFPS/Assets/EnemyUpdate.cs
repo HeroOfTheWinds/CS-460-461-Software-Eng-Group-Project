@@ -89,7 +89,7 @@ public class EnemyUpdate
                     case "Player":
                         // Get that player's stats and take off some HP
                         //USING PHIT TO TELL IF HIT FOR NOW (until raycasting bugs fixed)
-                        //hit.collider.gameObject.GetComponent<PlayerStatus>().TakeHP(8f);
+                        //hit.collider.gameObject.GetComponent<EnemyStatus>().TakeHP(8f);
                         Debug.Log("Player hit");
                         break;
                     default:
@@ -116,7 +116,10 @@ public class EnemyUpdate
 
         }
         
-        //deal with healing when implemented
+        if(hpr)
+        {
+            enemy.GetComponent<EnemyStatus>().RestoreHP(50f);
+        }
     }
 
 

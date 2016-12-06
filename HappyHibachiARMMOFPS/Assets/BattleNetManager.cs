@@ -10,9 +10,9 @@ public class BattleNetManager : MonoBehaviour
     //temp guid until dynamic ones are generated on battle start
     private static Guid testGUID = new Guid("dddddddddddddddddddddddddddddddd");
     //ip address to connect to
-    private static readonly IPAddress IP = IPAddress.Parse("10.10.10.103");
+    private static readonly IPAddress IP = IPAddress.Parse("132.160.49.90");
     //port to connect to
-    public const int BATTLE_PORT = 2227;
+    public const int BATTLE_PORT = 7004;
     //size of update packets in bytes
     public const int UPDATE_SIZE = 41;
 

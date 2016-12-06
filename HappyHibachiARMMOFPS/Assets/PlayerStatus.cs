@@ -60,6 +60,8 @@ public class PlayerStatus : MonoBehaviour {
 
     public void RestoreHP(float hp)
     {
+        PlayerControl controller = gameObject.GetComponent<PlayerControl>();
+        controller.Hpr = true;
         // Restore player's HP by given amount
         currentHP += hp;
 
