@@ -32,8 +32,10 @@ public class PlayerControl : MonoBehaviour {
     public GameObject WinCanvas;
     public GameObject LoseCanvas;
 
-
-
+    // Prefab with the particle system for a sparks flying effect when hit
+    public GameObject SparkSys;
+    // Prefab with the part. sys. for a cloud of dust where a bullet hits
+    public GameObject DustSys;
 
 
     //flags, least sig to most sig bit
@@ -173,9 +175,13 @@ public class PlayerControl : MonoBehaviour {
                         hit.collider.gameObject.GetComponent<EnemyStatus>().TakeHP(8f);
                         ehit = true;
                         Debug.Log("Hit enemy");
+                        // Spawn some sparks to let you know you hit them
+                        GameObject sparks = (GameObject)Instantiate(SparkSys, hit.point, Quaternion.identity);
                         break;
                     default:
                         // Other cases to consider: wall, arena border, ground
+                        // Spawn a cloud of dust
+                        GameObject dust = (GameObject)Instantiate(DustSys, hit.point, Quaternion.identity);
                         break;
                 }
             }

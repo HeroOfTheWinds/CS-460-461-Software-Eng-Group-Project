@@ -63,6 +63,20 @@ public class itemScript : MonoBehaviour {
         itemMenu.enabled = false;
     }
 
+    // Function to use the health restoration item
+    public void useHPRefill()
+    {
+        // First check if the player has any HP refills
+        if (CheckUseItem("HP Refill"))
+        {
+            // Call function to refill the player's health by 50 points
+            PlayerStatus status = player.GetComponent<PlayerStatus>();
+            status.RestoreHP(50f);
+        }
+        // Auto-close menu
+        itemMenu.enabled = false;
+    }
+
     // Function to check how many of a given item the player has in their inventory
     // If they do, return true to proceed using the item, and tell server to remove one from inventory
     public bool CheckUseItem(string name)
