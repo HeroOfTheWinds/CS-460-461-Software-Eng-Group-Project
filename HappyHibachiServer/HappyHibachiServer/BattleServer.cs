@@ -70,6 +70,9 @@ namespace HappyHibachiServer
         {
             try
             {
+                //connection finished, allow others to connect
+                connectionFound.Set();
+
                 Console.WriteLine("\nPlayer connected");
                 //hold data about the incoming request
                 WaitConnection wait;
@@ -79,9 +82,6 @@ namespace HappyHibachiServer
                 byte[] spawn = new byte[1];
                 //stores items for communications
                 State state = new State();
-
-                //connection finished, allow others to connect
-                connectionFound.Set();
 
                 //get socket for client
                 Socket listener = (Socket)ar.AsyncState;
