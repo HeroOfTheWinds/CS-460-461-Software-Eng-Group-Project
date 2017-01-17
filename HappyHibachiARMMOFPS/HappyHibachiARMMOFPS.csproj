@@ -232,6 +232,7 @@
     <Compile Include="Assets\Login.cs" />
     <Compile Include="Assets\MoveShot.cs" />
     <Compile Include="Assets\NetworkManagerCustom.cs" />
+    <Compile Include="Assets\OverworldNetManager.cs" />
     <Compile Include="Assets\Player.cs" />
     <Compile Include="Assets\PlayerControl.cs" />
     <Compile Include="Assets\PlayerStatus.cs" />

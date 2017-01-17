@@ -9,9 +9,9 @@ namespace HappyHibachiServer
     class OverworldServer
     {
         //size of updates in bytes
-        public const int UPDATE_SIZE = 4;
-        //port to listen on
-        public const int OVERWORLD_PORT = 7004;
+        public const int UPDATE_SIZE = 8;
+        //port to listen on (temp test port)
+        public const int OVERWORLD_PORT = 1234;
         //server ip address
         public static readonly IPAddress IP = IPAddress.Parse("10.42.42.153");
 
@@ -22,12 +22,10 @@ namespace HappyHibachiServer
         public static void startServer()
         {
 
-            //might have to change code to get ip address
-            //IPAddress ipAddress = Dns.GetHostEntry("localhost").AddressList[0];
             IPEndPoint localEndPoint = new IPEndPoint(IP, OVERWORLD_PORT);
 
             //create udp listener
-            //assume raw udp should suffice, can add order checks and discard if issues arise
+            //assume raw udp should suffice, can add order checks or discard if issues arise
             Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 
             try
@@ -133,8 +131,10 @@ namespace HappyHibachiServer
             //possibly figure out GPS range and use limited numerical value size to incorporate type of object into the same data size
             List<float> nearby = new List<float>();
 
-            //assumes floats always 4 bytes (sizeof operator "unsafe"), hopefully thats true for all relevant platforms
-            state.Nearby = new byte[nearby.Count * 4];
+            //place gps coords then object's guid in array to be sent
+
+            //creates byte aray with proper number of bytes
+            state.Nearby = new byte[nearby.Count * 8 * 16];
             //put nearby coords in byte array to be sent
             Buffer.BlockCopy(nearby.ToArray(), 0, state.Nearby, 0, nearby.Count * 4);
             //send nearby objects to client

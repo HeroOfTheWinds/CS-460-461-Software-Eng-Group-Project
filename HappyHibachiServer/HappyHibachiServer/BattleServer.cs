@@ -28,8 +28,6 @@ namespace HappyHibachiServer
         public static void startServer()
         {
 
-            //might have to change code to get ip address
-            //IPAddress ipAddress = Dns.GetHostEntry("localhost").AddressList[0];
             IPEndPoint localEndPoint = new IPEndPoint(IP, BATTLE_PORT);
 
             //create tcp listener
