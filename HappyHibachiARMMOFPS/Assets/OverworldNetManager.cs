@@ -21,6 +21,8 @@ public class OverworldNetManager : MonoBehaviour {
     private float longtitude;
     private bool update;
 
+    private byte[] size;
+
     private Timer t;
 
     private LocationService locService;
@@ -59,6 +61,7 @@ public class OverworldNetManager : MonoBehaviour {
             }
 
             coords = new byte[UPDATE_SIZE];
+            size = new byte[4];
 
             //remote endpoint of the server
             IPEndPoint remoteEP = new IPEndPoint(IP, OVERWORLD_PORT);
@@ -69,10 +72,14 @@ public class OverworldNetManager : MonoBehaviour {
             //connect to remote endpoint
             client.Connect(remoteEP);
 
+
             Debug.Log("Connect Successful");
 
 
             t = new Timer(setUpdate, null, 0, 12000);
+
+            //start receiving updates from server
+            client.BeginReceive(size, 0, 4, 0, new AsyncCallback(updateDriver), null);
         }
         //catch exception if fail to connect
         catch (Exception e)
@@ -80,6 +87,39 @@ public class OverworldNetManager : MonoBehaviour {
             Debug.Log(e.ToString());
             Debug.Log("Connection Failure");
         }
+    }
+
+
+    private void updateDriver(IAsyncResult ar)
+    {
+        //complete async data read
+        client.EndReceive(ar);
+
+        int nearby = BitConverter.ToInt32(size, 0);
+        int numObjects = nearby / 24;
+        byte[] buf = new byte[nearby];
+
+        //read in each nearby items
+        client.Receive(buf, nearby, 0);
+
+        float lat;
+        float lon;
+        byte[] idBytes = new byte[16];
+        Guid id;
+
+        for(int i = 0; i < numObjects; i++)
+        {
+            lat = BitConverter.ToSingle(buf, i * 8);
+            lon = BitConverter.ToSingle(buf, i * 8 + 4);
+            Buffer.BlockCopy(buf, 8 * numObjects + i, idBytes, 0, 16);
+            id = new Guid(idBytes);
+
+            //place object on screen or update position if guid already present, store respective guid with object
+        }
+            
+        //recursively read data while battle is going
+        client.BeginReceive(size, 0, 4, 0, new AsyncCallback(updateDriver), null);
+
     }
 
 

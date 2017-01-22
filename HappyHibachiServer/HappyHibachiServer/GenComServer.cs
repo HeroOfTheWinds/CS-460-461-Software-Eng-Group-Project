@@ -9,7 +9,7 @@ namespace HappyHibachiServer
     class GenComServer
     {
         //size of updates in bytes
-        public const int UPDATE_SIZE = 8;
+        public const int UPDATE_SIZE = 17;
         //port to listen on (temp test port)
         public const int COM_PORT = 2345;
         //server ip address
@@ -17,6 +17,9 @@ namespace HappyHibachiServer
 
         //signal for connections
         private static ManualResetEventSlim connectionFound = new ManualResetEventSlim();
+
+
+        private static Dictionary<Guid, Socket> players;
 
 
         public static void startServer()
@@ -62,6 +65,9 @@ namespace HappyHibachiServer
         //async method for connecting to clients
         public static void connect(IAsyncResult ar)
         {
+            ComState state = new ComState();
+            state.ClientID = new Guid();
+
             try
             {
                 //connection finished, allow others to connect
@@ -69,15 +75,15 @@ namespace HappyHibachiServer
 
                 Console.WriteLine("\nPlayer connected");
 
-                ComState state = new ComState();
-
                 state.Update = new byte[UPDATE_SIZE];
 
                 //get socket for client
                 Socket listener = (Socket)ar.AsyncState;
                 Socket handler = listener.EndAccept(ar);
 
-                Guid clientID = new Guid();
+                state.ClientSocket = handler;
+
+                players.Add(state.ClientID, handler);
 
 
                 //insert client id into db, use this as the key for identifying clients
@@ -90,6 +96,11 @@ namespace HappyHibachiServer
             //catch connection errors
             catch (Exception)
             {
+                if(players.ContainsKey(state.ClientID))
+                {
+                    players.Remove(state.ClientID);
+                }
+
                 Console.WriteLine("\nPlayer disconnected");
             }
         }
@@ -99,20 +110,19 @@ namespace HappyHibachiServer
         //read updates from clients
         public static void readUpdate(IAsyncResult ar)
         {
-            Socket handler = null;
+            //retreive the state object and socket
+            ComState state = (ComState)ar.AsyncState;
+            Socket handler = state.ClientSocket;
+
             try
             {
-                if(serverUpdateAvailable())
-                {
-                    processSpCom();
-                }
-                //retreive the state object and socket
-                ComState state = (ComState)ar.AsyncState;
-                handler = state.ClientSocket;
-
                 ar.AsyncWaitHandle.WaitOne();
                 handler.EndReceive(ar);
 
+                if (serverUpdateAvailable())
+                {
+                    processSpCom();
+                }
 
                 state.Type = state.Update[0];
 
@@ -143,6 +153,10 @@ namespace HappyHibachiServer
             //end communications gracefully if player disconnects
             catch (Exception)
             {
+                if (players.ContainsKey(state.ClientID))
+                {
+                    players.Remove(state.ClientID);
+                }
                 Console.WriteLine("\nPlayer disconnected");
 
             }
@@ -151,6 +165,7 @@ namespace HappyHibachiServer
         private static bool serverUpdateAvailable()
         {
             //check if the server needs to send things to the user, eg quests etc
+            //this will have the type id of 3
             return false;
         }
 
@@ -183,6 +198,7 @@ namespace HappyHibachiServer
     {
         //client's socket
         private Socket clientSocket;
+        private Guid clientID;
         private byte[] update;
         private byte type;
 
@@ -224,6 +240,19 @@ namespace HappyHibachiServer
             set
             {
                 type = value;
+            }
+        }
+
+        public Guid ClientID
+        {
+            get
+            {
+                return clientID;
+            }
+
+            set
+            {
+                clientID = value;
             }
         }
     }

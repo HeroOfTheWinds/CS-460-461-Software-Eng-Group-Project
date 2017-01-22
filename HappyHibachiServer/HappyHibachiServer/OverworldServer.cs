@@ -15,6 +15,7 @@ namespace HappyHibachiServer
         //server ip address
         public static readonly IPAddress IP = IPAddress.Parse("10.42.42.153");
 
+
         //signal for connections
         private static ManualResetEventSlim connectionFound = new ManualResetEventSlim();
 
@@ -129,14 +130,19 @@ namespace HappyHibachiServer
         private static void send(OverworldState state)
         {
             //possibly figure out GPS range and use limited numerical value size to incorporate type of object into the same data size
-            List<float> nearby = new List<float>();
+            List<float> nearbyC = new List<float>();
+            List<Guid> nearbyID = new List<Guid>();
 
-            //place gps coords then object's guid in array to be sent
+            //place gps coords and object's id in lists to be sent (indexes of latitude must be 2i and longtitude 2i+1 where i is the index of the respective objects guid)
 
             //creates byte aray with proper number of bytes
-            state.Nearby = new byte[nearby.Count * 8 * 16];
+            state.Nearby = new byte[nearbyC.Count * 8 + nearbyID.Count * 16];
             //put nearby coords in byte array to be sent
-            Buffer.BlockCopy(nearby.ToArray(), 0, state.Nearby, 0, nearby.Count * 4);
+            Buffer.BlockCopy(nearbyC.ToArray(), 0, state.Nearby, 0, nearbyC.Count * 4);
+            //put respective guids
+            Buffer.BlockCopy(nearbyID.ToArray(), 0, state.Nearby, nearbyC.Count * 4, nearbyID.Count * 16);
+            //tell client size of update
+            state.ClientSocket.Send(BitConverter.GetBytes(state.Nearby.Length));
             //send nearby objects to client
             state.ClientSocket.Send(state.Nearby, 0, state.Nearby.Length, 0);
         }

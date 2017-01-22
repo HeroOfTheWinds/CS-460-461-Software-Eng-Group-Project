@@ -8,7 +8,8 @@ using System.Threading;
 public class BattleNetManager : MonoBehaviour
 {
     //temp guid until dynamic ones are generated on battle start
-    private static Guid testGUID = new Guid("dddddddddddddddddddddddddddddddd");
+    private static Guid battleID = new Guid("dddddddddddddddddddddddddddddddd");
+
     //ip address to connect to
     private static readonly IPAddress IP = IPAddress.Parse("132.160.49.90");
     //port to connect to
@@ -57,6 +58,19 @@ public class BattleNetManager : MonoBehaviour
     //signal that an update should be sent
     private bool sendUpdate;
 
+    public static Guid BattleID
+    {
+        get
+        {
+            return battleID;
+        }
+
+        set
+        {
+            battleID = value;
+        }
+    }
+
 
     // Use this for initialization
     void Start()
@@ -94,7 +108,7 @@ public class BattleNetManager : MonoBehaviour
             eUpdate = new EnemyUpdate();
 
             //send the battle guid to the client in order to connect to opponent
-            client.Send(testGUID.ToByteArray());
+            client.Send(BattleID.ToByteArray());
 
             //gets which spawn to use
             client.Receive(spawn, 1, 0);
