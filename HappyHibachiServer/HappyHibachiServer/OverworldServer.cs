@@ -135,6 +135,9 @@ namespace HappyHibachiServer
 
             //place gps coords and object's id in lists to be sent (indexes of latitude must be 2i and longtitude 2i+1 where i is the index of the respective objects guid)
 
+            //use latitude to include the type of object it is. Determine if object is a (player, colloseum, landmark) and add (0, 1, 2) * 181 to latitude respectively
+            //latitudes range is -90 - 90, so by doing this the type of object can be determined without sending additional data (value < 91: player, 90 < value < 272: colloseum, 271 < value: colloseum)
+
             //creates byte aray with proper number of bytes
             state.Nearby = new byte[nearbyC.Count * 8 + nearbyID.Count * 16];
             //put nearby coords in byte array to be sent
