@@ -4,6 +4,7 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using System.Collections.Generic;
 
 public class OverworldNetManager : MonoBehaviour {
 
@@ -20,6 +21,11 @@ public class OverworldNetManager : MonoBehaviour {
     private float latitude;
     private float longtitude;
     private bool update;
+
+    //private bool upNearbyObj;
+    private ManualResetEvent waitUpdate;
+
+    private List<NearbyObject> nearbyObjects;
 
     private byte[] size;
 
@@ -72,6 +78,9 @@ public class OverworldNetManager : MonoBehaviour {
             //connect to remote endpoint
             client.Connect(remoteEP);
 
+            //upNearbyObj = false;
+            waitUpdate = new ManualResetEvent(false);
+
 
             Debug.Log("Connect Successful");
 
@@ -102,21 +111,45 @@ public class OverworldNetManager : MonoBehaviour {
         //read in each nearby items
         client.Receive(buf, nearby, 0);
 
-        float lat;
-        float lon;
         byte[] idBytes = new byte[16];
-        Guid id;
 
-        for(int i = 0; i < numObjects; i++)
+        nearbyObjects = new List<NearbyObject>();
+
+        float lat;
+
+        for (int i = 0; i < numObjects; i++)
         {
-            lat = BitConverter.ToSingle(buf, i * 8);
-            lon = BitConverter.ToSingle(buf, i * 8 + 4);
-            Buffer.BlockCopy(buf, 8 * numObjects + i, idBytes, 0, 16);
-            id = new Guid(idBytes);
+            NearbyObject o = new NearbyObject();
 
-            //place object on screen or update position if guid already present, store respective guid with object
+            lat = BitConverter.ToSingle(buf, i * 8);
+            if(lat < 91)
+            {
+                o.Type = 0;
+                o.Latitude = lat;
+            }
+            else if(lat < 272)
+            {
+                o.Type = 1;
+                o.Latitude = lat - 181;
+            }
+            else
+            {
+                o.Type = 2;
+                o.Latitude = lat - 362;
+            }
+
+
+            o.Longtitude = BitConverter.ToSingle(buf, i * 8 + 4);
+            Buffer.BlockCopy(buf, 8 * numObjects + i, idBytes, 0, 16);
+            o.Id = new Guid(idBytes);
+
+            nearbyObjects.Add(o);
         }
-            
+
+        //upNearbyObj = true;
+        waitUpdate.Reset();
+        waitUpdate.WaitOne();
+
         //recursively read data while battle is going
         client.BeginReceive(size, 0, 4, 0, new AsyncCallback(updateDriver), null);
 
@@ -140,11 +173,79 @@ public class OverworldNetManager : MonoBehaviour {
             update = false;
         }
 
+        if(!waitUpdate.WaitOne(0))
+        {
+            //place objects on screen or update position if guid already present, store respective guid with object for later use
+            //objects stored in list nearbyObjects which is a list of NearbyObjects that contain lat, long, object type, and id
+
+            waitUpdate.Set();
+        }
+
     }
 
     private void setUpdate(object state)
     {
         update = true;
+    }
+
+    private class NearbyObject
+    {
+        private float latitude;
+        private float longtitude;
+        private Guid id;
+        private byte type;
+
+        public float Latitude
+        {
+            get
+            {
+                return latitude;
+            }
+
+            set
+            {
+                latitude = value;
+            }
+        }
+
+        public float Longtitude
+        {
+            get
+            {
+                return longtitude;
+            }
+
+            set
+            {
+                longtitude = value;
+            }
+        }
+
+        public Guid Id
+        {
+            get
+            {
+                return id;
+            }
+
+            set
+            {
+                id = value;
+            }
+        }
+
+        public byte Type
+        {
+            get
+            {
+                return type;
+            }
+
+            set
+            {
+                type = value;
+            }
+        }
     }
 
 }
