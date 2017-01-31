@@ -11,7 +11,7 @@ namespace HappyHibachiServer
         //size of updates in bytes
         public const int UPDATE_SIZE = 8;
         //port to listen on (temp test port)
-        public const int OVERWORLD_PORT = 1234;
+        public const int OVERWORLD_PORT = 12345;
         //server ip address
         public static readonly IPAddress IP = IPAddress.Parse("10.42.42.153");
 
@@ -127,6 +127,7 @@ namespace HappyHibachiServer
 
 
         //Process and send nearby data to player
+        //later on add mechanism to avoid redundant object sending (at least for fixed position objects)
         private static void send(OverworldState state)
         {
             //possibly figure out GPS range and use limited numerical value size to incorporate type of object into the same data size

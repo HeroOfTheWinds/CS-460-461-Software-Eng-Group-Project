@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Collections.Generic;
+using System.Text;
 
 namespace HappyHibachiServer
 {
@@ -11,7 +12,7 @@ namespace HappyHibachiServer
         //size of updates in bytes
         public const int UPDATE_SIZE = 17;
         //port to listen on (temp test port)
-        public const int COM_PORT = 2345;
+        public const int GC_PORT = 1234;
         //server ip address
         public static readonly IPAddress IP = IPAddress.Parse("10.42.42.153");
 
@@ -19,16 +20,15 @@ namespace HappyHibachiServer
         private static ManualResetEventSlim connectionFound = new ManualResetEventSlim();
 
 
-        private static Dictionary<Guid, Socket> players;
+        private static Dictionary<Guid, ComState> players;
 
 
         public static void startServer()
         {
 
-            IPEndPoint localEndPoint = new IPEndPoint(IP, COM_PORT);
+            IPEndPoint localEndPoint = new IPEndPoint(IP, GC_PORT);
 
-            //create udp listener
-            //assume raw udp should suffice, can add order checks or discard if issues arise
+            //create tcp listener
             Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
             try
@@ -66,6 +66,8 @@ namespace HappyHibachiServer
         public static void connect(IAsyncResult ar)
         {
             ComState state = new ComState();
+
+            //this should be tied to the players account and tied to them on login somehow
             state.ClientID = new Guid();
 
             try
@@ -83,7 +85,7 @@ namespace HappyHibachiServer
 
                 state.ClientSocket = handler;
 
-                players.Add(state.ClientID, handler);
+                players.Add(state.ClientID, state);
 
 
                 //insert client id into db, use this as the key for identifying clients
@@ -119,27 +121,30 @@ namespace HappyHibachiServer
                 ar.AsyncWaitHandle.WaitOne();
                 handler.EndReceive(ar);
 
+                byte type = state.Update[0];
+
                 if (serverUpdateAvailable())
                 {
-                    processSpCom();
+                    processSpCom(state);
                 }
 
-                state.Type = state.Update[0];
 
-
-                switch(state.Type)
+                switch(type)
                 {
                     //player requesting battle with another player
                     case 0:
-                        processBattleReq();
+                        processBattleReq(state);
                         break;
                     //player interacting with colloseum
                     case 1:
-                        processColloseumReq();
+                        processColloseumReq(state);
                         break;
                     //player interacting with landmark
                     case 2:
-                        processLandmarkReq();
+                        processLandmarkReq(state);
+                        break;
+                    case 4:
+                        processItemReq(state);
                         break;
                     //anything else we may want
                     default:
@@ -162,31 +167,87 @@ namespace HappyHibachiServer
             }
         }
 
+        //use shorts for sizes (in bytes) to save data
+        //if image or anything being sent is larger than 64kb it's much too large
+
+        private static void processItemReq(ComState state)
+        {
+            List<byte> itemIDs = new List<byte>();
+            short size = 0;
+
+            //verify item req valid
+            //generate items and tell user what items they got, send a list of 0 if cant get items from landmark
+            //place item ids (item ids are bytes) in itemIDs
+            //store number of items in size
+            //maybe a random number of items? not sure how you want to deal with that
+
+            state.ClientSocket.Send(BitConverter.GetBytes(size));
+            state.ClientSocket.Send(itemIDs.ToArray());
+        }
+
         private static bool serverUpdateAvailable()
         {
             //check if the server needs to send things to the user, eg quests etc
-            //this will have the type id of 3
+            
             return false;
         }
 
-        async private static void processLandmarkReq()
+        private static void processLandmarkReq(ComState state)
         {
-            //process database stuff and give player items
+            short sizeName;
+            short sizeDescription;
+            short sizeImage = 0;
+            string name = "";
+            string description = "";
+            //create variable for the image, for now just sending other 2 things
+
+
+            //process database stuff and provide info on landmark
+            //store landmark name description and image in respective vars
+
+            sizeName = (short)ASCIIEncoding.ASCII.GetByteCount(name);
+            sizeDescription = (short)ASCIIEncoding.ASCII.GetByteCount(description);
+            //imagesize here
+
+            state.ClientSocket.Send(BitConverter.GetBytes(sizeName));
+            state.ClientSocket.Send(ASCIIEncoding.ASCII.GetBytes(name));
+            state.ClientSocket.Send(BitConverter.GetBytes(sizeDescription));
+            state.ClientSocket.Send(ASCIIEncoding.ASCII.GetBytes(description));
+            state.ClientSocket.Send(BitConverter.GetBytes(sizeImage));
+            //send image
+
         }
 
-        async private static void processColloseumReq()
+        private static void processColloseumReq(ComState state)
         {
-            //return info about colloseum and do other stuff that needs to be done
+            short sizeName;
+            short sizeDescription;
+            string name = "";
+            string description = "";
+
+
+            //process database stuff and provide info on colloseum
+            //store colloseum name and description in respective vars
+            //add other details later
+
+            sizeName = (short)ASCIIEncoding.ASCII.GetByteCount(name);
+            sizeDescription = (short)ASCIIEncoding.ASCII.GetByteCount(description);
+
+            state.ClientSocket.Send(BitConverter.GetBytes(sizeName));
+            state.ClientSocket.Send(ASCIIEncoding.ASCII.GetBytes(name));
+            state.ClientSocket.Send(BitConverter.GetBytes(sizeDescription));
+            state.ClientSocket.Send(ASCIIEncoding.ASCII.GetBytes(description));
         }
 
-        async private static void processBattleReq()
+        private static void processBattleReq(ComState state)
         {
             throw new NotImplementedException();
         }
 
-        async private static void processSpCom()
+        private static void processSpCom(ComState state)
         {
             //send stuff to client
+            //this will have the type id of 3
         }
 
     }
@@ -200,7 +261,8 @@ namespace HappyHibachiServer
         private Socket clientSocket;
         private Guid clientID;
         private byte[] update;
-        private byte type;
+        private bool busy;
+
 
         //getters and setters
         public Socket ClientSocket
@@ -230,19 +292,6 @@ namespace HappyHibachiServer
             }
         }
 
-        public byte Type
-        {
-            get
-            {
-                return type;
-            }
-
-            set
-            {
-                type = value;
-            }
-        }
-
         public Guid ClientID
         {
             get
@@ -253,6 +302,19 @@ namespace HappyHibachiServer
             set
             {
                 clientID = value;
+            }
+        }
+
+        public bool Busy
+        {
+            get
+            {
+                return busy;
+            }
+
+            set
+            {
+                busy = value;
             }
         }
     }

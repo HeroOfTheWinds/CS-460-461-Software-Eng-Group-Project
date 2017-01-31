@@ -12,7 +12,7 @@ public class OverworldNetManager : MonoBehaviour {
     //ip address to connect to
     private static readonly IPAddress IP = IPAddress.Parse("132.160.49.90");
     //port to connect to
-    public const int OVERWORLD_PORT = 1234;
+    public const int OVERWORLD_PORT = 12345;
     //size of update packets in bytes
     public const int UPDATE_SIZE = 8;
 
@@ -98,7 +98,7 @@ public class OverworldNetManager : MonoBehaviour {
         }
     }
 
-
+    //later on add mechanism to avoid redundant object sending (at least for fixed position objects), and smooth landmark/colloseums drawing since they are in a fixed position
     private void updateDriver(IAsyncResult ar)
     {
         //complete async data read
@@ -177,6 +177,7 @@ public class OverworldNetManager : MonoBehaviour {
         {
             //place objects on screen or update position if guid already present, store respective guid with object for later use
             //objects stored in list nearbyObjects which is a list of NearbyObjects that contain lat, long, object type, and id
+            //note: should check which scene is active before drawing, should be able to do that with scenemanager.getactivescene
 
             waitUpdate.Set();
         }
