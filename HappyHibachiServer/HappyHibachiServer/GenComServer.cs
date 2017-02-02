@@ -67,9 +67,6 @@ namespace HappyHibachiServer
         {
             ComState state = new ComState();
 
-            //this should be tied to the players account and tied to them on login somehow
-            state.ClientID = new Guid();
-
             try
             {
                 //connection finished, allow others to connect
@@ -84,6 +81,10 @@ namespace HappyHibachiServer
                 Socket handler = listener.EndAccept(ar);
 
                 state.ClientSocket = handler;
+
+                byte[] id = new byte[16];
+                handler.Receive(id, 16, 0);
+                state.ClientID = new Guid(id);
 
                 players.Add(state.ClientID, state);
 
@@ -146,6 +147,9 @@ namespace HappyHibachiServer
                     case 4:
                         processItemReq(state);
                         break;
+                    case 5:
+                        processBattleResponse(state);
+                        break;
                     //anything else we may want
                     default:
                         Console.WriteLine("Error: invalid update type received");
@@ -164,6 +168,27 @@ namespace HappyHibachiServer
                 }
                 Console.WriteLine("\nPlayer disconnected");
 
+            }
+        }
+
+        private static void processBattleResponse(ComState state)
+        {
+            byte[] response = new byte[18];
+            response[0] = 5;
+            state.ClientSocket.Receive(response, 1, 17, 0);
+            ComState opponent;
+            if (players.TryGetValue(getUpdateID(state.Update), out opponent))
+            {
+                //RACE CONDITIONS, RACE CONDITIONS, HAVE TO PUT LOCK IN STATE AND LOCK WRITES
+
+                opponent.ClientSocket.Send(response, 17, 0);
+            }
+            else
+            {
+                //need some way to indicate player no longer available
+
+                //temporarily write console message for potential troubleshooting
+                Console.WriteLine("Received ID not in player table");
             }
         }
 
@@ -188,6 +213,7 @@ namespace HappyHibachiServer
         private static bool serverUpdateAvailable()
         {
             //check if the server needs to send things to the user, eg quests etc
+            //implement later
             
             return false;
         }
@@ -241,18 +267,45 @@ namespace HappyHibachiServer
 
         private static void processBattleReq(ComState state)
         {
-            throw new NotImplementedException();
+            byte[] outUpdate = new byte[33];
+            outUpdate[0] = 0;
+            Array.Copy(state.ClientID.ToByteArray(), 0, outUpdate, 1, 16);
+            state.ClientSocket.Receive(outUpdate, 17, 16, 0);
+            ComState opponent;
+            if(players.TryGetValue(getUpdateID(state.Update), out opponent))
+            {
+                //RACE CONDITIONS, RACE CONDITIONS, HAVE TO PUT LOCK IN STATE AND LOCK WRITES
+
+                opponent.ClientSocket.Send(outUpdate, 17, 0);
+            }
+            else
+            {
+                //signal player could not be challenged when implemented
+                //can probably just wait for server response when challenge sent
+                //just send a byte indicating whether server determined client to be busy (check if busy set in state), or if dced
+                //if client busy and receives request because server not updated yet or timed out, have it respond with 0, 1, or 2
+                //where receiving a 2 in a type 5 com means client busy (0 declined, 1 accepted)
+
+                //temporarily write console message for potential troubleshooting
+                Console.WriteLine("Received ID not in player table");
+            }
         }
 
         private static void processSpCom(ComState state)
         {
             //send stuff to client
             //this will have the type id of 3
+            //implement later
+        }
+
+        private static Guid getUpdateID(byte[] update)
+        {
+            byte[] temp = new byte[16];
+            Array.Copy(update, temp, 16);
+            return new Guid(temp);
         }
 
     }
-
-
 
     // State object for reading client data asynchronously
     internal class ComState

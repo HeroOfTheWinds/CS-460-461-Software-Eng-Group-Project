@@ -78,7 +78,10 @@ namespace HappyHibachiServer
                 Socket listener = (Socket)ar.AsyncState;
                 Socket handler = listener.EndAccept(ar);
 
-                
+                byte[] id = new byte[16];
+                handler.Receive(id, 16, 0);
+                state.ClientID = new Guid(id);
+
                 //start receiving client updates
                 handler.BeginReceive(state.Update, 0, UPDATE_SIZE, 0, new AsyncCallback(readUpdate), state);
             }
@@ -160,6 +163,7 @@ namespace HappyHibachiServer
     {
         //client's socket
         private Socket clientSocket;
+        private Guid clientID;
         private byte[] update;
         private byte[] nearby;
 
@@ -201,6 +205,19 @@ namespace HappyHibachiServer
             set
             {
                 nearby = value;
+            }
+        }
+
+        public Guid ClientID
+        {
+            get
+            {
+                return clientID;
+            }
+
+            set
+            {
+                clientID = value;
             }
         }
     }
