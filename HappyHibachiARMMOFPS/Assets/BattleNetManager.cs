@@ -9,6 +9,7 @@ public class BattleNetManager : MonoBehaviour
 {
     //temp guid until dynamic ones are generated on battle start
     private static Guid battleID = new Guid("dddddddddddddddddddddddddddddddd");
+    private static Guid opponentID;
 
     //ip address to connect to
     private static readonly IPAddress IP = IPAddress.Parse("132.160.49.90");
@@ -68,6 +69,19 @@ public class BattleNetManager : MonoBehaviour
         set
         {
             battleID = value;
+        }
+    }
+
+    public static Guid OpponentID
+    {
+        get
+        {
+            return opponentID;
+        }
+
+        set
+        {
+            opponentID = value;
         }
     }
 
