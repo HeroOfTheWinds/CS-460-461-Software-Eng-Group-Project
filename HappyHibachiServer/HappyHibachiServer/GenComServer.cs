@@ -12,7 +12,7 @@ namespace HappyHibachiServer
         //size of updates in bytes
         public const int UPDATE_SIZE = 17;
         //port to listen on (temp test port)
-        public const int GC_PORT = 1234;
+        public const int GC_PORT = 7004;
         //server ip address
         public static readonly IPAddress IP = IPAddress.Parse("10.42.42.153");
 
@@ -30,7 +30,7 @@ namespace HappyHibachiServer
 
             //create tcp listener
             Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-
+            players = new Dictionary<Guid, ComState>();
             try
             {
                 //bind the socket to the endpoint and listen for connections
@@ -72,7 +72,7 @@ namespace HappyHibachiServer
                 //connection finished, allow others to connect
                 connectionFound.Set();
 
-                Console.WriteLine("\nPlayer connected");
+                Console.WriteLine("\nPlayer connected gen com");
 
                 state.Update = new byte[UPDATE_SIZE];
 
@@ -104,7 +104,7 @@ namespace HappyHibachiServer
                     players.Remove(state.ClientID);
                 }
 
-                Console.WriteLine("\nPlayer disconnected");
+                Console.WriteLine("\nPlayer disconnected gen com connect");
             }
         }
 
@@ -166,7 +166,7 @@ namespace HappyHibachiServer
                 {
                     players.Remove(state.ClientID);
                 }
-                Console.WriteLine("\nPlayer disconnected");
+                Console.WriteLine("\nPlayer disconnected gen com readUpdate");
 
             }
         }

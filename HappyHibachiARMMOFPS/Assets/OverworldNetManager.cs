@@ -12,7 +12,7 @@ public class OverworldNetManager : MonoBehaviour {
     //ip address to connect to
     private static readonly IPAddress IP = IPAddress.Parse("132.160.49.90");
     //port to connect to
-    public const int OVERWORLD_PORT = 12345;
+    public const int OVERWORLD_PORT = 6004;
     //size of update packets in bytes
     public const int UPDATE_SIZE = 8;
 
@@ -73,7 +73,7 @@ public class OverworldNetManager : MonoBehaviour {
             IPEndPoint remoteEP = new IPEndPoint(IP, OVERWORLD_PORT);
 
             //create TCP socket
-            client = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
             //connect to remote endpoint
             client.Connect(remoteEP);
