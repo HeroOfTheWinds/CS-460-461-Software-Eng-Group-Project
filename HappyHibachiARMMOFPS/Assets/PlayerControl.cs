@@ -37,6 +37,9 @@ public class PlayerControl : MonoBehaviour {
     // Prefab with the part. sys. for a cloud of dust where a bullet hits
     public GameObject DustSys;
 
+    // Variable to store the animator component used to control animation transitions
+    public Animator animator;
+
 
     //flags, least sig to most sig bit
     //is the battle over?
@@ -77,13 +80,12 @@ public class PlayerControl : MonoBehaviour {
         cam = Camera.main;
         //Set offset to head of player
         offset = new Vector3(0f, 2.8f, 0f);
-        
     }
 
 
     // Update is called once per frame
     void Update () {
-
+        
         // Add time since last frame to LastShotTime to advance the cooldown
         LastShotTime += Time.deltaTime;
 
@@ -93,6 +95,9 @@ public class PlayerControl : MonoBehaviour {
         // Get touch joystick input as horizontal and vertical components
         float hor = CrossPlatformInputManager.GetAxis("Horizontal");
         float vert = CrossPlatformInputManager.GetAxis("Vertical");
+
+        // Set running state based on input
+        animator.SetFloat("Moving", Mathf.Abs(vert));
 
         // Move player based on input and speed
         player.SimpleMove(transform.forward * vert * MoveSpeed);
@@ -194,6 +199,9 @@ public class PlayerControl : MonoBehaviour {
             
             // Reset time since last shot to enforce cooldown
             LastShotTime = 0f;
+
+            // Animate the player
+            animator.SetTrigger("FireT");
         }
     }
 
@@ -247,6 +255,7 @@ public class PlayerControl : MonoBehaviour {
     public void hit()
     {
         gameObject.GetComponent<PlayerStatus>().TakeHP(8f);
+        animator.SetTrigger("Damage");
     }
 
 
