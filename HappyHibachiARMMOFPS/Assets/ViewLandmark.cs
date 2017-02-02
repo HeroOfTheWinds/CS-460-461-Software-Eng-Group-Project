@@ -1,17 +1,35 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System;
-
+using UnityEngine.SceneManagement;
 
 public class ViewLandmark : MonoBehaviour
 {  
     public double lat, lon;
+    public string landmarktype = "Landmark";
+    private RaycastHit hit;
+    private Guid guid;
+
     public struct location
     {
         public double lat, lon; //landmark
     }
     location myLocation;
     private location landmark;
+
+    void Update()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.GetTouch(0).position);
+        if (Physics.Raycast(ray, out hit) && hit.transform.name == "Landmark")
+            if (hit.transform.name == "Landmark") {
+                GenComManager.setUpdate(2, guid);
+            }
+    }
+
+    void Start()
+    {
+        guid = new Guid();
+    }
 
     public void checkproximity()
     {
