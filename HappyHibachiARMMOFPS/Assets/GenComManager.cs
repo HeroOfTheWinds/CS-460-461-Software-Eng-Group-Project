@@ -60,6 +60,7 @@ public class GenComManager : MonoBehaviour {
 
             //connect to remote endpoint
             client.Connect(remoteEP);
+            //send the players id to the server
             client.Send(Player.playerID.ToByteArray());
 
             Debug.Log("Connect Successful");
