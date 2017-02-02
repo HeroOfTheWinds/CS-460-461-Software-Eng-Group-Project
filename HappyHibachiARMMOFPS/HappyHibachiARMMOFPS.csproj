@@ -254,6 +254,7 @@
     <Compile Include="Assets\UI\itemScript.cs" />
     <Compile Include="Assets\UI\menuAppear.cs" />
     <Compile Include="Assets\UI\menuScript.cs" />
+    <Compile Include="Assets\UI\nearbyPlayers.cs" />
     <Compile Include="Assets\UI\start.cs" />
     <Compile Include="Assets\ViewLandmark.cs" />
   </ItemGroup>
