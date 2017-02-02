@@ -1,10 +1,12 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
 public class Player{
     //player attributes
     public static string playername;
+    public static Guid playerID;
     public static int EXP;
     public static int level;
     public static int faction;
