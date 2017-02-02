@@ -219,6 +219,7 @@ public class GenComManager : MonoBehaviour {
                     break;
                 case 2:
                     //draw landmark info to screen, stored in landmarkInfo
+                    GUI.Box(new Rect(0, 0, Screen.width, Screen.height), landmarkInfo.Name);
                     break;
                 case 3:
                     //show user special com details

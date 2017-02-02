@@ -80,6 +80,7 @@
   <ItemGroup>
     <Compile Include="Assets\ARCamera.cs" />
     <Compile Include="Assets\BattleNetManager.cs" />
+    <Compile Include="Assets\CallLandmark.cs" />
     <Compile Include="Assets\DeviceRotation.cs" />
     <Compile Include="Assets\EnemyStatus.cs" />
     <Compile Include="Assets\EnemyUpdate.cs" />

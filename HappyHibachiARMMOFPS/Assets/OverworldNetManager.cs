@@ -182,6 +182,7 @@ public class OverworldNetManager : MonoBehaviour {
             waitUpdate.Set();
         }
 
+        
     }
 
     private void setUpdate(object state)
