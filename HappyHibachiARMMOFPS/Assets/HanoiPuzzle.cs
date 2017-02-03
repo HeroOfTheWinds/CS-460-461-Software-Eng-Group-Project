@@ -15,13 +15,17 @@ public class HanoiPuzzle : MonoBehaviour {
 
     public Renderer EnergyBarRenderer;
 
+    // Canvases to show win and loss screens
+    public GameObject WinCanvas;
+    public GameObject LoseCanvas;
+
     // Speed for dragging disks via touch
     public float dragSpeed = 0.05f;
 
     // Make three stacks to hold what each peg as on it (logically)
-    private Stack<int> peg1;
-    private Stack<int> peg2;
-    private Stack<int> peg3;
+    private Stack<int> peg1 = new Stack<int>();
+    private Stack<int> peg2 = new Stack<int>();
+    private Stack<int> peg3 = new Stack<int>();
 
     // Status of the generator
     private float energy = 0f;
@@ -38,6 +42,9 @@ public class HanoiPuzzle : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
+        peg1.Push(100);
+        peg2.Push(100);
+        peg3.Push(100);
         // Start with a half-finished puzzle
         peg1.Push(3);
         peg1.Push(2);
@@ -47,17 +54,17 @@ public class HanoiPuzzle : MonoBehaviour {
         peg3.Push(4);
 
         // Show the energy guage 40% full (currently broken)
-        Material[] mats = EnergyBarRenderer.materials;
+        /*Material[] mats = EnergyBarRenderer.materials;
         mats[2].mainTextureScale = new Vector2(0f, 0.4f);
         EnergyBarRenderer.materials = mats;
-        energy = 0.4f;
+        energy = 0.4f;*/
 	}
 	
 	// Update is called once per frame
 	void Update () {
 	    // Get touch input and process it
         // First check only one touch
-        if (Input.touchCount == 1)
+        /*if (Input.touchCount == 1)
         {
             // Check if the touch is just starting
             if (Input.GetTouch(0).phase == TouchPhase.Began)
@@ -190,6 +197,240 @@ public class HanoiPuzzle : MonoBehaviour {
                     moving = false;
                 }
             }
-        }
+        }*/
 	}
+
+    // Functions for the buttons
+    // These handle moving disks between the pegs
+    public void ButtonL()
+    {
+        // Check if we already have a disk selected
+        if (moving)
+        {
+            // Try placing the currently held disk onto the Left peg
+            peg1.Push(lastIndex);
+            Vector3 tempPos = lastDisk.transform.position;
+            tempPos.x = 0.5f;
+            tempPos.y = 2.35f;
+            lastDisk.transform.position = tempPos;
+
+            // Did you fail the puzzle?
+            int upper, lower;
+            upper = peg1.Pop();
+            lower = peg1.Peek();
+            if (upper > lower)
+            {
+                // put a larger disk on a smaller one, FAIL
+                peg1.Push(upper);
+                DisplayLoss();
+            }
+            else
+            {
+                // put it back, we're clear
+                peg1.Push(upper);
+            }
+
+            // done moving
+            moving = false;
+        }
+        else
+        {
+            // set this as the disk we're moving
+            lastIndex = peg1.Pop();
+
+            // check if empty peg
+            if (lastIndex == 100)
+            {
+                return;
+            }
+
+            // get the gameObject corresponding to this disk
+            switch (lastIndex)
+            {
+                case 1:
+                    lastDisk = DiskXS;
+                    break;
+                case 2:
+                    lastDisk = DiskS;
+                    break;
+                case 3:
+                    lastDisk = DiskM;
+                    break;
+                case 4:
+                    lastDisk = DiskL;
+                    break;
+                case 5:
+                    lastDisk = DiskL;
+                    break;
+                default:
+                    break;
+            }
+
+            // say we're moving something
+            moving = true;
+        }
+    }
+
+    public void ButtonC()
+    {
+        // Check if we already have a disk selected
+        if (moving)
+        {
+            // Try placing the currently held disk onto the Left peg
+            peg2.Push(lastIndex);
+            Vector3 tempPos = lastDisk.transform.position;
+            tempPos.x = 0f;
+            tempPos.y = 2.35f;
+            lastDisk.transform.position = tempPos;
+
+            // Did you fail the puzzle?
+            int upper, lower;
+            upper = peg2.Pop();
+            lower = peg2.Peek();
+            if (upper > lower)
+            {
+                // put a larger disk on a smaller one, FAIL
+                peg2.Push(upper);
+                DisplayLoss();
+            }
+            else
+            {
+                // put it back, we're clear
+                peg2.Push(upper);
+            }
+
+            // done moving
+            moving = false;
+        }
+        else
+        {
+            // set this as the disk we're moving
+            lastIndex = peg2.Pop();
+
+            // check if empty peg
+            if (lastIndex == 100)
+            {
+                return;
+            }
+
+            // get the gameObject corresponding to this disk
+            switch (lastIndex)
+            {
+                case 1:
+                    lastDisk = DiskXS;
+                    break;
+                case 2:
+                    lastDisk = DiskS;
+                    break;
+                case 3:
+                    lastDisk = DiskM;
+                    break;
+                case 4:
+                    lastDisk = DiskL;
+                    break;
+                case 5:
+                    lastDisk = DiskL;
+                    break;
+                default:
+                    break;
+            }
+
+            // say we're moving something
+            moving = true;
+        }
+    }
+
+    public void ButtonR()
+    {
+        // Check if we already have a disk selected
+        if (moving)
+        {
+            // Try placing the currently held disk onto the Left peg
+            peg3.Push(lastIndex);
+            Vector3 tempPos = lastDisk.transform.position;
+            tempPos.x = -0.5f;
+            tempPos.y = 2.35f;
+            lastDisk.transform.position = tempPos;
+
+            // Did you fail the puzzle?
+            int upper, lower;
+            upper = peg3.Pop();
+            lower = peg3.Peek();
+            if (upper > lower)
+            {
+                // put a larger disk on a smaller one, FAIL
+                peg3.Push(upper);
+                DisplayLoss();
+            }
+            else
+            {
+                // put it back, we're clear
+                peg3.Push(upper);
+
+                // Now check if the puzzle is finished
+                if (peg3.Count == 6)
+                {
+                    // all moves til now were legal, so if we have five disks, it is finished.
+                    DisplayWin();
+                }
+            }
+
+            // done moving
+            moving = false;
+        }
+        else
+        {
+            // set this as the disk we're moving
+            lastIndex = peg3.Pop();
+
+            // check if empty peg
+            if (lastIndex == 100)
+            {
+                return;
+            }
+
+            // get the gameObject corresponding to this disk
+            switch (lastIndex)
+            {
+                case 1:
+                    lastDisk = DiskXS;
+                    break;
+                case 2:
+                    lastDisk = DiskS;
+                    break;
+                case 3:
+                    lastDisk = DiskM;
+                    break;
+                case 4:
+                    lastDisk = DiskL;
+                    break;
+                case 5:
+                    lastDisk = DiskL;
+                    break;
+                default:
+                    break;
+            }
+
+            // say we're moving something
+            moving = true;
+        }
+    }
+
+    public void DisplayLoss()
+    {
+        // Battle was lost, so create a lose screen overlay
+        GameObject loss = (GameObject)Instantiate(LoseCanvas);
+
+        // Set it to render over the local Main Camera
+        loss.GetComponent<Canvas>().worldCamera = Camera.main;
+    }
+
+    public void DisplayWin()
+    {
+        // Battle was won, so create a win screen overlay
+        GameObject win = (GameObject)Instantiate(WinCanvas);
+
+        // Set it to render over the local Main Camera
+        win.GetComponent<Canvas>().worldCamera = Camera.main;
+    }
 }
