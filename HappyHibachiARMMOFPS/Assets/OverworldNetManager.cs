@@ -164,6 +164,7 @@ public class OverworldNetManager : MonoBehaviour {
     {
         if(update)
         {
+            Debug.Log("Test");
             loc = locService.lastData;
             latitude = loc.latitude;
             longtitude = loc.longitude;
