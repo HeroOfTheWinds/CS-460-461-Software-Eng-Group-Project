@@ -88,10 +88,7 @@ namespace HappyHibachiServer
 
                 players.Add(state.ClientID, state);
 
-
                 //insert client id into db, use this as the key for identifying clients
-
-
 
                 //start receiving client updates
                 handler.BeginReceive(state.Update, 0, UPDATE_SIZE, 0, new AsyncCallback(readUpdate), state);
@@ -225,11 +222,13 @@ namespace HappyHibachiServer
             short sizeImage = 0;
             string name = "";
             string description = "";
+            string image = "";
             //create variable for the image, for now just sending other 2 things
-
 
             //process database stuff and provide info on landmark
             //store landmark name description and image in respective vars
+            //var dbCon = new DatabaseConnect();
+            //dbCon.provideLandmarkInfoToDB(state.ClientID, name, description, image);
 
             sizeName = (short)ASCIIEncoding.ASCII.GetByteCount(name);
             sizeDescription = (short)ASCIIEncoding.ASCII.GetByteCount(description);
@@ -250,11 +249,13 @@ namespace HappyHibachiServer
             short sizeDescription;
             string name = "";
             string description = "";
-
+            string image = "";
 
             //process database stuff and provide info on colloseum
             //store colloseum name and description in respective vars
             //add other details later
+            //var dbCon = new DatabaseConnect();
+            //dbCon.provideColosseumInfoToDB(state.ClientID, name, description, image);
 
             sizeName = (short)ASCIIEncoding.ASCII.GetByteCount(name);
             sizeDescription = (short)ASCIIEncoding.ASCII.GetByteCount(description);
