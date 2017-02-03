@@ -79,12 +79,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\ARCamera.cs" />
+    <Compile Include="Assets\ARControl.cs" />
     <Compile Include="Assets\BattleNetManager.cs" />
     <Compile Include="Assets\CallLandmark.cs" />
     <Compile Include="Assets\DeviceRotation.cs" />
     <Compile Include="Assets\EnemyStatus.cs" />
     <Compile Include="Assets\EnemyUpdate.cs" />
     <Compile Include="Assets\GenComManager.cs" />
+    <Compile Include="Assets\HanoiPuzzle.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Examples (API usage)\BingMapsLocationAPIExample.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Examples (API usage)\CacheTilesExample.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Examples (API usage)\CalcAreaExample.cs" />

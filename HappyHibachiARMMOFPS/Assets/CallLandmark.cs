@@ -8,6 +8,7 @@ public class CallLandmark : MonoBehaviour
     public Canvas landmark; // Assign in inspector
     //Used for checking if menu is active
     private bool isShowing;
+    private RaycastHit hit;
 
     //Use this for initialization
     void Start()
@@ -15,6 +16,21 @@ public class CallLandmark : MonoBehaviour
         //Disables the menu
         landmark.enabled = false;
         isShowing = false;
+    }
+
+    private void Update()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.GetTouch(0).position);
+        if (Physics.Raycast(ray, out hit) && hit.transform.name == "Landmark")
+        {
+            isShowing = true;
+            landmark.enabled = true;
+        }
+        if (Input.GetButtonUp("Exit"))
+        {
+            isShowing = false;
+            landmark.enabled = false;
+        }
     }
 
     public void callLandmark()
