@@ -12,6 +12,14 @@ public class ReturnToOverworld : MonoBehaviour {
 
     public void returnToOverworld()
     {
-        SceneManager.LoadScene("Overworld");
+        if (SceneManager.GetActiveScene().name == "Battle")
+        {
+            SceneManager.LoadScene("AR Scene");
+        }
+        else
+        {
+            SceneManager.LoadScene("Overworld");
+        }
+        
     }
 }
