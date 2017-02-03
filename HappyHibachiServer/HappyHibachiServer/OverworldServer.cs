@@ -148,7 +148,7 @@ namespace HappyHibachiServer
             //latitudes range is -90 - 90, so by doing this the type of object can be determined without sending additional data (value < 91: player, 90 < value < 272: colloseum, 271 < value: colloseum)
 
             //creates byte aray with proper number of bytes
-            state.Nearby = new byte[nearbyC.Count * 8 + nearbyID.Count * 16];
+            state.Nearby = new byte[nearbyC.Count * 4 + nearbyID.Count * 16];
             //put nearby coords in byte array to be sent
             Buffer.BlockCopy(nearbyC.ToArray(), 0, state.Nearby, 0, nearbyC.Count * 4);
 
@@ -156,7 +156,7 @@ namespace HappyHibachiServer
             int i = 0;
             foreach(Guid id in nearbyID.ToArray())
             {
-                Buffer.BlockCopy(id.ToByteArray(), 0, state.Nearby, nearbyC.Count * 4 + 16 * i, nearbyID.Count * 16);
+                Buffer.BlockCopy(id.ToByteArray(), 0, state.Nearby, nearbyC.Count * 4 + 16 * i, 16);
                 i++;
             }
 

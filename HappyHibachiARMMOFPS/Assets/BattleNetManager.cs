@@ -68,7 +68,7 @@ public class BattleNetManager : MonoBehaviour
 
         set
         {
-            battleID = value;
+            //battleID = value;
         }
     }
 

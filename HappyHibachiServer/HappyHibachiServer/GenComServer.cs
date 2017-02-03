@@ -12,7 +12,7 @@ namespace HappyHibachiServer
         //size of updates in bytes
         public const int UPDATE_SIZE = 17;
         //port to listen on (temp test port)
-        public const int GC_PORT = 7004;
+        public const int GC_PORT = 6003;
         //server ip address
         public static readonly IPAddress IP = IPAddress.Parse("10.42.42.153");
 
@@ -97,13 +97,13 @@ namespace HappyHibachiServer
                 handler.BeginReceive(state.Update, 0, UPDATE_SIZE, 0, new AsyncCallback(readUpdate), state);
             }
             //catch connection errors
-            catch (Exception)
+            catch (Exception e)
             {
                 if(players.ContainsKey(state.ClientID))
                 {
                     players.Remove(state.ClientID);
                 }
-
+                Console.WriteLine(e.ToString());
                 Console.WriteLine("\nPlayer disconnected gen com connect");
             }
         }

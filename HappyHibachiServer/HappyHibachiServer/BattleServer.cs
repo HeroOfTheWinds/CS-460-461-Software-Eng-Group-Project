@@ -12,7 +12,7 @@ namespace HappyHibachiServer
         //size of updates in bytes
         public const int UPDATE_SIZE = 41;
         //port to listen on
-        public const int BATTLE_PORT = 6003;
+        public const int BATTLE_PORT = 7004;
         //server ip address
         public static readonly IPAddress IP = IPAddress.Parse("10.42.42.153");
 

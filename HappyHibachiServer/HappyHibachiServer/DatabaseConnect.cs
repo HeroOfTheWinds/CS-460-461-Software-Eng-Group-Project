@@ -25,7 +25,7 @@ namespace HappyHibachiServer
             server = "localhost";
             database = "happyhibachi_armmofps";
             uid = "root";
-            password = "password";
+            password = "T@rantul@50!";
             string connectionString;
             connectionString = "SERVER=" + server + ";" + "DATABASE=" +
             database + ";" + "UID=" + uid + ";" + "PASSWORD=" + password + ";";
@@ -94,7 +94,7 @@ namespace HappyHibachiServer
                 MySqlCommand cmd = new MySqlCommand(query, connection);
                 //Create a data reader and Execute the command
                 MySqlDataReader dataReader = cmd.ExecuteReader();
-                int i = 0;
+                //int i = 0;
                 //Read the data and store them in the list
                 while (dataReader.Read())
                 {
@@ -105,10 +105,10 @@ namespace HappyHibachiServer
 
                     //use latitude to include the type of object it is. Determine if object is a (player, colloseum, landmark) and add (0, 1, 2) * 181 to latitude respectively
                     //latitudes range is -90 - 90, so by doing this the type of object can be determined without sending additional data (value < 91: player, 90 < value < 272: colloseum, 271 < value: colloseum)
-                    nearbyC.Insert(2 * i, float.Parse((dataReader["LAT"] + dataReader["TYPE"] * 181).ToString()));
-                    nearbyC.Insert(2 * i + 1, float.Parse(dataReader["LON"].ToString()));
+                    nearbyC.Add(float.Parse(dataReader["LAT"].ToString())  + float.Parse(dataReader["TYPE"].ToString()) * 181);
+                    nearbyC.Add(float.Parse(dataReader["LON"].ToString()));
 
-                    i++;
+                    //i++;
 
                 }
 
