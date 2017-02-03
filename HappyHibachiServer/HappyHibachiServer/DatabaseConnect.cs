@@ -82,7 +82,7 @@ namespace HappyHibachiServer
             }
         }
 
-        //Select statement
+        //Select GUID, Lat, Lon and Type attributes from Player, landmark, and colosseum tables
         public void findNearbyObjects(List<float> nearbyC, List<Guid> nearbyID)
         {
             string query = "SELECT GUID, LAT, LON, TYPE FROM PLAYER UNION SELECT GUID, LAT, LON, TYPE FROM LANDMARK UNION SELECT GUID, LAT, LON, TYPE FROM COLOSSEUM";
@@ -124,8 +124,8 @@ namespace HappyHibachiServer
             }
         }
 
-        //Update statement
-        public void Update(byte[] update, Guid clientID)
+        //Update player coors based on guid
+        public void UpdatePlayerCoor(byte[] update, Guid clientID)
         {
             float lat = System.BitConverter.ToSingle(update, 0);
             float lon = System.BitConverter.ToSingle(update, 4);
@@ -145,7 +145,65 @@ namespace HappyHibachiServer
                 this.CloseConnection();
             }
         }
+        //insert client id into db, use this as the key for identifying clients
+        public void insertClientIdintoDB(Guid client_id)
+        {
+
+        }
+
+        //select landmark's name from landmark based on guid
+        public void provideLandmarkInfoToDB(Guid landmark_id, string name, string description, string image)
+        {
+            string query = "SELECT LANDMARK_NAME FROM LANDMARK WHERE GUID ='" + landmark_id.ToString() + "';";
+            //Open connection
+            if (this.OpenConnection() == true)
+            {
+                //Create Command
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                //Create a data reader and Execute the command
+                MySqlDataReader dataReader = cmd.ExecuteReader();
+
+                //Read the data and store them in the list
+                while (dataReader.Read())
+                {
+                    name = dataReader["LANDMARK_NAME"].ToString();
+                }
+                description = "Description of Landmark";
+                image = name + ".jpg";
+                //close Data Reader
+                dataReader.Close();
+
+                //close Connection
+                this.CloseConnection();
+            }
+        }
+
+        //select colosseum's name from colosseum based on guid
+        public void provideColosseumInfoToDB(Guid colosseum_id, string name, string description, string image)
+        {
+            string query = "SELECT COLOSSEUM_NAME FROM COLOSSEUM WHERE GUID ='" + colosseum_id.ToString() + "';";
+            //Open connection
+            if (this.OpenConnection() == true)
+            {
+                //Create Command
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                //Create a data reader and Execute the command
+                MySqlDataReader dataReader = cmd.ExecuteReader();
+
+                //Read the data and store them in the list
+                while (dataReader.Read())
+                {
+                    name = dataReader["COLOSSEUM_NAME"].ToString();
+                }
+                description = "Description of Landmark";
+                image = name + ".jpg";
+                //close Data Reader
+                dataReader.Close();
+
+                //close Connection
+                this.CloseConnection();
+            }
+        }
+
     }
 }
-
-

@@ -80,7 +80,8 @@ public class Login : MonoBehaviour
         Player.faction = int.Parse(splitString[3]);
         Player.factionEXP = int.Parse(splitString[4]);
         Player.factionLevel = int.Parse(splitString[5]);
-        //Player.playerID = new Guid(splitString[6]);
+        Guid test = new Guid(splitString[6]);
+        Player.playerID = (test);
     }
 
 

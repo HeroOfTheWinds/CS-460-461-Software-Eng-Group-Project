@@ -112,7 +112,7 @@ namespace HappyHibachiServer
 
                 //process update (GPS coords stored in state.Update) into DB
                 var dbCon = new DatabaseConnect();
-                dbCon.Update(state.Update, state.ClientID);
+                dbCon.UpdatePlayerCoor(state.Update, state.ClientID);
 
                 //next gps update not expected for long enough that it should probably be more efficient to handle parseing and sending synchronously
                 //pretty sure asynch calls require a certain amount of memory overhead, can change if need though
