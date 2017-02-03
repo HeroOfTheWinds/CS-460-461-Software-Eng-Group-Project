@@ -19,6 +19,9 @@ public class EnemyStatus : MonoBehaviour
     // HP Bar on the HUD
     //public Image InnerHPBar;
 
+    // Reference to animator for the enemy model
+    public Animator animator;
+
     // Use this for initialization
     void Start()
     {
@@ -58,6 +61,9 @@ public class EnemyStatus : MonoBehaviour
             controller.BattleEnd = true;
             controller.Win = true;
         }
+
+        // Play the recoil animation
+        animator.SetTrigger("Damage");
     }
 
     public void RestoreHP(float hp)

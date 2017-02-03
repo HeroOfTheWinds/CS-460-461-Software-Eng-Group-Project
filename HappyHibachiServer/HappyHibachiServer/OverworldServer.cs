@@ -11,7 +11,7 @@ namespace HappyHibachiServer
         //size of updates in bytes
         public const int UPDATE_SIZE = 8;
         //port to listen on (temp test port)
-        public const int OVERWORLD_PORT = 12345;
+        public const int OVERWORLD_PORT = 6004;
         //server ip address
         public static readonly IPAddress IP = IPAddress.Parse("10.42.42.153");
 
@@ -27,7 +27,7 @@ namespace HappyHibachiServer
 
             //create udp listener
             //assume raw udp should suffice, can add order checks or discard if issues arise
-            Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
             try
             {
@@ -68,7 +68,7 @@ namespace HappyHibachiServer
                 //connection finished, allow others to connect
                 connectionFound.Set();
 
-                Console.WriteLine("\nPlayer connected");
+                Console.WriteLine("\nPlayer connected overworld");
 
                 OverworldState state = new OverworldState();
 
@@ -81,6 +81,7 @@ namespace HappyHibachiServer
                 byte[] id = new byte[16];
                 handler.Receive(id, 16, 0);
                 state.ClientID = new Guid(id);
+                state.ClientSocket = handler;
 
                 //start receiving client updates
                 handler.BeginReceive(state.Update, 0, UPDATE_SIZE, 0, new AsyncCallback(readUpdate), state);
@@ -88,7 +89,7 @@ namespace HappyHibachiServer
             //catch connection errors
             catch (Exception)
             {
-                Console.WriteLine("\nPlayer disconnected");
+                Console.WriteLine("\nPlayer disconnected overworld connect");
             }
         }
 
@@ -121,9 +122,10 @@ namespace HappyHibachiServer
 
             }
             //end communications gracefully if player disconnects
-            catch (Exception)
+            catch (Exception e)
             {
-                Console.WriteLine("\nPlayer disconnected");
+                Console.WriteLine(e.ToString());
+                Console.WriteLine("\nPlayer disconnected overworld readUpdate");
 
             }
         }
@@ -149,8 +151,15 @@ namespace HappyHibachiServer
             state.Nearby = new byte[nearbyC.Count * 8 + nearbyID.Count * 16];
             //put nearby coords in byte array to be sent
             Buffer.BlockCopy(nearbyC.ToArray(), 0, state.Nearby, 0, nearbyC.Count * 4);
+
             //put respective guids
-            Buffer.BlockCopy(nearbyID.ToArray(), 0, state.Nearby, nearbyC.Count * 4, nearbyID.Count * 16);
+            int i = 0;
+            foreach(Guid id in nearbyID.ToArray())
+            {
+                Buffer.BlockCopy(id.ToByteArray(), 0, state.Nearby, nearbyC.Count * 4 + 16 * i, nearbyID.Count * 16);
+                i++;
+            }
+
             //tell client size of update
             state.ClientSocket.Send(BitConverter.GetBytes(state.Nearby.Length));
             //send nearby objects to client

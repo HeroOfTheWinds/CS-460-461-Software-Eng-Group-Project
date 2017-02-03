@@ -98,11 +98,16 @@ namespace HappyHibachiServer
                 //Read the data and store them in the list
                 while (dataReader.Read())
                 {
+                    //store GUID into nearbyID
                     Console.WriteLine(dataReader["GUID"].ToString());
-                    Guid GUID = Guid.Parse(dataReader["GUID"].ToString() + dataReader["TYPE"].ToString());
+                    Guid GUID = Guid.Parse(dataReader["GUID"].ToString());
                     nearbyID.Add(GUID);
-                    nearbyC.Insert(2 * i, float.Parse(dataReader["LAT"].ToString()));
+
+                    //use latitude to include the type of object it is. Determine if object is a (player, colloseum, landmark) and add (0, 1, 2) * 181 to latitude respectively
+                    //latitudes range is -90 - 90, so by doing this the type of object can be determined without sending additional data (value < 91: player, 90 < value < 272: colloseum, 271 < value: colloseum)
+                    nearbyC.Insert(2 * i, float.Parse((dataReader["LAT"] + dataReader["TYPE"] * 181).ToString()));
                     nearbyC.Insert(2 * i + 1, float.Parse(dataReader["LON"].ToString()));
+
                     i++;
 
                 }

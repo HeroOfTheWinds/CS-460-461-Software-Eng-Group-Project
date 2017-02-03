@@ -77,6 +77,7 @@
     <Compile Include="Assets\DeviceRotation.cs" />
     <Compile Include="Assets\EnemyStatus.cs" />
     <Compile Include="Assets\EnemyUpdate.cs" />
+    <Compile Include="Assets\GenComManager.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Examples (API usage)\BingMapsLocationAPIExample.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Examples (API usage)\CacheTilesExample.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Examples (API usage)\CalcAreaExample.cs" />
@@ -225,10 +226,12 @@
     <Compile Include="Assets\Infinity Code\Online maps\Scripts\XML\OnlineMapsXMLList.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Scripts\XML\OnlineMapsXMLListEnum.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Scripts\XML\OnlineMapsXMLNamespaceManager.cs" />
+    <Compile Include="Assets\ItemList.cs" />
     <Compile Include="Assets\Landmine.cs" />
     <Compile Include="Assets\Login.cs" />
     <Compile Include="Assets\MoveShot.cs" />
     <Compile Include="Assets\NetworkManagerCustom.cs" />
+    <Compile Include="Assets\OverworldNetManager.cs" />
     <Compile Include="Assets\Player.cs" />
     <Compile Include="Assets\PlayerControl.cs" />
     <Compile Include="Assets\PlayerStatus.cs" />
@@ -248,6 +251,7 @@
     <Compile Include="Assets\UI\itemScript.cs" />
     <Compile Include="Assets\UI\menuAppear.cs" />
     <Compile Include="Assets\UI\menuScript.cs" />
+    <Compile Include="Assets\UI\nearbyPlayers.cs" />
     <Compile Include="Assets\UI\start.cs" />
     <Compile Include="Assets\ViewLandmark.cs" />
   </ItemGroup>

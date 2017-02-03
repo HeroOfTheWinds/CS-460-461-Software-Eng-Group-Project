@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 
 namespace HappyHibachiServer
 {
@@ -11,8 +11,12 @@ namespace HappyHibachiServer
         static void Main(string[] args)
         {
             Console.WriteLine("Hit Ctrl-C to exit.");
-            BattleServer.startServer();
-            //TestSinglePerson.startServer();
+            Thread battleThread = new Thread(new ThreadStart(BattleServer.startServer));
+            Thread overworldThread = new Thread(new ThreadStart(OverworldServer.startServer));
+            Thread genComThread = new Thread(new ThreadStart(GenComServer.startServer));
+            battleThread.Start();
+            overworldThread.Start();
+            genComThread.Start();
         }
     }
 }

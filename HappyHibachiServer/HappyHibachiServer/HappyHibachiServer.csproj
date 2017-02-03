@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BattleServer.cs" />
+    <Compile Include="DatabaseConnect.cs" />
     <Compile Include="GenComServer.cs" />
     <Compile Include="OverworldServer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

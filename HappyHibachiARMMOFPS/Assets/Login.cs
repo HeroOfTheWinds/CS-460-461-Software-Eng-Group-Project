@@ -59,6 +59,7 @@ public class Login : MonoBehaviour
                 ErrorText.text = "Welcome, " + username;
                 yield return new WaitForSeconds(2);
                 parsePlayerInfo(text);
+                Debug.Log(Player.playerID.ToString());
                 goToOverworld(); // proceed to Overworld
             }
         }
@@ -79,6 +80,7 @@ public class Login : MonoBehaviour
         Player.faction = int.Parse(splitString[3]);
         Player.factionEXP = int.Parse(splitString[4]);
         Player.factionLevel = int.Parse(splitString[5]);
+        Player.playerID = new Guid(splitString[6]);
     }
 
 
