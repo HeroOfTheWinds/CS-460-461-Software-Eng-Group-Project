@@ -14,10 +14,11 @@ public class CallLandmark : MonoBehaviour
     {
         //Disables the menu
         landmark.enabled = false;
+        isShowing = false;
     }
 
     public void callLandmark()
     {
-        SceneManager.LoadScene("VisitLandmarkForExp");
+        SceneManager.LoadScene("ViewLandmark");
     }
 }

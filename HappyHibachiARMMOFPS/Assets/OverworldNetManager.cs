@@ -78,6 +78,9 @@ public class OverworldNetManager : MonoBehaviour {
             //connect to remote endpoint
             client.Connect(remoteEP);
 
+            //send the players id to the server
+            client.Send(Player.playerID.ToByteArray());
+
             //upNearbyObj = false;
             waitUpdate = new ManualResetEvent(false);
 
