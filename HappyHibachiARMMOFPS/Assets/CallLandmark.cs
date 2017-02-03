@@ -21,7 +21,8 @@ public class CallLandmark : MonoBehaviour
     private void Update()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.GetTouch(0).position);
-        if (Physics.Raycast(ray, out hit) && hit.transform.name == "Landmark")
+        Physics.Raycast(ray, out hit);
+        if (hit.collider.tag == "Landmark")
         {
             isShowing = true;
             landmark.enabled = true;

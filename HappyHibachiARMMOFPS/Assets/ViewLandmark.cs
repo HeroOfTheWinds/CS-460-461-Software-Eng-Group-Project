@@ -7,6 +7,7 @@ public class ViewLandmark : MonoBehaviour
 {  
     public double lat, lon;
     public string landmarktype = "Landmark";
+    public Canvas Land;
     private RaycastHit hit;
     private Guid guid;
 
@@ -20,10 +21,14 @@ public class ViewLandmark : MonoBehaviour
     void Update()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.GetTouch(0).position);
-        if (Physics.Raycast(ray, out hit) && hit.transform.name == "Landmark")
+        if (Physics.Raycast(ray, out hit))
             if (hit.transform.name == "Landmark") {
                 GenComManager.setUpdate(2, guid);
             }
+        if(hit.collider.tag == "Landmark")
+        {
+            Land.enabled = true;
+        }
     }
 
     void Start()
