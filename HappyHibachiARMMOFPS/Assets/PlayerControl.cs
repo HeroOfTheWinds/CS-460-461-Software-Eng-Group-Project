@@ -82,7 +82,9 @@ public class PlayerControl : MonoBehaviour {
         offset = new Vector3(0f, 2.8f, 0f);
     }
 
-
+    float yRotation = 0f;
+    float xRotation = 0f;
+            
     // Update is called once per frame
     void Update () {
         
@@ -119,14 +121,19 @@ public class PlayerControl : MonoBehaviour {
 
         if (Input.gyro.enabled)
         {
+            yRotation += -Input.gyro.rotationRateUnbiased.y * 4f;
+            xRotation += -Input.gyro.rotationRateUnbiased.x * 4f;
+
+            cam.transform.eulerAngles = new Vector3(xRotation, yRotation, 0f);
 
             // Rotate Camera based on gyroscope (more free)
-            cam.transform.rotation = deviceRotation;
+            //cam.transform.rotation = deviceRotation;
 
             // Rotate the player's Y axis to match the camera's
             Quaternion newRot = transform.rotation;
             Vector3 euler = newRot.eulerAngles;
-            euler.y = deviceRotation.eulerAngles.y;
+            //euler.y = deviceRotation.eulerAngles.y;
+            euler.y = cam.transform.eulerAngles.y;
             newRot.eulerAngles = euler;
             transform.rotation = newRot;
             // This wouldn't be so wasteful if Unity let you actually edit returned quaternions directly
