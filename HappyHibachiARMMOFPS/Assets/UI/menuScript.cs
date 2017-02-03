@@ -13,8 +13,8 @@ public class menuScript : MonoBehaviour {
     void Start()
     {
         //Disables the menu
-        menu.enabled = false;
-        isShowing = false;
+        menu.enabled = true;
+        isShowing = true;
     }
 
     public void callBattle()

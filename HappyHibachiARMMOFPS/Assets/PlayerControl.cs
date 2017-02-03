@@ -13,6 +13,7 @@ public class PlayerControl : MonoBehaviour {
     //public GameObject ARCam; // Link to the main camera
     public GameObject shotPrefab; // What does the bullet look like?
     public GameObject minePrefab; // Object containing the landmine
+    public GameObject exitButton;       // Button to exit the Battle Scene
 
     //Camera for game view
     public Camera cam;
@@ -235,6 +236,9 @@ public class PlayerControl : MonoBehaviour {
 
         // Set it to render over the local Main Camera
         loss.GetComponent<Canvas>().worldCamera = Camera.main;
+
+        // Bring up the exit button
+        exitButton.SetActive(true);
     }
 
     public void DisplayWin()
@@ -244,6 +248,9 @@ public class PlayerControl : MonoBehaviour {
 
         // Set it to render over the local Main Camera
         win.GetComponent<Canvas>().worldCamera = Camera.main;
+
+        // Bring up the exit button
+        exitButton.SetActive(true);
     }
 
     //used to draw enemy shots

@@ -14,8 +14,8 @@ public class CallLandmark : MonoBehaviour
     void Start()
     {
         //Disables the menu
-        landmark.enabled = false;
-        isShowing = false;
+        landmark.enabled = true;
+        isShowing = true;
     }
 
     private void Update()

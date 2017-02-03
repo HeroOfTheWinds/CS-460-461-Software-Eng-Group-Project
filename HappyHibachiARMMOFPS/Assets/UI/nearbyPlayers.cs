@@ -56,10 +56,10 @@ public class nearbyPlayers : MonoBehaviour {
 	public void openBattle()
 	{
 		//Loads the battle scence
-		//SceneManager.LoadScene ("Battle");
+		SceneManager.LoadScene ("Battle");
 
 		//Active Nearby Players Canvas
-		nearbyCanvasActivate();
+		//nearbyCanvasActivate();
 	}
 
 	//Function for when the yes button is pressed
