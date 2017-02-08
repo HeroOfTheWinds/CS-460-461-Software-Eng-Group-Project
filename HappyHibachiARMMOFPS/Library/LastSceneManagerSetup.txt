@@ -1,4 +1,4 @@
 sceneSetups:
-- path: Assets/Overworld.unity
+- path: Assets/ViewLandmark.unity
   isLoaded: 1
   isActive: 1
