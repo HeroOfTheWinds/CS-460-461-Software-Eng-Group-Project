@@ -23,6 +23,9 @@ public class GenComManager : MonoBehaviour {
     private byte[] type;
     private byte[] data;
 
+    private static readonly object UPDATE_LOCK = new object();
+    private Timer timeout;
+
     private byte outAccepted;
     private static bool inAccepted;
     private LandmarkInfo landmarkInfo;
@@ -38,8 +41,11 @@ public class GenComManager : MonoBehaviour {
     //call on event where player touches something
     public static void setUpdate(byte type, Guid objID)
     {
-        update[0] = type;
-        Buffer.BlockCopy(objID.ToByteArray(), 0, update, 1, 16);
+        lock(UPDATE_LOCK)
+        {
+            update[0] = type;
+            Buffer.BlockCopy(objID.ToByteArray(), 0, update, 1, 16);
+        }
     }
 
     public static void respondMatch(bool response)
@@ -206,34 +212,39 @@ public class GenComManager : MonoBehaviour {
 
 
     // Update is called once per frame
-    void Update () {
+    void Update() {
 
         //need to add mechanism to make sure multiple requests arent sent before finalized with server, primarily for the battle portion
 
-        //RACE CONDTIONS, NEED TO DISSALLOW CALLS TO SETUPDATE UNTIL UPDATE RUN
-
-        //when object touched, pack 
-        if (update[0] < 255)
+        lock(UPDATE_LOCK)
         {
-            client.Send(update, UPDATE_SIZE, 0);
+            //when object touched, pack 
+            if (update[0] < 255)
+            {
+                client.Send(update, UPDATE_SIZE, 0);
 
-            if (update[0] == 0)
-            {
-                Guid battleID = new Guid();
-                BattleNetManager.BattleID = battleID;
-                BattleNetManager.OpponentID = getUpdateID(update);
-                client.Send(battleID.ToByteArray());
-                //client.BeginReceive(accepted, 0, 1, 0, new AsyncCallback(battleAck), null);
+                if (update[0] == 0)
+                {
+                    Guid battleID = new Guid();
+                    BattleNetManager.BattleID = battleID;
+                    BattleNetManager.OpponentID = getUpdateID(update);
+                    client.Send(battleID.ToByteArray());
+                    //use this to receive acknoledgement when opponent received request
+                    //latency between starting timer on confirmation approximates adjustment for travel time for receiving the accept/decline packet
+                    //client.Receive(requestReceived, 0, 1, 0);
+                    timeout = new Timer(setTimeout, null, 0, 15000);
+                }
+                else if (update[0] == 5)
+                {
+                    byte[] temp = new byte[17];
+                    Array.Copy(BattleNetManager.BattleID.ToByteArray(), temp, 16);
+                    temp[16] = inAccepted ? (byte)1 : (byte)0;
+                    client.Send(temp, 17, 0);
+                }
             }
-            else if(update[0] == 5)
-            {
-                byte[] temp = new byte[17];
-                Array.Copy(BattleNetManager.BattleID.ToByteArray(), temp, 16);
-                temp[16] = inAccepted ? (byte)1 : (byte)0;
-                client.Send(temp, 17, 0);
-            }
+            update[0] = 255;
+
         }
-        update[0] = 255;
 
         if(!processed.WaitOne(0))
         {
@@ -296,6 +307,12 @@ public class GenComManager : MonoBehaviour {
         byte[] temp = new byte[16];
         Array.Copy(update, temp, 16);
         return new Guid(temp);
+    }
+
+    private void setTimout(object state)
+    {
+        BattleNetManager.BattleID = new Guid();
+        timeout = null;
     }
 
     /*

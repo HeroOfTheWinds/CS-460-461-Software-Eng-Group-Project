@@ -88,8 +88,6 @@ namespace HappyHibachiServer
 
                 players.Add(state.ClientID, state);
 
-                //insert client id into db, use this as the key for identifying clients
-
                 //start receiving client updates
                 handler.BeginReceive(state.Update, 0, UPDATE_SIZE, 0, new AsyncCallback(readUpdate), state);
             }
@@ -176,9 +174,10 @@ namespace HappyHibachiServer
             ComState opponent;
             if (players.TryGetValue(getUpdateID(state.Update), out opponent))
             {
-                //RACE CONDITIONS, RACE CONDITIONS, HAVE TO PUT LOCK IN STATE AND LOCK WRITES
-
-                opponent.ClientSocket.Send(response, 17, 0);
+                lock(opponent.WRITE_LOCK)
+                {
+                    opponent.ClientSocket.Send(response, 17, 0);
+                }
             }
             else
             {
@@ -202,9 +201,11 @@ namespace HappyHibachiServer
             //place item ids (item ids are bytes) in itemIDs
             //store number of items in size
             //maybe a random number of items? not sure how you want to deal with that
-
-            state.ClientSocket.Send(BitConverter.GetBytes(size));
-            state.ClientSocket.Send(itemIDs.ToArray());
+            lock (state.WRITE_LOCK)
+            {
+                state.ClientSocket.Send(BitConverter.GetBytes(size));
+                state.ClientSocket.Send(itemIDs.ToArray());
+            }
         }
 
         private static bool serverUpdateAvailable()
@@ -233,12 +234,14 @@ namespace HappyHibachiServer
             sizeName = (short)ASCIIEncoding.ASCII.GetByteCount(name);
             sizeDescription = (short)ASCIIEncoding.ASCII.GetByteCount(description);
             //imagesize here
-
-            state.ClientSocket.Send(BitConverter.GetBytes(sizeName));
-            state.ClientSocket.Send(ASCIIEncoding.ASCII.GetBytes(name));
-            state.ClientSocket.Send(BitConverter.GetBytes(sizeDescription));
-            state.ClientSocket.Send(ASCIIEncoding.ASCII.GetBytes(description));
-            state.ClientSocket.Send(BitConverter.GetBytes(sizeImage));
+            lock (state.WRITE_LOCK)
+            {
+                state.ClientSocket.Send(BitConverter.GetBytes(sizeName));
+                state.ClientSocket.Send(ASCIIEncoding.ASCII.GetBytes(name));
+                state.ClientSocket.Send(BitConverter.GetBytes(sizeDescription));
+                state.ClientSocket.Send(ASCIIEncoding.ASCII.GetBytes(description));
+                state.ClientSocket.Send(BitConverter.GetBytes(sizeImage));
+            }
             //send image
 
         }
@@ -260,10 +263,13 @@ namespace HappyHibachiServer
             sizeName = (short)ASCIIEncoding.ASCII.GetByteCount(name);
             sizeDescription = (short)ASCIIEncoding.ASCII.GetByteCount(description);
 
-            state.ClientSocket.Send(BitConverter.GetBytes(sizeName));
-            state.ClientSocket.Send(ASCIIEncoding.ASCII.GetBytes(name));
-            state.ClientSocket.Send(BitConverter.GetBytes(sizeDescription));
-            state.ClientSocket.Send(ASCIIEncoding.ASCII.GetBytes(description));
+            lock (state.WRITE_LOCK)
+            {
+                state.ClientSocket.Send(BitConverter.GetBytes(sizeName));
+                state.ClientSocket.Send(ASCIIEncoding.ASCII.GetBytes(name));
+                state.ClientSocket.Send(BitConverter.GetBytes(sizeDescription));
+                state.ClientSocket.Send(ASCIIEncoding.ASCII.GetBytes(description));
+            }
         }
 
         private static void processBattleReq(ComState state)
@@ -275,9 +281,10 @@ namespace HappyHibachiServer
             ComState opponent;
             if(players.TryGetValue(getUpdateID(state.Update), out opponent))
             {
-                //RACE CONDITIONS, RACE CONDITIONS, HAVE TO PUT LOCK IN STATE AND LOCK WRITES
-
-                opponent.ClientSocket.Send(outUpdate, 17, 0);
+                lock(opponent.WRITE_LOCK)
+                {
+                    opponent.ClientSocket.Send(outUpdate, 17, 0);
+                }
             }
             else
             {
@@ -316,6 +323,7 @@ namespace HappyHibachiServer
         private Guid clientID;
         private byte[] update;
         private bool busy;
+        public readonly object WRITE_LOCK = new object();
 
 
         //getters and setters
