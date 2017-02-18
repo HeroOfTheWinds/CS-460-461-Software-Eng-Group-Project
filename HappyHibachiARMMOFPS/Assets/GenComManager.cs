@@ -232,7 +232,7 @@ public class GenComManager : MonoBehaviour {
                     //use this to receive acknoledgement when opponent received request
                     //latency between starting timer on confirmation approximates adjustment for travel time for receiving the accept/decline packet
                     //client.Receive(requestReceived, 0, 1, 0);
-                    timeout = new Timer(setTimeout, null, 0, 15000);
+                    //timeout = new Timer(setTimeout, null, 0, 15000);
                 }
                 else if (update[0] == 5)
                 {

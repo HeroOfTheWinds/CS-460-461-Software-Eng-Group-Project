@@ -5,11 +5,15 @@ public class ARControl : MonoBehaviour {
 
     //Camera for game view
     public Camera cam;
+    public int AndroidVer;
 
     // Use this for initialization
     void Start () {
         //Set to main camera
         cam = Camera.main;
+
+        // Store the android version we're running on for later use
+        AndroidVer = GetSDKLevel();
     }
 
     float yRotation = 0f;
@@ -26,22 +30,42 @@ public class ARControl : MonoBehaviour {
 
         if (Input.gyro.enabled)
         {
-            yRotation += -Input.gyro.rotationRateUnbiased.y * 4f;
-            xRotation += -Input.gyro.rotationRateUnbiased.x * 4f;
-
-            cam.transform.eulerAngles = new Vector3(xRotation, yRotation, 0f);
-
-            // Rotate Camera based on gyroscope (more free)
-            //cam.transform.rotation = deviceRotation;
-
             // Rotate the player's Y axis to match the camera's
             Quaternion newRot = transform.rotation;
             Vector3 euler = newRot.eulerAngles;
-            //euler.y = deviceRotation.eulerAngles.y;
-            euler.y = cam.transform.eulerAngles.y;
+
+            // Android SDK level is represented as an int
+            // Android 6.0 Marshmallow is represented as 23
+            // Since Unity can't use gyroscope.attitude in Android 6.0, check if we need
+            // to use a clunky workaround on this device
+            if (AndroidVer >= 23)
+            {
+                // We need to workaround this
+                yRotation += -Input.gyro.rotationRateUnbiased.y * 4f;
+                xRotation += -Input.gyro.rotationRateUnbiased.x * 4f;
+
+                cam.transform.eulerAngles = new Vector3(xRotation, yRotation, 0f);
+                euler.y = cam.transform.eulerAngles.y;
+            }
+            else
+            {
+                // Use the nice solution
+                // Rotate Camera based on gyroscope (more free)
+                cam.transform.rotation = deviceRotation;
+                euler.y = deviceRotation.eulerAngles.y;
+            }
+            
             newRot.eulerAngles = euler;
             transform.rotation = newRot;
             // This wouldn't be so wasteful if Unity let you actually edit returned quaternions directly
         }
+    }
+
+    // Function to return which Android version the app is running on
+    private static int GetSDKLevel() {
+        System.IntPtr clazz = AndroidJNI.FindClass("android/os/Build$VERSION");
+        System.IntPtr fieldID = AndroidJNI.GetStaticFieldID(clazz, "SDK_INT", "I");
+        int sdkLevel = AndroidJNI.GetStaticIntField(clazz, fieldID);
+        return sdkLevel;
     }
 }
