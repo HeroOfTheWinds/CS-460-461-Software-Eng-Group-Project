@@ -22,6 +22,10 @@ public class HanoiPuzzle : MonoBehaviour {
     // Speed for dragging disks via touch
     public float dragSpeed = 0.05f;
 
+    // Materials used to mark if a disk is selected or not
+    public Material normal;
+    public Material selected;
+
     // Make three stacks to hold what each peg as on it (logically)
     private Stack<int> peg1 = new Stack<int>();
     private Stack<int> peg2 = new Stack<int>();
@@ -213,6 +217,8 @@ public class HanoiPuzzle : MonoBehaviour {
             tempPos.x = 0.5f;
             tempPos.y = 2.35f;
             lastDisk.transform.position = tempPos;
+            // Return material to normal
+            lastDisk.GetComponent<Renderer>().material = normal;
 
             // Did you fail the puzzle?
             int upper, lower;
@@ -241,6 +247,7 @@ public class HanoiPuzzle : MonoBehaviour {
             // check if empty peg
             if (lastIndex == 100)
             {
+                peg1.Push(lastIndex);
                 return;
             }
 
@@ -260,11 +267,14 @@ public class HanoiPuzzle : MonoBehaviour {
                     lastDisk = DiskL;
                     break;
                 case 5:
-                    lastDisk = DiskL;
+                    lastDisk = DiskXL;
                     break;
                 default:
                     break;
             }
+
+            // Show this disk is selected
+            lastDisk.GetComponent<Renderer>().material = selected;
 
             // say we're moving something
             moving = true;
@@ -282,6 +292,8 @@ public class HanoiPuzzle : MonoBehaviour {
             tempPos.x = 0f;
             tempPos.y = 2.35f;
             lastDisk.transform.position = tempPos;
+            // Return material to normal
+            lastDisk.GetComponent<Renderer>().material = normal;
 
             // Did you fail the puzzle?
             int upper, lower;
@@ -310,6 +322,7 @@ public class HanoiPuzzle : MonoBehaviour {
             // check if empty peg
             if (lastIndex == 100)
             {
+                peg2.Push(lastIndex);
                 return;
             }
 
@@ -329,11 +342,14 @@ public class HanoiPuzzle : MonoBehaviour {
                     lastDisk = DiskL;
                     break;
                 case 5:
-                    lastDisk = DiskL;
+                    lastDisk = DiskXL;
                     break;
                 default:
                     break;
             }
+
+            // Show this disk is selected
+            lastDisk.GetComponent<Renderer>().material = selected;
 
             // say we're moving something
             moving = true;
@@ -351,6 +367,8 @@ public class HanoiPuzzle : MonoBehaviour {
             tempPos.x = -0.5f;
             tempPos.y = 2.35f;
             lastDisk.transform.position = tempPos;
+            // Return material to normal
+            lastDisk.GetComponent<Renderer>().material = normal;
 
             // Did you fail the puzzle?
             int upper, lower;
@@ -386,6 +404,7 @@ public class HanoiPuzzle : MonoBehaviour {
             // check if empty peg
             if (lastIndex == 100)
             {
+                peg3.Push(lastIndex);
                 return;
             }
 
@@ -405,11 +424,14 @@ public class HanoiPuzzle : MonoBehaviour {
                     lastDisk = DiskL;
                     break;
                 case 5:
-                    lastDisk = DiskL;
+                    lastDisk = DiskXL;
                     break;
                 default:
                     break;
             }
+
+            // Show this disk is selected
+            lastDisk.GetComponent<Renderer>().material = selected;
 
             // say we're moving something
             moving = true;
