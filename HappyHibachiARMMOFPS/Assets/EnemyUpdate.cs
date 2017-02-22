@@ -15,6 +15,9 @@ public class EnemyUpdate
     //did the enemy win? (unused)
     private bool win = false;
 
+    // Attack stat of the enemy player
+    private int attack;
+
     //was a shot fired?
     private bool sf = false;
     //was hp regenerated?
@@ -38,6 +41,11 @@ public class EnemyUpdate
     private float mpx = 0;
     private float mpz = 0;
 
+    void Start()
+    {
+        // Retrieve Attack stat
+        attack = GameObject.FindGameObjectWithTag("Enemy").GetComponent<EnemyStatus>().getAttack();
+    }
 
     public void runUpdate(PlayerControl controller, GameObject enemy)
     {
@@ -104,7 +112,7 @@ public class EnemyUpdate
             //was the player hit?
             if(phit)
             {
-                controller.hit();
+                controller.hit(attack);
             }
 
         }

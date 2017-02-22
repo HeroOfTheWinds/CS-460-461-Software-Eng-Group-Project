@@ -8,7 +8,7 @@ public class EnemyStatus : MonoBehaviour
     // Create private variables for player stats
     private int level = 1;
     private int maxHP = 100;
-    private int attack = 15;
+    private int attack = 18;
     private int defense = 10;
     private float atkSpeed = 0.5f;
 
