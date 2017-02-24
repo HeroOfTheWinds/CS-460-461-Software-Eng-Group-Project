@@ -224,12 +224,15 @@ namespace HappyHibachiServer
             string name = "";
             string description = "";
             string image = "";
-            //create variable for the image, for now just sending other 2 things
 
             //process database stuff and provide info on landmark
             //store landmark name description and image in respective vars
-            //var dbCon = new DatabaseConnect();
-            //dbCon.provideLandmarkInfoToDB(state.ClientID, name, description, image);
+            var dbCon = new DatabaseConnect();
+            dbCon.provideLandmarkInfoFromDB(state.ClientID, ref name, ref description, ref image);
+            Console.WriteLine("Landmark GUID: " + state.ClientID.ToString());
+            Console.WriteLine("Landmark Name: " + name);
+            Console.WriteLine("Landmark description: " + description);
+            Console.WriteLine("Landmark image: " + image);
 
             sizeName = (short)ASCIIEncoding.ASCII.GetByteCount(name);
             sizeDescription = (short)ASCIIEncoding.ASCII.GetByteCount(description);
@@ -257,8 +260,12 @@ namespace HappyHibachiServer
             //process database stuff and provide info on colloseum
             //store colloseum name and description in respective vars
             //add other details later
-            //var dbCon = new DatabaseConnect();
-            //dbCon.provideColosseumInfoToDB(state.ClientID, name, description, image);
+            var dbCon = new DatabaseConnect();
+            dbCon.provideColosseumInfoFromDB(state.ClientID, ref name, ref description, ref image);
+            Console.WriteLine("Colloseum GUID: " + state.ClientID.ToString());
+            Console.WriteLine("Colloseum Name: " + name);
+            Console.WriteLine("Colloseum description: " + description);
+            Console.WriteLine("Colloseum image: " + image);
 
             sizeName = (short)ASCIIEncoding.ASCII.GetByteCount(name);
             sizeDescription = (short)ASCIIEncoding.ASCII.GetByteCount(description);

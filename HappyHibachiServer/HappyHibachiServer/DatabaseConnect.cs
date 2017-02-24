@@ -19,7 +19,7 @@ namespace HappyHibachiServer
             Initialize();
         }
 
-        //Initialize values
+        //Initialize database creds
         private void Initialize()
         {
             server = "localhost";
@@ -46,22 +46,20 @@ namespace HappyHibachiServer
             {
                 //When handling errors, you can your application's response based 
                 //on the error number.
-                //The two most common error numbers when connecting are as follows:
-                //0: Cannot connect to server.
-                //1045: Invalid user name and/or password.
                 switch (ex.Number)
                 {
                     default:
                         Console.WriteLine("Error: " + ex.Number);
                         break;
                     case 0:
-                        Console.WriteLine("Cannot connect to server.  Contact administrator");
+                        //0: Cannot connect to server.
+                        Console.WriteLine("Cannot connect to server.  Contact administrator"); 
                         break;
 
                     case 1045:
+                        //1045: Invalid user name and/or password.
                         Console.WriteLine("Invalid username/password, please try again");
                         break;
-
                 }
                 return false;
             }
@@ -96,6 +94,7 @@ namespace HappyHibachiServer
                 MySqlDataReader dataReader = cmd.ExecuteReader();
                 //int i = 0;
                 //Read the data and store them in the list
+                Console.WriteLine("Finding nearby objects:\n");
                 while (dataReader.Read())
                 {
                     //store GUID into nearbyID
@@ -105,13 +104,13 @@ namespace HappyHibachiServer
 
                     //use latitude to include the type of object it is. Determine if object is a (player, colloseum, landmark) and add (0, 1, 2) * 181 to latitude respectively
                     //latitudes range is -90 - 90, so by doing this the type of object can be determined without sending additional data (value < 91: player, 90 < value < 272: colloseum, 271 < value: colloseum)
-                    nearbyC.Add(float.Parse(dataReader["LAT"].ToString())  + float.Parse(dataReader["TYPE"].ToString()) * 181);
+                    nearbyC.Add(float.Parse(dataReader["LAT"].ToString()) + float.Parse(dataReader["TYPE"].ToString()) * 181);
                     nearbyC.Add(float.Parse(dataReader["LON"].ToString()));
 
                     //i++;
 
                 }
-
+                Console.WriteLine("\n");
                 //close Data Reader
                 dataReader.Close();
 
@@ -129,7 +128,10 @@ namespace HappyHibachiServer
         {
             float lat = System.BitConverter.ToSingle(update, 0);
             float lon = System.BitConverter.ToSingle(update, 4);
-
+            Console.WriteLine("Updating player coordinates\n");
+            Console.WriteLine("player guid: " + clientID.ToString() + "\n");
+            Console.WriteLine("lat: " + lat);
+            Console.WriteLine("lon: " + lon);
             string query = "UPDATE PLAYER SET LAT= '" + lat.ToString() + "', LON = '" + lon.ToString() + "' WHERE GUID = '" + clientID.ToString() + "';";
 
             //Open connection
@@ -143,6 +145,7 @@ namespace HappyHibachiServer
 
                 //close connection
                 this.CloseConnection();
+                Console.WriteLine("Player coordinates updated sucessfully");
             }
         }
         //insert client id into db, use this as the key for identifying clients
@@ -152,7 +155,7 @@ namespace HappyHibachiServer
         }
 
         //select landmark's name from landmark based on guid
-        public void provideLandmarkInfoToDB(Guid landmark_id, string name, string description, string image)
+        public void provideLandmarkInfoFromDB(Guid landmark_id, ref string name, ref string description, ref string image)
         {
             string query = "SELECT LANDMARK_NAME FROM LANDMARK WHERE GUID ='" + landmark_id.ToString() + "';";
             //Open connection
@@ -179,7 +182,7 @@ namespace HappyHibachiServer
         }
 
         //select colosseum's name from colosseum based on guid
-        public void provideColosseumInfoToDB(Guid colosseum_id, string name, string description, string image)
+        public void provideColosseumInfoFromDB(Guid colosseum_id, ref string name, ref string description, ref string image)
         {
             string query = "SELECT COLOSSEUM_NAME FROM COLOSSEUM WHERE GUID ='" + colosseum_id.ToString() + "';";
             //Open connection
@@ -204,6 +207,7 @@ namespace HappyHibachiServer
                 this.CloseConnection();
             }
         }
+
 
     }
 }

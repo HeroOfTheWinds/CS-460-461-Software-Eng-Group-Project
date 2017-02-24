@@ -41,6 +41,10 @@ public class PlayerControl : MonoBehaviour {
     // Variable to store the animator component used to control animation transitions
     public Animator animator;
 
+    // Some variables to store key stats about players after retrieval
+    private int attack; // Player's attack stat
+    private int defense; // Player's defense stat
+    private int e_defense; // Foe's defense stat
 
     //flags, least sig to most sig bit
     //is the battle over?
@@ -76,11 +80,16 @@ public class PlayerControl : MonoBehaviour {
     // Use this for initialization
     void Start()
     {
-        LastShotTime = Cooldown; // Make it so player can fire as soon as they're ready after scene loads
         //Set to main camera
         cam = Camera.main;
         //Set offset to head of player
         offset = new Vector3(0f, 2.8f, 0f);
+
+        // Retrieve some stats
+        attack = gameObject.GetComponent<PlayerStatus>().getAttack();
+        defense = gameObject.GetComponent<PlayerStatus>().getDefense();
+        Cooldown = gameObject.GetComponent<PlayerStatus>().getAtkSpeed();
+        LastShotTime = Cooldown; // Make it so player can fire as soon as they're ready after scene loads
     }
 
     float yRotation = 0f;
@@ -185,7 +194,11 @@ public class PlayerControl : MonoBehaviour {
                 {
                     case "Enemy":
                         // Get that player's stats and take off some HP
-                        hit.collider.gameObject.GetComponent<EnemyStatus>().TakeHP(8f);
+                        e_defense = hit.collider.gameObject.GetComponent<EnemyStatus>().getDefense();
+                        float damage = attack - e_defense;
+                        if (damage < 0)
+                            damage = 0f;
+                        hit.collider.gameObject.GetComponent<EnemyStatus>().TakeHP(damage);
                         ehit = true;
                         Debug.Log("Hit enemy");
                         // Spawn some sparks to let you know you hit them
@@ -266,9 +279,12 @@ public class PlayerControl : MonoBehaviour {
     }
 
     //temp function for hitting player
-    public void hit()
+    public void hit(float e_attack)
     {
-        gameObject.GetComponent<PlayerStatus>().TakeHP(8f);
+        float damage = e_attack - defense;
+        if (damage < 0)
+            damage = 0f;
+        gameObject.GetComponent<PlayerStatus>().TakeHP(damage);
         animator.SetTrigger("Damage");
     }
 

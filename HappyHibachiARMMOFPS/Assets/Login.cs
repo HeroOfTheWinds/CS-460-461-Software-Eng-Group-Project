@@ -27,7 +27,7 @@ public class Login : MonoBehaviour
         var form = new WWWForm();
         form.AddField("usernameFromUnity", username);
         form.AddField("passwordFromUnity", password);
-        //send form to login.pp
+        //send form to login.php
         WWW send = new WWW(url, form);
         StartCoroutine(WaitForRequest(send));
     }

@@ -2,8 +2,10 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
-public class Player{
+public class Player : MonoBehaviour
+{
     //player attributes
     public static string playername;
     public static Guid playerID = new Guid();
@@ -116,4 +118,6 @@ public class Player{
     {
         shotSpeedStat += value;
     }
+
+    
 }
