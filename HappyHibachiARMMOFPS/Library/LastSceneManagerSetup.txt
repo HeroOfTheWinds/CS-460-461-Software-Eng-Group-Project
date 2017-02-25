@@ -1,8 +1,4 @@
 sceneSetups:
-<<<<<<< HEAD
-- path: Assets/Overworld.unity
-=======
 - path: Assets/Battle.unity
->>>>>>> fbf581e0be8a5c5ba48dc21c6b3a012a05911669
   isLoaded: 1
   isActive: 1
