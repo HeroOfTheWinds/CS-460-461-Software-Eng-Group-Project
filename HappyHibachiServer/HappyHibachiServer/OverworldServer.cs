@@ -109,6 +109,7 @@ namespace HappyHibachiServer
                 ar.AsyncWaitHandle.WaitOne();
                 handler.EndReceive(ar);
 
+                Console.WriteLine(BitConverter.ToSingle(state.Update, 0));
 
                 //process update (GPS coords stored in state.Update) into DB
                 var dbCon = new DatabaseConnect();

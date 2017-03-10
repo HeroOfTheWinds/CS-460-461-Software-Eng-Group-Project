@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 public class OverworldNetManager : MonoBehaviour {
 
@@ -38,6 +39,8 @@ public class OverworldNetManager : MonoBehaviour {
     //connected socket
     private Socket client;
 
+    //for response timing
+    private Stopwatch responseTime = new Stopwatch();
 
     // Use this for initialization
     void Start()
@@ -85,7 +88,7 @@ public class OverworldNetManager : MonoBehaviour {
             waitUpdate = new ManualResetEvent(false);
 
 
-            Debug.Log("Connect Successful");
+            UnityEngine.Debug.Log("Connect Successful");
 
 
             t = new Timer(setUpdate, null, 0, 12000);
@@ -96,8 +99,8 @@ public class OverworldNetManager : MonoBehaviour {
         //catch exception if fail to connect
         catch (Exception e)
         {
-            Debug.Log(e.ToString());
-            Debug.Log("Connection Failure");
+            UnityEngine.Debug.Log(e.ToString());
+            UnityEngine.Debug.Log("Connection Failure");
         }
     }
 
@@ -106,6 +109,8 @@ public class OverworldNetManager : MonoBehaviour {
     {
         //complete async data read
         client.EndReceive(ar);
+
+        UnityEngine.Debug.Log(responseTime.ElapsedMilliseconds);
 
         int nearby = BitConverter.ToInt32(size, 0);
         int numObjects = nearby / 24;
@@ -147,7 +152,10 @@ public class OverworldNetManager : MonoBehaviour {
             o.Id = new Guid(idBytes);
 
             nearbyObjects.Add(o);
+            UnityEngine.Debug.Log(o.Longtitude);
         }
+
+
 
         //upNearbyObj = true;
         waitUpdate.Reset();
@@ -164,7 +172,7 @@ public class OverworldNetManager : MonoBehaviour {
     {
         if(update)
         {
-            Debug.Log("Test");
+            UnityEngine.Debug.Log("Test");
             loc = locService.lastData;
             latitude = loc.latitude;
             longtitude = loc.longitude;
@@ -173,6 +181,16 @@ public class OverworldNetManager : MonoBehaviour {
             BitConverter.GetBytes(longtitude).CopyTo(coords, 4);
 
             client.Send(coords);
+
+            if(responseTime.IsRunning)
+            {
+                responseTime.Reset();
+            }
+            else
+            {
+                responseTime.Start();
+            }
+            
 
             update = false;
         }

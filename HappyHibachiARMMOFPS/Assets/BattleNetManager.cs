@@ -4,6 +4,7 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using System.Diagnostics;
 
 public class BattleNetManager : MonoBehaviour
 {
@@ -59,6 +60,8 @@ public class BattleNetManager : MonoBehaviour
     //signal that an update should be sent
     private bool sendUpdate;
 
+    private Stopwatch responseTime = new Stopwatch();
+
     public static Guid BattleID
     {
         get
@@ -105,7 +108,7 @@ public class BattleNetManager : MonoBehaviour
             spawn = new byte[1];
             update = new byte[UPDATE_SIZE];
 
-            Debug.Log("Connect Successful");
+            UnityEngine.Debug.Log("Connect Successful");
 
             player = GameObject.FindGameObjectWithTag("Player");
             opponent = GameObject.FindGameObjectWithTag("Enemy");
@@ -149,8 +152,8 @@ public class BattleNetManager : MonoBehaviour
         //catch exception if fail to connect
         catch (Exception e)
         {
-            Debug.Log(e.ToString());
-            Debug.Log("Connection Failure");
+            UnityEngine.Debug.Log(e.ToString());
+            UnityEngine.Debug.Log("Connection Failure");
         }
     }
 
@@ -160,7 +163,7 @@ public class BattleNetManager : MonoBehaviour
         //complete async data read
         client.EndReceive(ar);
 
-        //Debug.Log(controller.BattleEnd);
+        UnityEngine.Debug.Log(responseTime.ElapsedMilliseconds);
 
         //send updates until both players verify the battle is over, then disconnect
         if(!(eUpdate.BattleEnd && controller.BattleEnd))
@@ -205,7 +208,7 @@ public class BattleNetManager : MonoBehaviour
             // Release the socket.
             client.Shutdown(SocketShutdown.Both);
             client.Close();
-            Debug.Log("Disconnected");
+            UnityEngine.Debug.Log("Disconnected");
             
         }
 
@@ -262,7 +265,7 @@ public class BattleNetManager : MonoBehaviour
 
     private void testCallback(IAsyncResult ar)
     {
-        Debug.Log("Callback success, damn unity");
+        UnityEngine.Debug.Log("Callback success, damn unity");
     }
 
     private void Update()
@@ -295,6 +298,15 @@ public class BattleNetManager : MonoBehaviour
                     //send current information on player position
                     client.Send(getUpdate());
                     //Debug.Log("Update sent");
+
+                    if (responseTime.IsRunning)
+                    {
+                        responseTime.Reset();
+                    }
+                    else
+                    {
+                        responseTime.Start();
+                    }
                 }
                 //catch exception if opponent disconnects
                 catch (Exception) { }

@@ -6,6 +6,7 @@ using System.Threading;
 using System.Text;
 using System.Collections.Generic;
 using Assets;
+using UnityEngine.SceneManagement;
 
 public class GenComManager : MonoBehaviour {
 
@@ -213,10 +214,9 @@ public class GenComManager : MonoBehaviour {
 
     // Update is called once per frame
     void Update() {
-
         //need to add mechanism to make sure multiple requests arent sent before finalized with server, primarily for the battle portion
 
-        lock(UPDATE_LOCK)
+        lock (UPDATE_LOCK)
         {
             //when object touched, pack 
             if (update[0] < 255)
@@ -280,7 +280,7 @@ public class GenComManager : MonoBehaviour {
                 case 5:
                     if(outAccepted == 1)
                     {
-                        //change to battle scene
+                        SceneManager.LoadScene("Battle");
                     }
                     else if(outAccepted == 0)
                     {
