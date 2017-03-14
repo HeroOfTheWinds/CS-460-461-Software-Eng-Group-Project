@@ -1,17 +1,23 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System;
+#if NETFX_CORE
+using Windows.Networking.Sockets;
+using Windows.Networking;
+#else
 using System.Net;
 using System.Net.Sockets;
+#endif
 using System.Threading;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-public class OverworldNetManager : MonoBehaviour {
+public class OverworldNetManager : MonoBehaviour
+{
 
 
     //ip address to connect to
-    private static readonly IPAddress IP = IPAddress.Parse("132.160.49.90");
+    private static readonly String IP = "132.160.49.90";
     //port to connect to
     public const int OVERWORLD_PORT = 6004;
     //size of update packets in bytes
@@ -37,7 +43,7 @@ public class OverworldNetManager : MonoBehaviour {
 
 
     //connected socket
-    private Socket client;
+    private TcpClient client;
 
     //for response timing
     private Stopwatch responseTime = new Stopwatch();
@@ -48,7 +54,7 @@ public class OverworldNetManager : MonoBehaviour {
         try
         {
             locService = Input.location;
-            if(!locService.isEnabledByUser)
+            if (!locService.isEnabledByUser)
             {
                 //display some sort of error message telling user location services must be enabled
             }
@@ -58,13 +64,17 @@ public class OverworldNetManager : MonoBehaviour {
             int timeout = 30;
 
             //potentially display some sort of loading screen while waiting for location services, etc.
-            while(Input.location.status == LocationServiceStatus.Initializing && timeout > 0)
+            while (Input.location.status == LocationServiceStatus.Initializing && timeout > 0)
             {
+#if NETFX_CORE
+                new ManualResetEvent(false).WaitOne(1000);
+#else
                 Thread.Sleep(1000);
+#endif
                 timeout--;
             }
 
-            if(timeout < 1)
+            if (timeout < 1)
             {
                 //display some sort of error message, failed to start location services
             }
@@ -73,10 +83,10 @@ public class OverworldNetManager : MonoBehaviour {
             size = new byte[4];
 
             //remote endpoint of the server
-            IPEndPoint remoteEP = new IPEndPoint(IP, OVERWORLD_PORT);
+            _IPEndPoint remoteEP = new _IPEndPoint(IP, OVERWORLD_PORT);
 
             //create TCP socket
-            client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            client = new TcpClient();
 
             //connect to remote endpoint
             client.Connect(remoteEP);
@@ -130,12 +140,12 @@ public class OverworldNetManager : MonoBehaviour {
             NearbyObject o = new NearbyObject();
 
             lat = BitConverter.ToSingle(buf, i * 8);
-            if(lat < 91)
+            if (lat < 91)
             {
                 o.Type = 0;
                 o.Latitude = lat;
             }
-            else if(lat < 272)
+            else if (lat < 272)
             {
                 o.Type = 1;
                 o.Latitude = lat - 181;
@@ -170,7 +180,7 @@ public class OverworldNetManager : MonoBehaviour {
 
     private void Update()
     {
-        if(update)
+        if (update)
         {
             UnityEngine.Debug.Log("Test");
             loc = locService.lastData;
@@ -182,7 +192,7 @@ public class OverworldNetManager : MonoBehaviour {
 
             client.Send(coords);
 
-            if(responseTime.IsRunning)
+            if (responseTime.IsRunning)
             {
                 responseTime.Reset();
             }
@@ -190,12 +200,12 @@ public class OverworldNetManager : MonoBehaviour {
             {
                 responseTime.Start();
             }
-            
+
 
             update = false;
         }
 
-        if(!waitUpdate.WaitOne(0))
+        if (!waitUpdate.WaitOne(0))
         {
             //place objects on screen or update position if guid already present, store respective guid with object for later use
             //objects stored in list nearbyObjects which is a list of NearbyObjects that contain lat, long, object type, and id
@@ -204,7 +214,7 @@ public class OverworldNetManager : MonoBehaviour {
             waitUpdate.Set();
         }
 
-        
+
     }
 
     private void setUpdate(object state)
