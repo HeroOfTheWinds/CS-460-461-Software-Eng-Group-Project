@@ -1,10 +1,17 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System;
+#if NETFX_CORE
+using Windows.Networking.Sockets;
+using Windows.Networking;
+#else
 using System.Net;
 using System.Net.Sockets;
+#endif
 using System.Threading;
 using System.Diagnostics;
+
+
 
 public class BattleNetManager : MonoBehaviour
 {
@@ -13,7 +20,8 @@ public class BattleNetManager : MonoBehaviour
     private static Guid opponentID;
 
     //ip address to connect to
-    private static readonly IPAddress IP = IPAddress.Parse("132.160.49.90");
+    private static readonly String IP = "132.160.49.90";
+
     //port to connect to
     public const int BATTLE_PORT = 7004;
     //size of update packets in bytes
@@ -26,7 +34,7 @@ public class BattleNetManager : MonoBehaviour
         new Spawn(new Vector3(0, 0, 12), Quaternion.Euler(0, 180, 0))
     };
 
-    
+
     private static readonly object UPDATE_LOCK = new object();
     private static readonly object I_FLAG_LOCK = new object();
     //public static readonly object O_FLAG_LOCK = new object();
@@ -43,8 +51,9 @@ public class BattleNetManager : MonoBehaviour
     private ManualResetEvent readUpdate;
     private ManualResetEvent updateFin;
 
-    //connected socket
-    private Socket client;
+    //connected socket 
+    private TcpClient client;
+
     //local player
     private GameObject player;
     //opponent
@@ -95,10 +104,10 @@ public class BattleNetManager : MonoBehaviour
         try
         {
             //remote endpoint of the server
-            IPEndPoint remoteEP = new IPEndPoint(IP, BATTLE_PORT);
+            _IPEndPoint remoteEP = new _IPEndPoint(IP, BATTLE_PORT);
 
             //create TCP socket
-            client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            client = new TcpClient();
 
             //connect to remote endpoint
             client.Connect(remoteEP);
@@ -136,13 +145,13 @@ public class BattleNetManager : MonoBehaviour
             opponent.transform.position = spawns[(spawn[0] + 1) % 2].SpawnPos;
             opponent.transform.rotation = spawns[(spawn[0] + 1) % 2].SpawnRot;
 
-            
+
 
             //Debug.Log("Send GUID Successful");
 
             //initial update
             client.Send(getUpdate());
-            
+
             //Debug.Log("Send Update Successful");
 
             //start receiving updates from server
@@ -166,7 +175,7 @@ public class BattleNetManager : MonoBehaviour
         UnityEngine.Debug.Log(responseTime.ElapsedMilliseconds);
 
         //send updates until both players verify the battle is over, then disconnect
-        if(!(eUpdate.BattleEnd && controller.BattleEnd))
+        if (!(eUpdate.BattleEnd && controller.BattleEnd))
         {
             //Debug.Log("begin update");
             //Debug.Log(isClient[0]);
@@ -179,12 +188,12 @@ public class BattleNetManager : MonoBehaviour
 
                 //need to delegate to main thread in order to update Unity objects
                 //indicate an new update should be sent
-                lock(UPDATE_LOCK)
+                lock (UPDATE_LOCK)
                 {
                     sendUpdate = true;
                 }
-                
-                
+
+
             }
             else
             {
@@ -206,14 +215,17 @@ public class BattleNetManager : MonoBehaviour
         else
         {
             // Release the socket.
+#if NETFX_CORE
+#else
             client.Shutdown(SocketShutdown.Both);
+#endif
             client.Close();
             UnityEngine.Debug.Log("Disconnected");
-            
+
         }
 
 
-        
+
     }
 
 
@@ -257,7 +269,7 @@ public class BattleNetManager : MonoBehaviour
                 receiveUpdate = true;
             }
         }
-        
+
         //Debug.Log("end unpack");
     }
 
@@ -275,7 +287,7 @@ public class BattleNetManager : MonoBehaviour
         {
             //Debug.Log(client.IsBound);
             //ensure update isn't overwritten
-            lock(I_FLAG_LOCK)
+            lock (I_FLAG_LOCK)
             {
                 //run update if available
                 if (receiveUpdate)
@@ -290,7 +302,7 @@ public class BattleNetManager : MonoBehaviour
 
                 }
             }
-            
+
             if (sendUpdate)
             {
                 try
@@ -314,12 +326,12 @@ public class BattleNetManager : MonoBehaviour
                 //reset flags
                 reset();
             }
-            
+
             //reset flags
             receiveUpdate = false;
             sendUpdate = false;
         }
-        
+
     }
 
 
@@ -333,7 +345,7 @@ public class BattleNetManager : MonoBehaviour
         controller.Ehit = false;
     }
 
-    
+
     //get update for this player
     //what happened since last update?
     public byte[] getUpdate()
