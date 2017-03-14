@@ -249,6 +249,7 @@
     <Compile Include="Assets\Infinity Code\Online maps\Scripts\XML\OnlineMapsXMLNamespaceManager.cs" />
     <Compile Include="Assets\ItemList.cs" />
     <Compile Include="Assets\Landmine.cs" />
+    <Compile Include="Assets\LeaderboardScroll.cs" />
     <Compile Include="Assets\Login.cs" />
     <Compile Include="Assets\MoveShot.cs" />
     <Compile Include="Assets\NetworkManagerCustom.cs" />
@@ -267,7 +268,6 @@
     <Compile Include="Assets\Scripts\LandMarkerScripts\take_picture.cs" />
     <Compile Include="Assets\Scripts\LandMarkerScripts\testbutton.cs" />
     <Compile Include="Assets\Scripts\Leaderboard\LeaderboardFilter.cs" />
-    <Compile Include="Assets\Scripts\Leaderboard\LeaderboardScroll.cs" />
     <Compile Include="Assets\ShowPlayerInfo.cs" />
     <Compile Include="Assets\TCPClient.cs" />
     <Compile Include="Assets\UI\button.cs" />
