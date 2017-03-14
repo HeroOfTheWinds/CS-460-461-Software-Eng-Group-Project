@@ -1,17 +1,26 @@
 ﻿using UnityEngine;
 using System;
+
+#if NETFX_CORE
+using System.Threading.Tasks;
+using Windows.Networking;
+using Windows.Networking.Sockets;
+using Windows.Storage.Streams;
+#else
 using System.Net;
 using System.Net.Sockets;
+#endif
 using System.Threading;
 using System.Text;
 using System.Collections.Generic;
 using Assets;
 using UnityEngine.SceneManagement;
 
-public class GenComManager : MonoBehaviour {
+public class GenComManager : MonoBehaviour
+{
 
     //ip address to connect to
-    private static readonly IPAddress IP = IPAddress.Parse("132.160.49.90");
+    private static readonly String IP = "132.160.49.90";
     //port to connect to
     public const int GC_PORT = 6003;
     //size of update packets in bytes
@@ -36,16 +45,16 @@ public class GenComManager : MonoBehaviour {
 
     private ManualResetEvent processed;
 
-    //connected socket
-    private Socket client;
+    //connected socket 
+    private TcpClient client;
 
     //call on event where player touches something
     public static void setUpdate(byte type, Guid objID)
     {
-        lock(UPDATE_LOCK)
+        lock (UPDATE_LOCK)
         {
             update[0] = type;
-            Buffer.BlockCopy(objID.ToByteArray(), 0, update, 1, 16);
+            System.Buffer.BlockCopy(objID.ToByteArray(), 0, update, 1, 16);
         }
     }
 
@@ -55,18 +64,20 @@ public class GenComManager : MonoBehaviour {
     }
 
     // Use this for initialization
-    void Start () {
+    void Start()
+    {
 
         try
         {
             //remote endpoint of the server
-            IPEndPoint remoteEP = new IPEndPoint(IP, GC_PORT);
+            _IPEndPoint remoteEP = new _IPEndPoint(IP, GC_PORT);
 
             //create TCP socket
-            client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            client = new TcpClient();
 
             //connect to remote endpoint
             client.Connect(remoteEP);
+
             //send the players id to the server
             client.Send(Player.playerID.ToByteArray());
 
@@ -197,7 +208,7 @@ public class GenComManager : MonoBehaviour {
                 client.Receive(infoBuf, 1, 0);
                 //check if expected battle id and set outAccepted accordingly
                 outAccepted = battleID == BattleNetManager.BattleID ? infoBuf[0] : (byte)3;
-                
+
 
                 processed.Reset();
                 processed.WaitOne();
@@ -213,7 +224,8 @@ public class GenComManager : MonoBehaviour {
 
 
     // Update is called once per frame
-    void Update() {
+    void Update()
+    {
         //need to add mechanism to make sure multiple requests arent sent before finalized with server, primarily for the battle portion
 
         lock (UPDATE_LOCK)
@@ -246,7 +258,7 @@ public class GenComManager : MonoBehaviour {
 
         }
 
-        if(!processed.WaitOne(0))
+        if (!processed.WaitOne(0))
         {
             //before drawing stuff make sure they are in the expected screen (eg dont draw landmark info over the overworld map if they exit out of it before processed)
             switch (type[0])
@@ -278,11 +290,11 @@ public class GenComManager : MonoBehaviour {
                     //place items in users inventory (even if not drawn to screen), can store as a mapping of the items id and the number held or something like that
                     break;
                 case 5:
-                    if(outAccepted == 1)
+                    if (outAccepted == 1)
                     {
                         SceneManager.LoadScene("Battle");
                     }
-                    else if(outAccepted == 0)
+                    else if (outAccepted == 0)
                     {
                         //what happens if match declined?
                         //prolly just display notice match declined for now
@@ -300,7 +312,7 @@ public class GenComManager : MonoBehaviour {
 
             processed.Set();
         }
-	}
+    }
 
     private static Guid getUpdateID(byte[] update)
     {
