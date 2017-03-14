@@ -4,7 +4,7 @@ using System.Collections;
 using UnityEngine.SceneManagement;
 using System;
 using System.Text.RegularExpressions;
-using System.Runtime.Serialization.Formatters.Binary;
+//using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
 
 public class Login : MonoBehaviour
