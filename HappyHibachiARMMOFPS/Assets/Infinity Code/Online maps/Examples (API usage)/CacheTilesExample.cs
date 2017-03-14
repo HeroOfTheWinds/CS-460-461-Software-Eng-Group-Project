@@ -83,11 +83,14 @@ namespace InfinityCode.OnlineMapsExamples
             string path = GetTilePath(tile);
 
             // Cache tile.
+#if NETFX_CORE
+#else
             FileInfo fileInfo = new FileInfo(path);
             DirectoryInfo directory = fileInfo.Directory;
             if (!directory.Exists) directory.Create();
 
             File.WriteAllBytes(path, tile.www.bytes);
+#endif
         }
 
         private void Start()

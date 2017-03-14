@@ -592,12 +592,15 @@ public class OnlineMapsHereRoutingAPI: OnlineMapsGoogleAPIQuery
                 int v = (int)values.GetValue(i);
                 if ((value & v) == v)
                 {
+#if NETFX_CORE
+#else
                     if (addSeparator) builder.Append(",");
                     string name = Enum.GetName(type, v);
                     MemberInfo[] infos = type.GetMember(name);
                     object[] attributes = infos[0].GetCustomAttributes(typeof(ShortNameAttribute), false).ToArray();
                     builder.Append(((ShortNameAttribute)attributes[0]).shortName);
                     addSeparator = true;
+#endif
                 }
             }
         }
