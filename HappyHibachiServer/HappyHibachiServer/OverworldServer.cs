@@ -9,11 +9,11 @@ namespace HappyHibachiServer
     class OverworldServer
     {
         //size of updates in bytes
-        public const int UPDATE_SIZE = 8;
+        public static readonly int UPDATE_SIZE = 8;
         //port to listen on (temp test port)
         public const int OVERWORLD_PORT = 6004;
         //server ip address
-        public static readonly IPAddress IP = IPAddress.Parse("10.42.42.153");
+        public static readonly IPAddress IP = IPAddress.Parse("10.0.0.4");
 
 
         //signal for connections

@@ -14,13 +14,14 @@ namespace HappyHibachiServer
         //port to listen on (temp test port)
         public const int GC_PORT = 6003;
         //server ip address
-        public static readonly IPAddress IP = IPAddress.Parse("10.42.42.153");
+        public static readonly IPAddress IP = IPAddress.Parse("10.0.0.4");
 
         //signal for connections
         private static ManualResetEventSlim connectionFound = new ManualResetEventSlim();
 
 
-        private static Dictionary<Guid, ComState> players;
+        public static Dictionary<Guid, ComState> players;
+        public static readonly object DICTIONARY_LOCK = new object();
 
 
         public static void startServer()
@@ -94,10 +95,14 @@ namespace HappyHibachiServer
             //catch connection errors
             catch (Exception e)
             {
-                if(players.ContainsKey(state.ClientID))
+                lock(DICTIONARY_LOCK)
                 {
-                    players.Remove(state.ClientID);
+                    if (players.ContainsKey(state.ClientID))
+                    {
+                        players.Remove(state.ClientID);
+                    }
                 }
+                
                 Console.WriteLine(e.ToString());
                 Console.WriteLine("\nPlayer disconnected gen com connect");
             }
@@ -157,10 +162,14 @@ namespace HappyHibachiServer
             //end communications gracefully if player disconnects
             catch (Exception)
             {
-                if (players.ContainsKey(state.ClientID))
+                lock(DICTIONARY_LOCK)
                 {
-                    players.Remove(state.ClientID);
+                    if (players.ContainsKey(state.ClientID))
+                    {
+                        players.Remove(state.ClientID);
+                    }
                 }
+                
                 Console.WriteLine("\nPlayer disconnected gen com readUpdate");
 
             }

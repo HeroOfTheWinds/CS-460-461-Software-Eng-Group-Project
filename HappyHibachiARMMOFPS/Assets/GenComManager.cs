@@ -11,7 +11,7 @@ using UnityEngine.SceneManagement;
 public class GenComManager : MonoBehaviour {
 
     //ip address to connect to
-    private static readonly IPAddress IP = IPAddress.Parse("132.160.49.90");
+    private static readonly IPAddress IP = IPAddress.Parse("13.84.163.243");
     //port to connect to
     public const int GC_PORT = 6003;
     //size of update packets in bytes

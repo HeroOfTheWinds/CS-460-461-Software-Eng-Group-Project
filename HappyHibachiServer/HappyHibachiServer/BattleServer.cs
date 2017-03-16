@@ -10,11 +10,11 @@ namespace HappyHibachiServer
     public class BattleServer
     {
         //size of updates in bytes
-        public const int UPDATE_SIZE = 41;
+        public static readonly int UPDATE_SIZE = 41;
         //port to listen on
         public const int BATTLE_PORT = 7004;
         //server ip address
-        public static readonly IPAddress IP = IPAddress.Parse("10.42.42.153");
+        public static readonly IPAddress IP = IPAddress.Parse("10.0.0.4");
 
         //signal for connections
         private static ManualResetEventSlim connectionFound = new ManualResetEventSlim();
