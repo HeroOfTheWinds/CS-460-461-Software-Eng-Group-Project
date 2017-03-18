@@ -85,6 +85,25 @@ namespace HappyHibachiServer
                 Socket listener = (Socket)ar.AsyncState;
                 Socket handler = listener.EndAccept(ar);
 
+                //ADD TO CLIENT SIDE SO SENDS CLIENT ID
+                byte[] id = new byte[16];
+                handler.Receive(id, 16, 0);
+                state.ClientID = new Guid(id);
+
+                TimeoutState addSocket;
+                lock (TimeoutManagerServer.DICTIONARY_LOCK)
+                {
+                    if (TimeoutManagerServer.clientSockets.TryGetValue(state.ClientID, out addSocket))
+                    {
+                        addSocket.OverworldSocket = handler;
+                    }
+                    else
+                    {
+                        TimeoutManagerServer.clientSockets.Add(state.ClientID, new TimeoutState(state.ClientID, null, null, handler, null));
+                    }
+                }
+
+
                 //read the battle guid from the client
                 handler.Receive(guid, 16, 0);
                 battleGUID = new Guid(guid);
@@ -199,8 +218,18 @@ namespace HappyHibachiServer
                     //handle winner stuff (DB stuff, etc)
 
                     //clean up
-                    handler.Shutdown(SocketShutdown.Both);
-                    handler.Close();
+                    lock(TimeoutManagerServer.DICTIONARY_LOCK)
+                    {
+                        TimeoutState removeSocket;
+                        if(TimeoutManagerServer.clientSockets.TryGetValue(state.ClientID, out removeSocket))
+                        {
+                            removeSocket.BattleSocket = null;
+                            //if value not found then connection should already be closed
+                            handler.Shutdown(SocketShutdown.Both);
+                            handler.Close();
+                        }
+                    }
+                    
                     Console.WriteLine("\nPlayer disconnected");
                 }
             }
@@ -322,6 +351,7 @@ namespace HappyHibachiServer
         private Socket opponentSocket;
         //buffer for updates
         private byte[] update;
+        private Guid clientID;
 
         //getters and setters
         public Socket ClientSocket
@@ -374,6 +404,19 @@ namespace HappyHibachiServer
             set
             {
                 writeLock = value;
+            }
+        }
+
+        public Guid ClientID
+        {
+            get
+            {
+                return clientID;
+            }
+
+            set
+            {
+                clientID = value;
             }
         }
     }

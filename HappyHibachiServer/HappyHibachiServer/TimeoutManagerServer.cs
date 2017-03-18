@@ -25,6 +25,8 @@ namespace HappyHibachiServer
         //signal for connections
         public static Dictionary<Guid, TimeoutState> clientSockets = new Dictionary<Guid, TimeoutState>();
 
+        public static readonly object DICTIONARY_LOCK = new object();
+
         public static void startServer()
         {
 
@@ -75,18 +77,34 @@ namespace HappyHibachiServer
 
                 Console.WriteLine("\nPlayer connected timeout manager");
 
-                TimeoutState state = new TimeoutState();
+                //get user id first, follow similar procedure
+                //TimeoutState state = new TimeoutState(null, null, null);
 
                 //get socket for client
                 Socket listener = (Socket)ar.AsyncState;
                 Socket handler = listener.EndAccept(ar);
 
-                //this isnt exactly right, how to get state
+                //MAKE SURE TO ADD THIS TO CLIENT SIDE
+                byte[] id = new byte[16];
+                handler.Receive(id, 16, 0);
+                Guid clientID = new Guid(id);
 
-                state.ClientSocket = handler;
+                TimeoutState state;
+                lock (DICTIONARY_LOCK)
+                {
+                    if (clientSockets.TryGetValue(clientID, out state))
+                    {
+                        state.ClientSocket = handler;
+                    }
+                    else
+                    {
+                        clientSockets.Add(clientID, new TimeoutState(state.ClientID, null, null, null, handler));
+                    }
+                }
+
                 state.startTimeout();
 
-                //start receiving client updates
+                //start recieving client connection confirmations
                 handler.BeginReceive(state.TestCon, 0, UPDATE_SIZE, 0, new AsyncCallback(readUpdate), state);
             }
             //catch connection errors
@@ -112,6 +130,7 @@ namespace HappyHibachiServer
                 ar.AsyncWaitHandle.WaitOne();
                 handler.EndReceive(ar);
 
+                //when recieve ack, restart timout
                 state.resetTimeout();
                 handler.Send(state.TestCon);
 
@@ -272,11 +291,13 @@ namespace HappyHibachiServer
             }
         }
 
-        public TimeoutState()
+        public TimeoutState(Guid cid, Socket gcsocket, Socket osocket, Socket bsocket, Socket tsocket)
         {
-            GenComSocket = null;
-            OverworldSocket = null;
-            BattleSocket = null;
+            clientID = cid;
+            genComSocket = gcsocket;
+            overworldSocket = osocket;
+            battleSocket = bsocket;
+            clientSocket = tsocket;
         }
     }
 }

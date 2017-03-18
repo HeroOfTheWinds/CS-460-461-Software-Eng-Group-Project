@@ -87,6 +87,19 @@ namespace HappyHibachiServer
                 handler.Receive(id, 16, 0);
                 state.ClientID = new Guid(id);
 
+                TimeoutState addSocket;
+                lock (TimeoutManagerServer.DICTIONARY_LOCK)
+                {
+                    if (TimeoutManagerServer.clientSockets.TryGetValue(state.ClientID, out addSocket))
+                    {
+                        addSocket.OverworldSocket = handler;
+                    }
+                    else
+                    {
+                        TimeoutManagerServer.clientSockets.Add(state.ClientID, new TimeoutState(state.ClientID, handler, null, null, null));
+                    }
+                }
+
                 players.Add(state.ClientID, state);
 
                 //start receiving client updates

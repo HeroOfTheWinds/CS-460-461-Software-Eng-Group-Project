@@ -25,8 +25,7 @@ namespace HappyHibachiServer
 
             IPEndPoint localEndPoint = new IPEndPoint(IP, OVERWORLD_PORT);
 
-            //create udp listener
-            //assume raw udp should suffice, can add order checks or discard if issues arise
+            //create tcp listener
             Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
             try
@@ -82,6 +81,18 @@ namespace HappyHibachiServer
                 handler.Receive(id, 16, 0);
                 state.ClientID = new Guid(id);
                 state.ClientSocket = handler;
+
+                TimeoutState addSocket;
+                lock(TimeoutManagerServer.DICTIONARY_LOCK) {
+                    if(TimeoutManagerServer.clientSockets.TryGetValue(state.ClientID, out addSocket))
+                    {
+                        addSocket.OverworldSocket = handler;
+                    }
+                    else
+                    {
+                        TimeoutManagerServer.clientSockets.Add(state.ClientID, new TimeoutState(state.ClientID, null, handler, null, null));
+                    }
+                }
 
                 //start receiving client updates
                 handler.BeginReceive(state.Update, 0, UPDATE_SIZE, 0, new AsyncCallback(readUpdate), state);
