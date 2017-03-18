@@ -81,6 +81,8 @@ public class OverworldNetManager : MonoBehaviour {
             //connect to remote endpoint
             client.Connect(remoteEP);
 
+            Debug.Log("Connect Overworld Successful");
+
             //send the players id to the server
             client.Send(Player.playerID.ToByteArray());
 

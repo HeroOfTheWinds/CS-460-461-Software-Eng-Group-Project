@@ -70,7 +70,7 @@ public class GenComManager : MonoBehaviour {
             //send the players id to the server
             client.Send(Player.playerID.ToByteArray());
 
-            Debug.Log("Connect Successful");
+            Debug.Log("Connect GenCom Successful");
 
             update = new byte[UPDATE_SIZE];
             type = new byte[1];

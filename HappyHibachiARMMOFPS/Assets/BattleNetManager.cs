@@ -124,6 +124,9 @@ public class BattleNetManager : MonoBehaviour
 
             eUpdate = new EnemyUpdate();
 
+            //send the players id to the server
+            client.Send(Player.playerID.ToByteArray());
+
             //send the battle guid to the client in order to connect to opponent
             client.Send(BattleID.ToByteArray());
 
