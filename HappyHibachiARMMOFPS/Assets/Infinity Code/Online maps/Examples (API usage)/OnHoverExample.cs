@@ -1,4 +1,4 @@
-﻿/*     INFINITY CODE 2013-2016      */
+﻿/*     INFINITY CODE 2013-2017      */
 /*   http://www.infinity-code.com   */
 
 using UnityEngine;
@@ -15,17 +15,17 @@ namespace InfinityCode.OnlineMapsExamples
 
         private void Start()
         {
-            OnlineMaps api = OnlineMaps.instance;
+            OnlineMaps map = OnlineMaps.instance;
 
             // Create a new marker
-            OnlineMapsMarker marker = api.AddMarker(new Vector2(), "Marker");
+            OnlineMapsMarker marker = map.AddMarker(new Vector2(), "Marker");
 
             // Subscribe to marker events
             marker.OnRollOver += OnRollOver;
             marker.OnRollOut += OnRollOut;
 
             // Reset map position
-            api.position = new Vector2();
+            map.position = new Vector2();
         }
 
         private void OnRollOut(OnlineMapsMarkerBase marker)

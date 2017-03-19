@@ -1,4 +1,4 @@
-/*     INFINITY CODE 2013-2016      */
+/*     INFINITY CODE 2013-2017      */
 /*   http://www.infinity-code.com   */
 
 using System.Collections;
@@ -65,6 +65,9 @@ public class OnlineMapsXMLList : IEnumerable
 
     public IEnumerator GetEnumerator()
     {
-        return new OnlineMapsXMLListEnum(this);
+        for (int i = 0; i < count; i++)
+        {
+            yield return this[i];
+        }
     }
 }

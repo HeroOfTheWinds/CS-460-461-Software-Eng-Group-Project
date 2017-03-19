@@ -148,18 +148,26 @@
     <Compile Include="Assets\Infinity Code\Online maps\Scripts\Editor\Controls\OnlineMapsGUITextureControlEditor.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Scripts\Editor\Controls\OnlineMapsIGUITextureControlEditor.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Scripts\Editor\Controls\OnlineMapsNGUITextureControlEditor.cs" />
+    <Compile Include="Assets\Infinity Code\Online maps\Scripts\Editor\Controls\OnlineMapsSpriteRendererControlEditor.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Scripts\Editor\Controls\OnlineMapsTextureControlEditor.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Scripts\Editor\Controls\OnlineMapsTilesetControlEditor.cs" />
+    <Compile Include="Assets\Infinity Code\Online maps\Scripts\Editor\Controls\OnlineMapsUIImageControlEditor.cs" />
+    <Compile Include="Assets\Infinity Code\Online maps\Scripts\Editor\Controls\OnlineMapsUIRawImageControlEditor.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Scripts\Editor\OnlineMapsAboutWindow.cs" />
+    <Compile Include="Assets\Infinity Code\Online maps\Scripts\Editor\OnlineMapsCustomURLWizard.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Scripts\Editor\OnlineMapsEditor.cs" />
+    <Compile Include="Assets\Infinity Code\Online maps\Scripts\Editor\OnlineMapsEditorUtils.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Scripts\Editor\OnlineMapsImporter.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Scripts\Editor\OnlineMapsPackageManager.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Scripts\Editor\OnlineMapsPrefs.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Scripts\Editor\OnlineMapsUpdater.cs" />
+    <Compile Include="Assets\Infinity Code\Online maps\Scripts\Editor\OnlineMapsWelcome.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Scripts\Editor\OnlineMapsWizard.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Scripts\Editor\Plugins\OnlineMapsBuildingBaseEditor.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Scripts\Editor\Plugins\OnlineMapsBuildingsEditor.cs" />
+    <Compile Include="Assets\Infinity Code\Online maps\Scripts\Editor\Plugins\OnlineMapsCacheEditor.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Scripts\Editor\Plugins\OnlineMapsJSLoaderEditor.cs" />
+    <Compile Include="Assets\Infinity Code\Online maps\Scripts\Editor\Plugins\OnlineMapsLimitsEditor.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Scripts\Editor\Plugins\OnlineMapsLocationServiceEditor.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Scripts\Editor\Plugins\OnlineMapsRWTConnectorEditor.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Scripts\Editor\PropertyDrawers\OnlineMapsBuildingMaterialPropertyDrawer.cs" />
@@ -168,6 +176,7 @@
     <Compile Include="Assets\Infinity Code\Online maps\Scripts\Editor\PropertyDrawers\OnlineMapsRangePropertyDrawer.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assets\FactionShader.shader" />
     <None Include="Assets\Infinity Code\Online maps\Shaders\TilesetCutoutShader.shader" />
     <None Include="Assets\Infinity Code\Online maps\Shaders\TilesetDrawingElement.shader" />
     <None Include="Assets\Infinity Code\Online maps\Shaders\TilesetShader.shader" />

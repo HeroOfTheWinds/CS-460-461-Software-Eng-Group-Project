@@ -1,4 +1,4 @@
-﻿/*     INFINITY CODE 2013-2016      */
+﻿/*     INFINITY CODE 2013-2017      */
 /*   http://www.infinity-code.com   */
 
 using UnityEngine;
@@ -18,7 +18,7 @@ namespace InfinityCode.OnlineMapsExamples
         private void Start()
         {
             // Gets the current 3D control.
-            OnlineMapsControlBase3D control = GetComponent<OnlineMapsControlBase3D>();
+            OnlineMapsControlBase3D control = OnlineMapsControlBase3D.instance;
             if (control == null)
             {
                 Debug.LogError("You must use the 3D control (Texture or Tileset).");

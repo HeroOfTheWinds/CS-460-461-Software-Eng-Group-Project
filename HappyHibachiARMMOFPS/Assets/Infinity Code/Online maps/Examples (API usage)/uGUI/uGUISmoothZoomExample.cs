@@ -1,7 +1,5 @@
-﻿/*     INFINITY CODE 2013-2016      */
+﻿/*     INFINITY CODE 2013-2017      */
 /*   http://www.infinity-code.com   */
-
-#if !UNITY_4_3 && !UNITY_4_5
 
 using System;
 using System.Linq;
@@ -164,5 +162,3 @@ namespace InfinityCode.OnlineMapsExamples
         }
     }
 }
-
-#endif

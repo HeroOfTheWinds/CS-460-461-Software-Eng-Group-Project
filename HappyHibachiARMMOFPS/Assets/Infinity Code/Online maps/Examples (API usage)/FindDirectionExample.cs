@@ -1,4 +1,4 @@
-﻿/*     INFINITY CODE 2013-2016      */
+﻿/*     INFINITY CODE 2013-2017      */
 /*   http://www.infinity-code.com   */
 
 using System.Collections.Generic;
@@ -15,7 +15,7 @@ namespace InfinityCode.OnlineMapsExamples
         private void Start()
         {
             // Begin to search a route from Los Angeles to the specified coordinates.
-            OnlineMapsGoogleAPIQuery query = OnlineMapsFindDirection.Find("Los Angeles",
+            OnlineMapsGoogleDirections query = OnlineMapsGoogleDirections.Find("Los Angeles",
                 new Vector2(-118.178960f, 35.063995f));
 
             // Specifies that search results must be sent to OnFindDirectionComplete.

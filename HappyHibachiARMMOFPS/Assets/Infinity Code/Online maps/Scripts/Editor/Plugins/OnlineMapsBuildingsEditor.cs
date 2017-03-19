@@ -1,4 +1,4 @@
-﻿/*     INFINITY CODE 2013-2016      */
+﻿/*     INFINITY CODE 2013-2017      */
 /*   http://www.infinity-code.com   */
 
 using UnityEditor;
@@ -51,7 +51,6 @@ public class OnlineMapsBuildingsEditor:Editor
 
         serializedObject.Update();
 
-        
         EditorGUILayout.PropertyField(pZoomRange, new GUIContent("Zoom"));
         if (buildings.zoomRange.min < 17) EditorGUILayout.HelpBox("Can create a very large number of buildings. This may work slowly.", MessageType.Warning);
         

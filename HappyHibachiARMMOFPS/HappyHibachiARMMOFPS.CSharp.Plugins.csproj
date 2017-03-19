@@ -175,6 +175,7 @@
     <Compile Include="Assets\Standard Assets\Utility\WaypointProgressTracker.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assets\FactionShader.shader" />
     <None Include="Assets\Infinity Code\Online maps\Shaders\TilesetCutoutShader.shader" />
     <None Include="Assets\Infinity Code\Online maps\Shaders\TilesetDrawingElement.shader" />
     <None Include="Assets\Infinity Code\Online maps\Shaders\TilesetShader.shader" />

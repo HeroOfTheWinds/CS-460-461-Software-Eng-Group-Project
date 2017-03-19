@@ -1,4 +1,4 @@
-/*     INFINITY CODE 2013-2016      */
+/*     INFINITY CODE 2013-2017      */
 /*   http://www.infinity-code.com   */
 
 using UnityEngine;
@@ -18,6 +18,10 @@ namespace InfinityCode.OnlineMapsExamples
 
             // Lock map coordinates range
             OnlineMaps.instance.positionRange = new OnlineMapsPositionRange(33, -119, 34, -118);
+
+            // Initializes the position and zoom
+            OnlineMaps.instance.zoom = 10;
+            OnlineMaps.instance.position = OnlineMaps.instance.positionRange.center;
         }
     }
 }

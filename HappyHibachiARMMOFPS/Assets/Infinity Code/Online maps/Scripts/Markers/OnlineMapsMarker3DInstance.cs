@@ -1,14 +1,11 @@
-﻿/*     INFINITY CODE 2013-2016      */
+﻿/*     INFINITY CODE 2013-2017      */
 /*   http://www.infinity-code.com   */
 
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
-#if !UNITY_4_3 && !UNITY_4_5
 using UnityEngine.EventSystems;
-#endif
 
 /// <summary>
 /// 3D marker instance class.
@@ -16,6 +13,8 @@ using UnityEngine.EventSystems;
 [AddComponentMenu("")]
 public class OnlineMapsMarker3DInstance : OnlineMapsMarkerInstanceBase
 {
+    private static bool eventInited = false;
+
     private double _longitude;
     private double _latitude;
     //private Vector2 _position;
@@ -37,9 +36,13 @@ public class OnlineMapsMarker3DInstance : OnlineMapsMarkerInstanceBase
     [SerializeField]
     private OnlineMapsMarker3D _marker;
 
+    private static Vector2 inputPosition;
+    private static List<RaycastResult> uiHits;
+    private static RaycastHit[] hits;
+
     private void Awake()
     {
-#if UNITY_4_3 || UNITY_4_5 || UNITY_4_6 || UNITY_4_7
+#if UNITY_4_6 || UNITY_4_7
         Collider cl = collider;
 #else
         Collider cl = GetComponent<Collider>();
@@ -49,19 +52,33 @@ public class OnlineMapsMarker3DInstance : OnlineMapsMarkerInstanceBase
         cl.isTrigger = true;
     }
 
+    private void OnDestroy()
+    {
+        if (OnlineMaps.instance != null) OnlineMaps.instance.OnUpdateLate -= OnUpdate;
+    }
+
     private void OnPress()
     {
 #if !UNITY_ANDROID
         OnlineMapsControlBase.instance.InvokeBasePress();
 #endif
 
+        pressPoint = OnlineMapsControlBase.instance.GetInputPosition();
+
+        if (EventSystem.current != null)
+        {
+            PointerEventData pe = new PointerEventData(EventSystem.current);
+            pe.position = pressPoint;
+            List<RaycastResult> hits = new List<RaycastResult>();
+            EventSystem.current.RaycastAll(pe, hits);
+            if (hits.Count > 0 && hits[0].gameObject != gameObject) return;
+        }
+
         isPressed = true;
         if (marker.OnPress != null) marker.OnPress(marker);
 
         lastClickTimes[0] = lastClickTimes[1];
         lastClickTimes[1] = DateTime.Now.Ticks;
-
-        pressPoint = OnlineMapsControlBase.instance.GetInputPosition();
 
         if (Input.GetKey(KeyCode.LeftControl))
         {
@@ -103,6 +120,13 @@ public class OnlineMapsMarker3DInstance : OnlineMapsMarkerInstanceBase
         marker.GetPosition(out _longitude, out _latitude);
         _scale = marker.scale;
         transform.localScale = new Vector3(_scale, _scale, _scale);
+        if (!eventInited)
+        {
+            OnlineMaps.instance.OnUpdateLate += UpdateHits;
+            eventInited = true;
+        }
+
+        OnlineMaps.instance.OnUpdateLate += OnUpdate;
     }
 
     private void StopWaitLongPress()
@@ -112,16 +136,16 @@ public class OnlineMapsMarker3DInstance : OnlineMapsMarkerInstanceBase
         longPressEnumenator = null;
     }
 
-    private void Update()
+    private void OnUpdate()
     {
-        if ((marker as OnlineMapsMarker3D) == null) 
+        if (marker as OnlineMapsMarker3D == null) 
         {
             OnlineMapsUtils.DestroyImmediate(gameObject);
             return;
         }
 
         UpdateBaseProps();
-        UpdateDefaultMarkerEvens();
+        UpdateDefaultMarkerEvents();
     }
 
     private void UpdateBaseProps()
@@ -134,13 +158,7 @@ public class OnlineMapsMarker3DInstance : OnlineMapsMarkerInstanceBase
             _longitude = mx;
             _latitude = my;
 
-            OnlineMaps map = OnlineMaps.instance;
-
-            double tlx, tly, brx, bry;
-            map.GetTopLeftPosition(out tlx, out tly);
-            map.GetBottomRightPosition(out brx, out bry);
-
-            marker.Update(tlx, tly, brx, bry, map.zoom);
+            marker.Update();
         }
 
         if (_scale != marker.scale)
@@ -150,26 +168,15 @@ public class OnlineMapsMarker3DInstance : OnlineMapsMarkerInstanceBase
         }
     }
 
-    private void UpdateDefaultMarkerEvens()
+    private void UpdateDefaultMarkerEvents()
     {
-        if (!(marker as OnlineMapsMarker3D).allowDefaultMarkerEvents) return;
-
 #if !IGUI && ((!UNITY_ANDROID && !UNITY_IOS) || UNITY_EDITOR)
         if (OnlineMaps.instance.notInteractUnderGUI && GUIUtility.hotControl != 0) return;
 #endif
 
-        Vector2 inputPosition = OnlineMapsControlBase.instance.GetInputPosition();
+        if (!(marker as OnlineMapsMarker3D).allowDefaultMarkerEvents) return;
 
-#if !UNITY_4_3 && !UNITY_4_5
-        if (EventSystem.current != null)
-        {
-            PointerEventData pe = new PointerEventData(EventSystem.current);
-            pe.position = inputPosition;
-            List<RaycastResult> uiHits = new List<RaycastResult>();
-            EventSystem.current.RaycastAll(pe, uiHits);
-            if (uiHits.Count > 0 && uiHits[0].gameObject != gameObject) return;
-        }
-#endif
+        if (uiHits != null && uiHits.Count > 0 && uiHits[0].gameObject != gameObject) return;
 
         int touchCount = 0;
 
@@ -180,11 +187,12 @@ public class OnlineMapsMarker3DInstance : OnlineMapsMarkerInstanceBase
 #endif
         if (lastTouchCount == touchCount) return;
 
-        RaycastHit[] hits = Physics.RaycastAll(OnlineMapsControlBase3D.instance.activeCamera.ScreenPointToRay(inputPosition));
         bool hit = false;
 
-        foreach (RaycastHit h in hits)
+        for (int i = 0; i < hits.Length; i++)
         {
+            RaycastHit h = hits[i];
+            if (h.collider == null) continue;
             if (h.collider.gameObject == gameObject)
             {
                 hit = true;
@@ -201,12 +209,24 @@ public class OnlineMapsMarker3DInstance : OnlineMapsMarkerInstanceBase
             if (hit) OnRelease();
             isPressed = false;
         }
-        else if (hit)
-        {
-            OnPress();
-        }
+        else if (hit) OnPress();
 
         lastTouchCount = touchCount;
+    }
+
+    private static void UpdateHits()
+    {
+        inputPosition = OnlineMapsControlBase.instance.GetInputPosition();
+
+        if (EventSystem.current != null)
+        {
+            PointerEventData pe = new PointerEventData(EventSystem.current);
+            pe.position = inputPosition;
+            uiHits = new List<RaycastResult>();
+            EventSystem.current.RaycastAll(pe, uiHits);
+        }
+
+        hits = Physics.RaycastAll(OnlineMapsControlBase3D.instance.activeCamera.ScreenPointToRay(inputPosition));
     }
 
     private IEnumerator WaitLongPress()

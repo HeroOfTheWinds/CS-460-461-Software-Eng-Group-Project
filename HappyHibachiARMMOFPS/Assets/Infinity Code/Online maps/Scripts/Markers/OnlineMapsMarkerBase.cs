@@ -1,9 +1,7 @@
-﻿/*     INFINITY CODE 2013-2016      */
+﻿/*     INFINITY CODE 2013-2017      */
 /*   http://www.infinity-code.com   */
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -15,67 +13,56 @@ public class OnlineMapsMarkerBase
     /// <summary>
     /// Default event caused to draw tooltip.
     /// </summary>
-    [NonSerialized]
     public static Action<OnlineMapsMarkerBase> OnMarkerDrawTooltip;
 
     /// <summary>
     /// Events that occur when user click on the marker.
     /// </summary>
-    [NonSerialized]
     public Action<OnlineMapsMarkerBase> OnClick;
 
     /// <summary>
     /// Events that occur when user double click on the marker.
     /// </summary>
-    [NonSerialized]
     public Action<OnlineMapsMarkerBase> OnDoubleClick;
 
     /// <summary>
     /// Events that occur when user drag the marker.
     /// </summary>
-    [NonSerialized]
     public Action<OnlineMapsMarkerBase> OnDrag;
 
     /// <summary>
     /// Event caused to draw tooltip.
     /// </summary>
-    [NonSerialized]
     public Action<OnlineMapsMarkerBase> OnDrawTooltip;
 
     /// <summary>
     /// Event occurs when the marker enabled change.
     /// </summary>
-    [NonSerialized]
     public Action<OnlineMapsMarkerBase> OnEnabledChange;
 
     /// <summary>
     /// Events that occur when user long press on the marker.
     /// </summary>
-    [NonSerialized]
     public Action<OnlineMapsMarkerBase> OnLongPress;
 
     /// <summary>
     /// Events that occur when user press on the marker.
     /// </summary>
-    [NonSerialized]
     public Action<OnlineMapsMarkerBase> OnPress;
 
     /// <summary>
     /// Events that occur when user release on the marker.
     /// </summary>
-    [NonSerialized]
     public Action<OnlineMapsMarkerBase> OnRelease;
 
     /// <summary>
     /// Events that occur when user roll out marker.
     /// </summary>
-    [NonSerialized]
     public Action<OnlineMapsMarkerBase> OnRollOut;
 
     /// <summary>
     /// Events that occur when user roll over marker.
     /// </summary>
-    [NonSerialized]
     public Action<OnlineMapsMarkerBase> OnRollOver;
 
     /// <summary>
@@ -124,6 +111,11 @@ public class OnlineMapsMarkerBase
         }
     }
 
+    protected static OnlineMaps map
+    {
+        get { return OnlineMaps.instance; }
+    }
+
     /// <summary>
     /// Marker coordinates.
     /// </summary>
@@ -158,13 +150,10 @@ public class OnlineMapsMarkerBase
         {
             if (!enabled) return false;
 
-            OnlineMaps api = OnlineMaps.instance;
-
-            if (!range.InRange(api.zoom)) return false;
+            if (!range.InRange(map.zoom)) return false;
 
             double tlx, tly, brx, bry;
-            api.GetTopLeftPosition(out tlx, out tly);
-            api.GetBottomRightPosition(out brx, out bry);
+            map.GetCorners(out tlx, out tly, out brx, out bry);
 
             if (longitude >= tlx && longitude <= brx && latitude >= bry && latitude <= tly) return true;
             return false;
@@ -173,7 +162,7 @@ public class OnlineMapsMarkerBase
 
     public OnlineMapsMarkerBase()
     {
-        range = new OnlineMapsRange(3, 20);
+        range = new OnlineMapsRange(3, OnlineMaps.MAXZOOM);
     }
 
     /// <summary>
@@ -204,6 +193,11 @@ public class OnlineMapsMarkerBase
         lat = latitude;
     }
 
+    public void GetTilePosition(out double px, out double py)
+    {
+        map.projection.CoordinatesToTile(longitude, latitude, map.zoom, out px, out py);
+    }
+
     /// <summary>
     /// Turns the marker in the direction specified coordinates.
     /// </summary>
@@ -227,6 +221,7 @@ public class OnlineMapsMarkerBase
         element.Create("Latitude", latitude);
         element.Create("Range", range);
         element.Create("Label", label);
+        element.Create("Scale", scale);
         return element;
     }
 
@@ -247,6 +242,11 @@ public class OnlineMapsMarkerBase
     public void SetDragable()
     {
         OnPress += OnMarkerPress;
+    }
+
+    public virtual void Update()
+    {
+        
     }
 
     /// <summary>

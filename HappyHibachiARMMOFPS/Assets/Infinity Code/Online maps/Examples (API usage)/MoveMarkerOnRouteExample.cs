@@ -1,4 +1,4 @@
-﻿/*     INFINITY CODE 2013-2016      */
+﻿/*     INFINITY CODE 2013-2017      */
 /*   http://www.infinity-code.com   */
 
 using System.Collections.Generic;
@@ -60,7 +60,7 @@ namespace InfinityCode.OnlineMapsExamples
         private void Start()
         {
             // Looking for a route between locations.
-            OnlineMapsFindDirection.Find(fromPlace, toPlace).OnComplete += OnComplete;
+            OnlineMapsGoogleDirections.Find(fromPlace, toPlace).OnComplete += OnComplete;
         }
 
         private void OnComplete(string response)

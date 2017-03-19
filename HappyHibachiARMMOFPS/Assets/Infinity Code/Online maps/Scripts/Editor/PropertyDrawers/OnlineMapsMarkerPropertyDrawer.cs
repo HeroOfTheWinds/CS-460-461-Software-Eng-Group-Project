@@ -1,7 +1,7 @@
-﻿/*     INFINITY CODE 2013-2016      */
+﻿/*     INFINITY CODE 2013-2017      */
 /*   http://www.infinity-code.com   */
 
-#if !UNITY_4_3 && !UNITY_4_5 && !UNITY_4_6 && !UNITY_4_7
+#if !UNITY_4_6 && !UNITY_4_7
 #define UNITY_5_0P
 #endif
 

@@ -1,4 +1,4 @@
-﻿/*     INFINITY CODE 2013-2016      */
+﻿/*     INFINITY CODE 2013-2017      */
 /*   http://www.infinity-code.com   */
 
 using UnityEditor;
@@ -17,7 +17,7 @@ public class OnlineMapsBuildingBaseEditor:Editor
     {
         EditorGUILayout.LabelField("Meta count: " + building.metaInfo.Length);
         EditorGUI.BeginDisabledGroup(true);
-        foreach (OnlineMapsBuildingMetaInfo item in building.metaInfo) EditorGUILayout.TextField(item.title, item.info);
+        foreach (OnlineMapsBuildingBase.MetaInfo item in building.metaInfo) EditorGUILayout.TextField(item.title, item.info);
         EditorGUI.EndDisabledGroup();
     }
 }

@@ -1,4 +1,4 @@
-/*     INFINITY CODE 2013-2016      */
+/*     INFINITY CODE 2013-2017      */
 /*   http://www.infinity-code.com   */
 
 using UnityEngine;
@@ -23,7 +23,7 @@ namespace InfinityCode.OnlineMapsExamples
             Vector2 mouseCoords = OnlineMapsControlBase.instance.GetCoords();
 
             // Try find location name by coordinates.
-            OnlineMapsGoogleAPIQuery query = OnlineMapsFindLocation.Find(null, mouseCoords.y + "," + mouseCoords.x);
+            OnlineMapsGoogleGeocoding query = OnlineMapsGoogleGeocoding.Find(null, mouseCoords.y + "," + mouseCoords.x);
             query.OnComplete += OnQueryComplete;
         }
 

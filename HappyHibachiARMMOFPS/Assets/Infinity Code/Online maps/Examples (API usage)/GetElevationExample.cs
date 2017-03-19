@@ -1,4 +1,4 @@
-﻿/*     INFINITY CODE 2013-2016      */
+﻿/*     INFINITY CODE 2013-2017      */
 /*   http://www.infinity-code.com   */
 
 using UnityEngine;
@@ -20,13 +20,13 @@ namespace InfinityCode.OnlineMapsExamples
         private void OnMapClick()
         {
             // Get elevation on click point
-            OnlineMapsGetElevation.Find(OnlineMapsControlBase.instance.GetCoords()).OnComplete += OnComplete;
+            OnlineMapsGoogleElevation.Find(OnlineMapsControlBase.instance.GetCoords()).OnComplete += OnComplete;
         }
 
         private void OnComplete(string response)
         {
             // Get results from response string
-            OnlineMapsGetElevationResult[] results = OnlineMapsGetElevation.GetResults(response);
+            OnlineMapsGoogleElevationResult[] results = OnlineMapsGoogleElevation.GetResults(response);
 
             if (results == null)
             {
