@@ -14,9 +14,11 @@ namespace HappyHibachiServer
             Thread battleThread = new Thread(new ThreadStart(BattleServer.startServer));
             Thread overworldThread = new Thread(new ThreadStart(OverworldServer.startServer));
             Thread genComThread = new Thread(new ThreadStart(GenComServer.startServer));
+            Thread timeoutThread = new Thread(new ThreadStart(TimeoutManagerServer.startServer));
             battleThread.Start();
             overworldThread.Start();
             genComThread.Start();
+            timeoutThread.Start();
         }
     }
 }

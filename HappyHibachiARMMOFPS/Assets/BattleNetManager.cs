@@ -325,6 +325,15 @@ public class BattleNetManager : MonoBehaviour
         
     }
 
+    private void OnApplicationQuit()
+    {
+        try
+        {
+            client.Shutdown(SocketShutdown.Both);
+            client.Close();
+        }
+        catch (Exception) { }
+    }
 
     //reset update flags
     private void reset()

@@ -54,6 +54,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Run.cs" />
     <Compile Include="TestSinglePerson.cs" />
+    <Compile Include="TimeoutManagerServer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

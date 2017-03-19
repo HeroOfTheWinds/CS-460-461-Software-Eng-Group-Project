@@ -94,11 +94,11 @@ namespace HappyHibachiServer
                 MySqlDataReader dataReader = cmd.ExecuteReader();
                 //int i = 0;
                 //Read the data and store them in the list
-                Console.WriteLine("Finding nearby objects:\n");
+                //Console.WriteLine("Finding nearby objects:\n");
                 while (dataReader.Read())
                 {
                     //store GUID into nearbyID
-                    Console.WriteLine(dataReader["GUID"].ToString());
+                    //Console.WriteLine(dataReader["GUID"].ToString());
                     Guid GUID = Guid.Parse(dataReader["GUID"].ToString());
                     nearbyID.Add(GUID);
 
@@ -110,7 +110,7 @@ namespace HappyHibachiServer
                     //i++;
 
                 }
-                Console.WriteLine("\n");
+                //Console.WriteLine("\n");
                 //close Data Reader
                 dataReader.Close();
 
@@ -129,9 +129,9 @@ namespace HappyHibachiServer
             float lat = System.BitConverter.ToSingle(update, 0);
             float lon = System.BitConverter.ToSingle(update, 4);
             Console.WriteLine("Updating player coordinates\n");
-            Console.WriteLine("player guid: " + clientID.ToString() + "\n");
-            Console.WriteLine("lat: " + lat);
-            Console.WriteLine("lon: " + lon);
+            //Console.WriteLine("player guid: " + clientID.ToString() + "\n");
+            //Console.WriteLine("lat: " + lat);
+            //Console.WriteLine("lon: " + lon);
             string query = "UPDATE PLAYER SET LAT= '" + lat.ToString() + "', LON = '" + lon.ToString() + "' WHERE GUID = '" + clientID.ToString() + "';";
 
             //Open connection

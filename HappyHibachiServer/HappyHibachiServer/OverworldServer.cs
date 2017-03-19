@@ -120,7 +120,7 @@ namespace HappyHibachiServer
                 ar.AsyncWaitHandle.WaitOne();
                 handler.EndReceive(ar);
 
-                Console.WriteLine(BitConverter.ToSingle(state.Update, 0));
+                //Console.WriteLine(BitConverter.ToSingle(state.Update, 0));
 
                 //process update (GPS coords stored in state.Update) into DB
                 var dbCon = new DatabaseConnect();
@@ -134,9 +134,9 @@ namespace HappyHibachiServer
 
             }
             //end communications gracefully if player disconnects
-            catch (Exception e)
+            catch (Exception)
             {
-                Console.WriteLine(e.ToString());
+                //Console.WriteLine(e.ToString());
                 Console.WriteLine("\nPlayer disconnected overworld readUpdate");
 
             }

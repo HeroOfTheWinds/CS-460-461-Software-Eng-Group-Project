@@ -81,7 +81,7 @@ public class OverworldNetManager : MonoBehaviour {
             //connect to remote endpoint
             client.Connect(remoteEP);
 
-            Debug.Log("Connect Overworld Successful");
+            UnityEngine.Debug.Log("Connect Overworld Successful");
 
             //send the players id to the server
             client.Send(Player.playerID.ToByteArray());
@@ -212,6 +212,16 @@ public class OverworldNetManager : MonoBehaviour {
     private void setUpdate(object state)
     {
         update = true;
+    }
+
+    private void OnApplicationQuit()
+    {
+        try
+        {
+            client.Shutdown(SocketShutdown.Both);
+            client.Close();
+        }
+        catch (Exception) { }
     }
 
     private class NearbyObject

@@ -210,8 +210,6 @@ public class GenComManager : MonoBehaviour {
         client.BeginReceive(type, 0, 1, 0, new AsyncCallback(updateDriver), null);
     }
 
-
-
     // Update is called once per frame
     void Update() {
         //need to add mechanism to make sure multiple requests arent sent before finalized with server, primarily for the battle portion
@@ -313,6 +311,16 @@ public class GenComManager : MonoBehaviour {
     {
         BattleNetManager.BattleID = new Guid();
         timeout = null;
+    }
+
+    private void OnApplicationQuit()
+    {
+        try
+        {
+            client.Shutdown(SocketShutdown.Both);
+            client.Close();
+        }
+        catch (Exception) { }
     }
 
     /*

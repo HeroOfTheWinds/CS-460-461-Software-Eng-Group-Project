@@ -89,28 +89,39 @@ namespace HappyHibachiServer
                 handler.Receive(id, 16, 0);
                 Guid clientID = new Guid(id);
 
+                //Console.WriteLine("loc 0\n");
+
                 TimeoutState state;
                 lock (DICTIONARY_LOCK)
                 {
+                    //Console.WriteLine("loc 0.1\n");
                     if (clientSockets.TryGetValue(clientID, out state))
                     {
+                        //Console.WriteLine("loc 0.2\n");
                         state.ClientSocket = handler;
                     }
                     else
                     {
-                        clientSockets.Add(clientID, new TimeoutState(state.ClientID, null, null, null, handler));
+                        state = new TimeoutState(clientID, null, null, null, handler);
+                        //Console.WriteLine("loc 0.3\n");
+                        clientSockets.Add(clientID, state);
                     }
                 }
 
+                //Console.WriteLine("loc 1");
+
                 state.startTimeout();
+
+                //Console.WriteLine("loc 2");
 
                 //start recieving client connection confirmations
                 handler.BeginReceive(state.TestCon, 0, UPDATE_SIZE, 0, new AsyncCallback(readUpdate), state);
             }
             //catch connection errors
-            catch (Exception)
+            catch (Exception e)
             {
-                Console.WriteLine("\nPlayer disconnected overworld connect");
+                Console.WriteLine(e.ToString());
+                Console.WriteLine("\nPlayer disconnected timeout connect");
             }
         }
 
@@ -122,6 +133,7 @@ namespace HappyHibachiServer
             Socket handler = null;
             try
             {
+                //Console.WriteLine("Entered timeout readupdate");
 
                 //retreive the state object and socket
                 TimeoutState state = (TimeoutState)ar.AsyncState;
@@ -129,6 +141,8 @@ namespace HappyHibachiServer
 
                 ar.AsyncWaitHandle.WaitOne();
                 handler.EndReceive(ar);
+
+                //Console.WriteLine("Received ack\n");
 
                 //when recieve ack, restart timout
                 state.resetTimeout();
@@ -138,9 +152,9 @@ namespace HappyHibachiServer
 
             }
             //end communications gracefully if player disconnects
-            catch (Exception e)
+            catch (Exception)
             {
-                Console.WriteLine(e.ToString());
+                //Console.WriteLine(e.ToString());
                 Console.WriteLine("\nPlayer disconnected timeout readUpdate");
 
             }
@@ -172,6 +186,14 @@ namespace HappyHibachiServer
             timeout.Start();
         }
 
+        /*
+        //should delete when working
+        public double testTimeout()
+        {
+            return timeout.time
+        }
+        */
+
         private void connectionTimeout(object sender, ElapsedEventArgs e)
         {
             Console.WriteLine("Connection timeout");
@@ -199,18 +221,19 @@ namespace HappyHibachiServer
             }
             catch(Exception) { }
 
-            if(TimeoutManagerServer.clientSockets.ContainsKey(ClientID))
+            if (TimeoutManagerServer.clientSockets.ContainsKey(ClientID))
             {
                 TimeoutManagerServer.clientSockets.Remove(ClientID);
             }
-            lock(GenComServer.DICTIONARY_LOCK)
+            lock (GenComServer.DICTIONARY_LOCK)
             {
                 if (GenComServer.players.ContainsKey(ClientID))
                 {
                     GenComServer.players.Remove(ClientID);
                 }
             }
-            
+            //Console.WriteLine("test 2");
+            timeout.Dispose();
         }
 
         public Socket BattleSocket

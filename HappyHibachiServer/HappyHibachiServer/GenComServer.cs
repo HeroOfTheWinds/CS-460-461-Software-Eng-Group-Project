@@ -106,17 +106,9 @@ namespace HappyHibachiServer
                 handler.BeginReceive(state.Update, 0, UPDATE_SIZE, 0, new AsyncCallback(readUpdate), state);
             }
             //catch connection errors
-            catch (Exception e)
-            {
-                lock(DICTIONARY_LOCK)
-                {
-                    if (players.ContainsKey(state.ClientID))
-                    {
-                        players.Remove(state.ClientID);
-                    }
-                }
-                
-                Console.WriteLine(e.ToString());
+            catch (Exception)
+            {   
+                //Console.WriteLine(e.ToString());
                 Console.WriteLine("\nPlayer disconnected gen com connect");
             }
         }

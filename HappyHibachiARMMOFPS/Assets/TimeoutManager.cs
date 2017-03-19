@@ -36,9 +36,11 @@ public class TimeoutManager : MonoBehaviour {
             //send the players id to the server
             client.Send(Player.playerID.ToByteArray());
 
-            Debug.Log("Connect GenCom Successful");
+            Debug.Log("Connect Timeout Successful");
 
             client.Send(update);
+
+            Debug.Log("Update Sent");
 
             //start receiving updates from server
             client.BeginReceive(update, 0, 1, 0, new AsyncCallback(updateDriver), null);
@@ -72,4 +74,14 @@ public class TimeoutManager : MonoBehaviour {
     void Update () {
 		
 	}
+
+    private void OnApplicationQuit()
+    {
+        try
+        {
+            client.Shutdown(SocketShutdown.Both);
+            client.Close();
+        }
+        catch (Exception) { }
+    }
 }
