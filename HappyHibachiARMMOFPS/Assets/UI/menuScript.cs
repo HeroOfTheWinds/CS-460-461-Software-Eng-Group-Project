@@ -13,7 +13,7 @@ public class menuScript : MonoBehaviour {
     void Start()
     {
         //Disables the menu
-        menu.enabled = false;
+        menu.enabled = true;
         isShowing = true;
     }
 
