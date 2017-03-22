@@ -8,7 +8,7 @@ public class Register : MonoBehaviour {
     public static string username; //if successful, passed to login screen
     public Text ErrorText; //displays errors
     public InputField emailInput, userInput, passwordInput1, passwordInput2; // user input fields
-    private string url = "http://132.160.49.90:7001/register.php"; //script to check email + username in database
+    private string url = "http://13.84.163.243/register.php"; //script to check email + username in database
     public void checkRegisterInputs()
     {
         bool emailIsValid = false, usernameIsValid = false, 
