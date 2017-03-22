@@ -12,7 +12,7 @@ public class Login : MonoBehaviour
     private string username, password; //holds info to ask database
     public InputField userInput, passwordInput; //user input fields
     public Text ErrorText; //outputs errors to screen
-    private string url = "http://132.160.49.90:7001/login.php"; //script that handles login
+    private string url = "http://13.84.163.243/login.php"; //script that handles login
 
     void Start()
     {
