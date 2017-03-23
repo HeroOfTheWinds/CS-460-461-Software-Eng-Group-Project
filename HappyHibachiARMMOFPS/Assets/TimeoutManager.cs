@@ -20,6 +20,8 @@ public class TimeoutManager : MonoBehaviour {
     //connected socket
     private Socket client;
 
+    private bool appClosed = false;
+
     // Use this for initialization
     void Start () {
 
@@ -57,7 +59,14 @@ public class TimeoutManager : MonoBehaviour {
     {
         try
         {
-            client.EndReceive(ar);
+            if(client.EndReceive(ar) == 0)
+            {
+                if (!appClosed)
+                {
+                    Start();
+                }
+                return;
+            }
             client.Send(update);
             client.BeginReceive(update, 0, 1, 0, new AsyncCallback(updateDriver), null);
         }
@@ -65,8 +74,10 @@ public class TimeoutManager : MonoBehaviour {
         {
             Debug.Log(e.ToString());
             Debug.Log("Connection Failure");
-            
-            //TRY TO RECONNECT ON CONNECTION TIMEOUT OR FAILURE (NEED TO PUT CODE IN ALL CATCH BLOCKS FOR VARIOUS CONNECTIONS PROBABLY)
+            if(!appClosed)
+            {
+                Start();
+            }
         }
     }
 
@@ -77,6 +88,7 @@ public class TimeoutManager : MonoBehaviour {
 
     private void OnApplicationQuit()
     {
+        appClosed = true;
         try
         {
             client.Shutdown(SocketShutdown.Both);

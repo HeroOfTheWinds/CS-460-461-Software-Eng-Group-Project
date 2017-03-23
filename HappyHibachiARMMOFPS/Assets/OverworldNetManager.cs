@@ -35,6 +35,7 @@ public class OverworldNetManager : MonoBehaviour {
     private LocationService locService;
     private LocationInfo loc;
 
+    private bool appClosed = false;
 
     //connected socket
     private Socket client;
@@ -45,6 +46,7 @@ public class OverworldNetManager : MonoBehaviour {
     // Use this for initialization
     void Start()
     {
+        UnityEngine.Debug.Log(Player.playerID);
         try
         {
             locService = Input.location;
@@ -109,62 +111,80 @@ public class OverworldNetManager : MonoBehaviour {
     //later on add mechanism to avoid redundant object sending (at least for fixed position objects), and smooth landmark/colloseums drawing since they are in a fixed position
     private void updateDriver(IAsyncResult ar)
     {
-        //complete async data read
-        client.EndReceive(ar);
-
-        UnityEngine.Debug.Log(responseTime.ElapsedMilliseconds);
-
-        int nearby = BitConverter.ToInt32(size, 0);
-        int numObjects = nearby / 24;
-        byte[] buf = new byte[nearby];
-
-        //read in each nearby items
-        client.Receive(buf, nearby, 0);
-
-        byte[] idBytes = new byte[16];
-
-        nearbyObjects = new List<NearbyObject>();
-
-        float lat;
-
-        for (int i = 0; i < numObjects; i++)
+        try
         {
-            NearbyObject o = new NearbyObject();
-
-            lat = BitConverter.ToSingle(buf, i * 8);
-            if(lat < 91)
+            //complete async data read
+            if (client.EndReceive(ar) == 0)
             {
-                o.Type = 0;
-                o.Latitude = lat;
-            }
-            else if(lat < 272)
-            {
-                o.Type = 1;
-                o.Latitude = lat - 181;
-            }
-            else
-            {
-                o.Type = 2;
-                o.Latitude = lat - 362;
+                if (!appClosed)
+                {
+                    Start();
+                }
+                return;
             }
 
+            UnityEngine.Debug.Log(responseTime.ElapsedMilliseconds);
 
-            o.Longtitude = BitConverter.ToSingle(buf, i * 8 + 4);
-            Buffer.BlockCopy(buf, 8 * numObjects + i, idBytes, 0, 16);
-            o.Id = new Guid(idBytes);
+            int nearby = BitConverter.ToInt32(size, 0);
+            int numObjects = nearby / 24;
+            byte[] buf = new byte[nearby];
 
-            nearbyObjects.Add(o);
-            UnityEngine.Debug.Log(o.Longtitude);
+            //read in each nearby items
+            client.Receive(buf, nearby, 0);
+
+            byte[] idBytes = new byte[16];
+
+            nearbyObjects = new List<NearbyObject>();
+
+            float lat;
+
+            for (int i = 0; i < numObjects; i++)
+            {
+                NearbyObject o = new NearbyObject();
+
+                lat = BitConverter.ToSingle(buf, i * 8);
+                if (lat < 91)
+                {
+                    o.Type = 0;
+                    o.Latitude = lat;
+                }
+                else if (lat < 272)
+                {
+                    o.Type = 1;
+                    o.Latitude = lat - 181;
+                }
+                else
+                {
+                    o.Type = 2;
+                    o.Latitude = lat - 362;
+                }
+
+
+                o.Longtitude = BitConverter.ToSingle(buf, i * 8 + 4);
+                Buffer.BlockCopy(buf, 8 * numObjects + i, idBytes, 0, 16);
+                o.Id = new Guid(idBytes);
+
+                nearbyObjects.Add(o);
+                UnityEngine.Debug.Log(o.Longtitude);
+            }
+
+
+
+            //upNearbyObj = true;
+            waitUpdate.Reset();
+            waitUpdate.WaitOne();
+
+            //recursively read data while battle is going
+            client.BeginReceive(size, 0, 4, 0, new AsyncCallback(updateDriver), null);
         }
-
-
-
-        //upNearbyObj = true;
-        waitUpdate.Reset();
-        waitUpdate.WaitOne();
-
-        //recursively read data while battle is going
-        client.BeginReceive(size, 0, 4, 0, new AsyncCallback(updateDriver), null);
+        catch(Exception)
+        {
+            //attempt to restart on failure
+            if (!appClosed)
+            {
+                Start();
+            }
+        }
 
     }
 
@@ -172,40 +192,43 @@ public class OverworldNetManager : MonoBehaviour {
 
     private void Update()
     {
-        if(update)
+        try
         {
-            UnityEngine.Debug.Log("Test");
-            loc = locService.lastData;
-            latitude = loc.latitude;
-            longtitude = loc.longitude;
-
-            BitConverter.GetBytes(latitude).CopyTo(coords, 0);
-            BitConverter.GetBytes(longtitude).CopyTo(coords, 4);
-
-            client.Send(coords);
-
-            if(responseTime.IsRunning)
+            if (update)
             {
-                responseTime.Reset();
+                UnityEngine.Debug.Log("Test");
+                loc = locService.lastData;
+                latitude = loc.latitude;
+                longtitude = loc.longitude;
+
+                BitConverter.GetBytes(latitude).CopyTo(coords, 0);
+                BitConverter.GetBytes(longtitude).CopyTo(coords, 4);
+
+                client.Send(coords);
+
+                if (responseTime.IsRunning)
+                {
+                    responseTime.Reset();
+                }
+                else
+                {
+                    responseTime.Start();
+                }
+
+
+                update = false;
             }
-            else
+
+            if (!waitUpdate.WaitOne(0))
             {
-                responseTime.Start();
+                //place objects on screen or update position if guid already present, store respective guid with object for later use
+                //objects stored in list nearbyObjects which is a list of NearbyObjects that contain lat, long, object type, and id
+                //note: should check which scene is active before drawing, should be able to do that with scenemanager.getactivescene
+
+                waitUpdate.Set();
             }
-            
-
-            update = false;
         }
-
-        if(!waitUpdate.WaitOne(0))
-        {
-            //place objects on screen or update position if guid already present, store respective guid with object for later use
-            //objects stored in list nearbyObjects which is a list of NearbyObjects that contain lat, long, object type, and id
-            //note: should check which scene is active before drawing, should be able to do that with scenemanager.getactivescene
-
-            waitUpdate.Set();
-        }
-
+        catch(Exception) { }
         
     }
 
@@ -216,6 +239,7 @@ public class OverworldNetManager : MonoBehaviour {
 
     private void OnApplicationQuit()
     {
+        appClosed = true;
         try
         {
             client.Shutdown(SocketShutdown.Both);

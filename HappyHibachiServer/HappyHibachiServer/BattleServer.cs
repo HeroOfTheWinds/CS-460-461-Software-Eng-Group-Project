@@ -193,7 +193,11 @@ namespace HappyHibachiServer
                 //NEED TO DEAL WITH SIZES AND STUFF, MAYBE SEND A MESSAGE WITH THE SIZE
                 //for now everything sent as 41 bytes
                 ar.AsyncWaitHandle.WaitOne();
-                handler.EndReceive(ar);
+                if (handler.EndReceive(ar) == 0)
+                {
+                    //ANYTHING ELSE NEED TO BE DONE ON THE SIDE OF THE PERSON WHO DCED?
+                    return;
+                }
 
 
                 byte flags = state.Update[0];

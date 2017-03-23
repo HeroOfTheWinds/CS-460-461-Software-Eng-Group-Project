@@ -101,14 +101,15 @@ namespace HappyHibachiServer
                 }
 
                 players.Add(state.ClientID, state);
+                
 
                 //start receiving client updates
                 handler.BeginReceive(state.Update, 0, UPDATE_SIZE, 0, new AsyncCallback(readUpdate), state);
             }
             //catch connection errors
-            catch (Exception)
+            catch (Exception e)
             {   
-                //Console.WriteLine(e.ToString());
+                Console.WriteLine(e.ToString());
                 Console.WriteLine("\nPlayer disconnected gen com connect");
             }
         }
@@ -125,7 +126,18 @@ namespace HappyHibachiServer
             try
             {
                 ar.AsyncWaitHandle.WaitOne();
-                handler.EndReceive(ar);
+                if (handler.EndReceive(ar) == 0)
+                {
+                    Console.WriteLine("\nPlayer disconnected gen com readUpdate");
+                    lock (DICTIONARY_LOCK)
+                    {
+                        if (players.ContainsKey(state.ClientID))
+                        {
+                            players.Remove(state.ClientID);
+                        }
+                    }
+                    return;
+                }
 
                 byte type = state.Update[0];
 
@@ -316,6 +328,8 @@ namespace HappyHibachiServer
                 //where receiving a 2 in a type 5 com means client busy (0 declined, 1 accepted)
 
                 //temporarily write console message for potential troubleshooting
+
+                //RECEIVED THIS MESSAGE WHEN THIS METHOD SHOULD NOT HAVE BEEN CALLED
                 Console.WriteLine("Received ID not in player table");
             }
         }

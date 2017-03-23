@@ -118,7 +118,11 @@ namespace HappyHibachiServer
                 handler = state.ClientSocket;
 
                 ar.AsyncWaitHandle.WaitOne();
-                handler.EndReceive(ar);
+                if (handler.EndReceive(ar) == 0)
+                {
+                    Console.WriteLine("\nPlayer disconnected overworld readUpdate");
+                    return;
+                }
 
                 //Console.WriteLine(BitConverter.ToSingle(state.Update, 0));
 

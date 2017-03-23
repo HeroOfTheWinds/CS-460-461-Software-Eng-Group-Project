@@ -38,7 +38,7 @@ namespace HappyHibachiServer
         {
             try
             {
-                Console.WriteLine("testing connection");
+                //Console.WriteLine("testing connection");
                 connection.Open();
                 return true;
             }
@@ -128,7 +128,7 @@ namespace HappyHibachiServer
         {
             float lat = System.BitConverter.ToSingle(update, 0);
             float lon = System.BitConverter.ToSingle(update, 4);
-            Console.WriteLine("Updating player coordinates\n");
+            //Console.WriteLine("Updating player coordinates\n");
             //Console.WriteLine("player guid: " + clientID.ToString() + "\n");
             //Console.WriteLine("lat: " + lat);
             //Console.WriteLine("lon: " + lon);
@@ -145,7 +145,7 @@ namespace HappyHibachiServer
 
                 //close connection
                 this.CloseConnection();
-                Console.WriteLine("Player coordinates updated sucessfully");
+                //Console.WriteLine("Player coordinates updated sucessfully");
             }
         }
         //insert client id into db, use this as the key for identifying clients
