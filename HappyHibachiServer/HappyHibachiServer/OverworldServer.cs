@@ -79,7 +79,9 @@ namespace HappyHibachiServer
 
                 byte[] id = new byte[16];
                 handler.Receive(id, 16, 0);
+                
                 state.ClientID = new Guid(id);
+                Console.WriteLine(state.ClientID.ToString());
                 state.ClientSocket = handler;
 
                 TimeoutState addSocket;
@@ -112,11 +114,10 @@ namespace HappyHibachiServer
             Socket handler = null;
             try
             {
-
+                
                 //retreive the state object and socket
                 OverworldState state = (OverworldState)ar.AsyncState;
                 handler = state.ClientSocket;
-
                 ar.AsyncWaitHandle.WaitOne();
                 if (handler.EndReceive(ar) == 0)
                 {
@@ -133,14 +134,12 @@ namespace HappyHibachiServer
                 //next gps update not expected for long enough that it should probably be more efficient to handle parseing and sending synchronously
                 //pretty sure asynch calls require a certain amount of memory overhead, can change if need though
                 send(state);
-
                 handler.BeginReceive(state.Update, 0, UPDATE_SIZE, 0, new AsyncCallback(readUpdate), state);
-
             }
             //end communications gracefully if player disconnects
-            catch (Exception)
+            catch (Exception e)
             {
-                //Console.WriteLine(e.ToString());
+                Console.WriteLine(e.ToString());
                 Console.WriteLine("\nPlayer disconnected overworld readUpdate");
 
             }

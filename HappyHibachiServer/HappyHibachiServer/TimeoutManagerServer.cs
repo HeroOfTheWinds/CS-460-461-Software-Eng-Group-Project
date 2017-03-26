@@ -243,7 +243,13 @@ namespace HappyHibachiServer
 
         public void cleanup()
         {
-            
+            try
+            {
+                clientSocket.Shutdown(SocketShutdown.Both);
+                clientSocket.Close();
+            }
+            catch (Exception) { }
+
             try
             {
                 genComSocket.Shutdown(SocketShutdown.Both);
@@ -260,7 +266,7 @@ namespace HappyHibachiServer
 
             try
             {
-                if (genComSocket != null)
+                if (battleSocket != null)
                 {
                     battleSocket.Shutdown(SocketShutdown.Both);
                     battleSocket.Close();
