@@ -69,7 +69,7 @@ namespace HappyHibachiServer
             byte[] guid = new byte[16];
             Guid battleGUID;
 
-            State state = new State();
+            BattleState state = new BattleState();
 
             // Signal the main thread to continue.
             connectionFound.Set();
@@ -139,7 +139,7 @@ namespace HappyHibachiServer
 
                 // Retrieve the state object and the handler socket
                 // from the asynchronous state object.
-                State state = (State)ar.AsyncState;
+                BattleState state = (BattleState)ar.AsyncState;
                 Socket handler = state.ClientSocket;
 
                 //NEED TO DEAL WITH SIZES AND STUFF, MAYBE SEND A MESSAGE WITH THE SIZE
@@ -174,7 +174,7 @@ namespace HappyHibachiServer
             }
         }
 
-        private static void send(State state)
+        private static void send(BattleState state)
         {
             byte[] isClient = new byte[1] { 0 };
 

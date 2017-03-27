@@ -20,8 +20,8 @@ namespace HappyHibachiServer
         private static ManualResetEventSlim connectionFound = new ManualResetEventSlim();
 
 
-        public static Dictionary<Guid, ComState> players;
-        public static readonly object DICTIONARY_LOCK = new object();
+        //public static Dictionary<Guid, ComState> players;
+        //public static readonly object DICTIONARY_LOCK = new object();
 
 
         public static void startServer()
@@ -31,7 +31,6 @@ namespace HappyHibachiServer
 
             //create tcp listener
             Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            players = new Dictionary<Guid, ComState>();
             try
             {
                 //bind the socket to the endpoint and listen for connections
@@ -66,8 +65,6 @@ namespace HappyHibachiServer
         //async method for connecting to clients
         public static void connect(IAsyncResult ar)
         {
-            ComState state = new ComState();
-
             try
             {
                 //connection finished, allow others to connect
@@ -75,33 +72,37 @@ namespace HappyHibachiServer
 
                 Console.WriteLine("\nPlayer connected gen com");
 
-                state.Update = new byte[UPDATE_SIZE];
+                
 
                 //get socket for client
                 Socket listener = (Socket)ar.AsyncState;
                 Socket handler = listener.EndAccept(ar);
 
-                state.ClientSocket = handler;
+                
 
                 byte[] id = new byte[16];
                 handler.Receive(id, 16, 0);
-                state.ClientID = new Guid(id);
+                Guid clientID = new Guid(id);
 
-                TimeoutState addSocket;
-                lock (TimeoutManagerServer.DICTIONARY_LOCK)
+                ClientState addSocket;
+                lock (ConnectedPlayers.DICTIONARY_LOCK)
                 {
-                    if (TimeoutManagerServer.clientSockets.TryGetValue(state.ClientID, out addSocket))
+                    if (ConnectedPlayers.playerDetails.TryGetValue(clientID, out addSocket))
                     {
-                        addSocket.OverworldSocket = handler;
+                        addSocket.GenComSocket = handler;
                     }
                     else
                     {
-                        TimeoutManagerServer.clientSockets.Add(state.ClientID, new TimeoutState(state.ClientID, handler, null, null, null));
+                        addSocket = new ClientState(handler, null, null, null);
+                        ConnectedPlayers.playerDetails.Add(clientID, addSocket);
                     }
                 }
-
-                players.Add(state.ClientID, state);
-                
+                //link writelock with the playerdetails gencomwritelock for this client
+                ComState state = new ComState(addSocket.GENCOM_WRITE_LOCK);
+                //initialize values
+                state.ClientSocket = handler;
+                state.Update = new byte[UPDATE_SIZE];
+                state.ClientID = clientID;
 
                 //start receiving client updates
                 handler.BeginReceive(state.Update, 0, UPDATE_SIZE, 0, new AsyncCallback(readUpdate), state);
@@ -129,13 +130,6 @@ namespace HappyHibachiServer
                 if (handler.EndReceive(ar) == 0)
                 {
                     Console.WriteLine("\nPlayer disconnected gen com readUpdate");
-                    lock (DICTIONARY_LOCK)
-                    {
-                        if (players.ContainsKey(state.ClientID))
-                        {
-                            players.Remove(state.ClientID);
-                        }
-                    }
                     return;
                 }
 
@@ -179,14 +173,6 @@ namespace HappyHibachiServer
             //end communications gracefully if player disconnects
             catch (Exception)
             {
-                lock(DICTIONARY_LOCK)
-                {
-                    if (players.ContainsKey(state.ClientID))
-                    {
-                        players.Remove(state.ClientID);
-                    }
-                }
-                
                 Console.WriteLine("\nPlayer disconnected gen com readUpdate");
 
             }
@@ -197,18 +183,18 @@ namespace HappyHibachiServer
             byte[] response = new byte[18];
             response[0] = 5;
             state.ClientSocket.Receive(response, 1, 17, 0);
-            ComState opponent;
-            if (players.TryGetValue(getUpdateID(state.Update), out opponent))
+            ClientState opponent;
+            if (ConnectedPlayers.playerDetails.TryGetValue(getUpdateID(state.Update), out opponent))
             {
-                lock(opponent.WRITE_LOCK)
+                lock(opponent.GENCOM_WRITE_LOCK)
                 {
-                    opponent.ClientSocket.Send(response, 17, 0);
+                    opponent.GenComSocket.Send(response, 17, 0);
                 }
             }
             else
             {
                 //need some way to indicate player no longer available
-
+                //Console.WriteLine("What, why am I here?");
                 //temporarily write console message for potential troubleshooting
                 Console.WriteLine("Received ID not in player table");
             }
@@ -311,12 +297,12 @@ namespace HappyHibachiServer
             outUpdate[0] = 0;
             Array.Copy(state.ClientID.ToByteArray(), 0, outUpdate, 1, 16);
             state.ClientSocket.Receive(outUpdate, 17, 16, 0);
-            ComState opponent;
-            if(players.TryGetValue(getUpdateID(state.Update), out opponent))
+            ClientState opponent;
+            if(ConnectedPlayers.playerDetails.TryGetValue(getUpdateID(state.Update), out opponent))
             {
-                lock(opponent.WRITE_LOCK)
+                lock(opponent.GENCOM_WRITE_LOCK)
                 {
-                    opponent.ClientSocket.Send(outUpdate, 17, 0);
+                    opponent.GenComSocket.Send(outUpdate, 17, 0);
                 }
             }
             else
@@ -329,6 +315,7 @@ namespace HappyHibachiServer
 
                 //temporarily write console message for potential troubleshooting
 
+                //Console.WriteLine("I probably shouldn't be here either");
                 //RECEIVED THIS MESSAGE WHEN THIS METHOD SHOULD NOT HAVE BEEN CALLED
                 Console.WriteLine("Received ID not in player table");
             }
@@ -358,8 +345,12 @@ namespace HappyHibachiServer
         private Guid clientID;
         private byte[] update;
         private bool busy;
-        public readonly object WRITE_LOCK = new object();
+        public readonly object WRITE_LOCK;
 
+        public ComState(object wl)
+        {
+            WRITE_LOCK = wl;
+        }
 
         //getters and setters
         public Socket ClientSocket

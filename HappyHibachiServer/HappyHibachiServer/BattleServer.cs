@@ -79,7 +79,7 @@ namespace HappyHibachiServer
                 //tell player which spawn to use
                 byte[] spawn = new byte[1];
                 //stores items for communications
-                State state = new State();
+                BattleState state = new BattleState();
 
                 //get socket for client
                 Socket listener = (Socket)ar.AsyncState;
@@ -90,16 +90,17 @@ namespace HappyHibachiServer
                 handler.Receive(id, 16, 0);
                 state.ClientID = new Guid(id);
 
-                TimeoutState addSocket;
-                lock (TimeoutManagerServer.DICTIONARY_LOCK)
+                ClientState addSocket;
+                lock (ConnectedPlayers.DICTIONARY_LOCK)
                 {
-                    if (TimeoutManagerServer.clientSockets.TryGetValue(state.ClientID, out addSocket))
+                    if (ConnectedPlayers.playerDetails.TryGetValue(state.ClientID, out addSocket))
                     {
-                        addSocket.OverworldSocket = handler;
+                        addSocket.BattleSocket = handler;
                     }
                     else
                     {
-                        TimeoutManagerServer.clientSockets.Add(state.ClientID, new TimeoutState(state.ClientID, null, null, handler, null));
+                        addSocket = new ClientState(null, null, handler, null);
+                        ConnectedPlayers.playerDetails.Add(state.ClientID, addSocket);
                     }
                 }
 
@@ -187,7 +188,7 @@ namespace HappyHibachiServer
                 //STORE HP AND LOCATIONS IN STATE, UPDATE AND USE FOR THINGS (anti-cheat stuff)
 
                 //retreive the state object and socket
-                State state = (State)ar.AsyncState;
+                BattleState state = (BattleState)ar.AsyncState;
                 handler = state.ClientSocket;
 
                 //NEED TO DEAL WITH SIZES AND STUFF, MAYBE SEND A MESSAGE WITH THE SIZE
@@ -222,10 +223,10 @@ namespace HappyHibachiServer
                     //handle winner stuff (DB stuff, etc)
 
                     //clean up
-                    lock(TimeoutManagerServer.DICTIONARY_LOCK)
+                    lock(ConnectedPlayers.DICTIONARY_LOCK)
                     {
-                        TimeoutState removeSocket;
-                        if(TimeoutManagerServer.clientSockets.TryGetValue(state.ClientID, out removeSocket))
+                        ClientState removeSocket;
+                        if(ConnectedPlayers.playerDetails.TryGetValue(state.ClientID, out removeSocket))
                         {
                             removeSocket.BattleSocket = null;
                             //if value not found then connection should already be closed
@@ -246,7 +247,7 @@ namespace HappyHibachiServer
         }
 
         //send updates and acknowledgements
-        private static void send(State state)
+        private static void send(BattleState state)
         {
             //indicate this is an update for the opponent
             byte[] isClient = new byte[1] { 0 };
@@ -345,7 +346,7 @@ namespace HappyHibachiServer
 
 
     // State object for reading client data asynchronously
-    internal class State
+    internal class BattleState
     {
         //lock for asyncronous write operations
         private object writeLock;

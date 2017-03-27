@@ -84,24 +84,30 @@ namespace HappyHibachiServer
                 Console.WriteLine(state.ClientID.ToString());
                 state.ClientSocket = handler;
 
-                TimeoutState addSocket;
-                lock(TimeoutManagerServer.DICTIONARY_LOCK) {
-                    if(TimeoutManagerServer.clientSockets.TryGetValue(state.ClientID, out addSocket))
+                ClientState addSocket;
+                lock (ConnectedPlayers.DICTIONARY_LOCK)
+                {
+                    if (ConnectedPlayers.playerDetails.TryGetValue(state.ClientID, out addSocket))
                     {
-                        addSocket.OverworldSocket = handler;
-                    }
+                        addSocket.OverworldSocket = handler;                    }
                     else
                     {
-                        TimeoutManagerServer.clientSockets.Add(state.ClientID, new TimeoutState(state.ClientID, null, handler, null, null));
+                        addSocket = new ClientState(null, handler, null, null);
+                        ConnectedPlayers.playerDetails.Add(state.ClientID, addSocket);
                     }
                 }
+
+                state.Lat = addSocket.Latitude;
+                state.Lon = addSocket.Longtitude;
+
 
                 //start receiving client updates
                 handler.BeginReceive(state.Update, 0, UPDATE_SIZE, 0, new AsyncCallback(readUpdate), state);
             }
             //catch connection errors
-            catch (Exception)
+            catch (Exception e)
             {
+                //Console.WriteLine(e);
                 Console.WriteLine("\nPlayer disconnected overworld connect");
             }
         }
@@ -128,8 +134,11 @@ namespace HappyHibachiServer
                 //Console.WriteLine(BitConverter.ToSingle(state.Update, 0));
 
                 //process update (GPS coords stored in state.Update) into DB
-                var dbCon = new DatabaseConnect();
-                dbCon.UpdatePlayerCoor(state.Update, state.ClientID);
+                //var dbCon = new DatabaseConnect();
+                //dbCon.UpdatePlayerCoor(state.Update, state.ClientID);
+
+                state.Lat[0] = BitConverter.ToSingle(state.Update, 0);
+                state.Lon[0] = BitConverter.ToSingle(state.Update, 4);
 
                 //next gps update not expected for long enough that it should probably be more efficient to handle parseing and sending synchronously
                 //pretty sure asynch calls require a certain amount of memory overhead, can change if need though
@@ -139,7 +148,7 @@ namespace HappyHibachiServer
             //end communications gracefully if player disconnects
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                //Console.WriteLine(e.ToString());
                 Console.WriteLine("\nPlayer disconnected overworld readUpdate");
 
             }
@@ -157,7 +166,8 @@ namespace HappyHibachiServer
 
             //place gps coords and object's id in lists to be sent (indexes of latitude must be 2i and longtitude 2i+1 where i is the index of the respective objects guid)
             var dbCon = new DatabaseConnect();
-            dbCon.findNearbyObjects(nearbyC, nearbyID);
+
+            dbCon.findNearbyObjects(state.Lat[0], state.Lon[0], nearbyC, nearbyID);
 
             //use latitude to include the type of object it is. Determine if object is a (player, colloseum, landmark) and add (0, 1, 2) * 181 to latitude respectively
             //latitudes range is -90 - 90, so by doing this the type of object can be determined without sending additional data (value < 91: player, 90 < value < 272: colloseum, 271 < value: colloseum)
@@ -193,6 +203,8 @@ namespace HappyHibachiServer
         private Guid clientID;
         private byte[] update;
         private byte[] nearby;
+        private float[] lat;
+        private float[] lon;
 
         //getters and setters
         public Socket ClientSocket
@@ -245,6 +257,32 @@ namespace HappyHibachiServer
             set
             {
                 clientID = value;
+            }
+        }
+
+        public float[] Lat
+        {
+            get
+            {
+                return lat;
+            }
+
+            set
+            {
+                lat = value;
+            }
+        }
+
+        public float[] Lon
+        {
+            get
+            {
+                return lon;
+            }
+
+            set
+            {
+                lon = value;
             }
         }
     }

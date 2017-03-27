@@ -23,9 +23,9 @@ namespace HappyHibachiServer
         private static ManualResetEventSlim connectionFound = new ManualResetEventSlim();
 
         //signal for connections
-        public static Dictionary<Guid, TimeoutState> clientSockets = new Dictionary<Guid, TimeoutState>();
+        //public static Dictionary<Guid, TimeoutState> clientSockets = new Dictionary<Guid, TimeoutState>();
 
-        public static readonly object DICTIONARY_LOCK = new object();
+        //public static readonly object DICTIONARY_LOCK = new object();
 
         public static void startServer()
         {
@@ -70,7 +70,7 @@ namespace HappyHibachiServer
         //async method for connecting to clients
         public static void connect(IAsyncResult ar)
         {
-            TimeoutState state = null;
+            TimeoutState state = new TimeoutState();
             try
             {
                 //connection finished, allow others to connect
@@ -88,33 +88,29 @@ namespace HappyHibachiServer
                 //MAKE SURE TO ADD THIS TO CLIENT SIDE
                 byte[] id = new byte[16];
                 handler.Receive(id, 16, 0);
-                Guid clientID = new Guid(id);
+                state.ClientID = new Guid(id);
+
+                state.ClientSocket = handler;
 
                 //Console.WriteLine("loc 0\n");
 
-
-                lock (DICTIONARY_LOCK)
+                ClientState addSocket;
+                lock (ConnectedPlayers.DICTIONARY_LOCK)
                 {
-                    //Console.WriteLine("loc 0.1\n");
-                    if (clientSockets.TryGetValue(clientID, out state))
+                    if (ConnectedPlayers.playerDetails.TryGetValue(state.ClientID, out addSocket))
                     {
-                        //Console.WriteLine("loc 0.2\n");
-                        state.ClientSocket = handler;
+                        addSocket.TimeoutSocket = handler;
                     }
                     else
                     {
-                        state = new TimeoutState(clientID, null, null, null, handler);
-                        //Console.WriteLine("loc 0.3\n");
-                        clientSockets.Add(clientID, state);
+                        addSocket = new ClientState(null, null, null, handler);
+                        ConnectedPlayers.playerDetails.Add(state.ClientID, addSocket);
                     }
                 }
 
                 //Console.WriteLine("loc 1");
 
-                lock(state.TIMEOUT_LOCK)
-                {
-                    state.startTimeout();
-                }
+                state.startTimeout();
 
                 //Console.WriteLine("loc 2");
 
@@ -140,6 +136,7 @@ namespace HappyHibachiServer
         {
             Socket handler = null;
             TimeoutState state = (TimeoutState)ar.AsyncState;
+
             try
             {
                 //Console.WriteLine("Entered timeout readupdate");
@@ -151,12 +148,9 @@ namespace HappyHibachiServer
                 if(handler.EndReceive(ar) == 0)
                 {
                     Console.WriteLine("\nPlayer disconnected timeout readUpdate");
-                    lock (state.TIMEOUT_LOCK)
+                    if (state.Timeout != null)
                     {
-                        if (state.Timeout != null)
-                        {
-                            state.cleanup();
-                        }
+                        state.cleanup();
                     }
                     
                     return;
@@ -176,12 +170,9 @@ namespace HappyHibachiServer
             {
                 //Console.WriteLine(e.ToString());
                 Console.WriteLine("\nPlayer disconnected timeout readUpdate");
-                lock (state.TIMEOUT_LOCK)
+                if (state.Timeout != null)
                 {
-                    if (state.Timeout != null)
-                    {
-                        state.cleanup();
-                    }
+                    state.cleanup();
                 }
             }
         }
@@ -194,13 +185,8 @@ namespace HappyHibachiServer
     {
         private byte[] testCon = { 0 };
         private Socket clientSocket;
-        private Socket genComSocket;
-        private Socket overworldSocket;
-        private Socket battleSocket;
         private System.Timers.Timer timeout = null;
         private Guid clientID;
-        //private byte numCon = 0;
-        public readonly object TIMEOUT_LOCK = new object();
 
         public System.Timers.Timer Timeout
         {
@@ -212,15 +198,8 @@ namespace HappyHibachiServer
 
         public void startTimeout()
         {
-            lock(TIMEOUT_LOCK)
-            {
-                if (timeout != null)
-                {
-                    timeout.Dispose();
-                }
-                timeout = new System.Timers.Timer(10000);
-                timeout.Elapsed += connectionTimeout;
-            }
+            timeout = new System.Timers.Timer(10000);
+            timeout.Elapsed += connectionTimeout;
         }
 
         public void resetTimeout()
@@ -232,103 +211,59 @@ namespace HappyHibachiServer
         private void connectionTimeout(object sender, ElapsedEventArgs e)
         {
             Console.WriteLine("Connection timeout");
-            lock (TIMEOUT_LOCK)
+            if (timeout != null)
             {
-                if(timeout != null)
-                {
-                    cleanup();
-                }
+                cleanup();
             }
         }
 
         public void cleanup()
         {
-            try
+            ClientState cs;
+            lock(ConnectedPlayers.DICTIONARY_LOCK)
             {
-                clientSocket.Shutdown(SocketShutdown.Both);
-                clientSocket.Close();
-            }
-            catch (Exception) { }
-
-            try
-            {
-                genComSocket.Shutdown(SocketShutdown.Both);
-                genComSocket.Close();
-            }
-            catch (Exception) { }
-
-            try
-            {
-                overworldSocket.Shutdown(SocketShutdown.Both);
-                overworldSocket.Close();
-            }
-            catch (Exception) { }
-
-            try
-            {
-                if (battleSocket != null)
+                if(ConnectedPlayers.playerDetails.TryGetValue(ClientID, out cs))
                 {
-                    battleSocket.Shutdown(SocketShutdown.Both);
-                    battleSocket.Close();
+                    try
+                    {
+                        cs.TimeoutSocket.Shutdown(SocketShutdown.Both);
+                        cs.TimeoutSocket.Close();
+                    }
+                    catch (Exception) { }
+
+                    try
+                    {
+                        cs.GenComSocket.Shutdown(SocketShutdown.Both);
+                        cs.GenComSocket.Close();
+                    }
+                    catch (Exception) { }
+
+                    try
+                    {
+                        cs.OverworldSocket.Shutdown(SocketShutdown.Both);
+                        cs.OverworldSocket.Close();
+                    }
+                    catch (Exception) { }
+
+                    try
+                    {
+                        if (cs.BattleSocket != null)
+                        {
+                            cs.BattleSocket.Shutdown(SocketShutdown.Both);
+                            cs.BattleSocket.Close();
+                        }
+                    }
+                    catch (Exception) { }
+
+                    ConnectedPlayers.playerDetails.Remove(ClientID);
+                }
+                if(timeout != null)
+                {
+                    timeout.Dispose();
+                    timeout = null;
                 }
             }
-            catch (Exception) { }
-
-            lock (TimeoutManagerServer.DICTIONARY_LOCK)
-            {
-                if (TimeoutManagerServer.clientSockets.ContainsKey(ClientID))
-                {
-                    TimeoutManagerServer.clientSockets.Remove(ClientID);
-                }
-            }
-            lock (GenComServer.DICTIONARY_LOCK)
-            {
-                if (GenComServer.players.ContainsKey(ClientID))
-                {
-                    GenComServer.players.Remove(ClientID);
-                }
-            }
-            timeout.Dispose();
-            timeout = null;
-        }
-
-        public Socket BattleSocket
-        {
-            get
-            {
-                return battleSocket;
-            }
-
-            set
-            {
-                battleSocket = value;
-            }
-        }
-
-        public Socket OverworldSocket
-        {
-            get
-            {
-                return overworldSocket;
-            }
-
-            set
-            {
-                overworldSocket = value;
-            }
-        }
-
-        public Socket GenComSocket
-        {
-            get
-            {
-                return genComSocket;
-            }
-
-            set
-            {
-                genComSocket = value;
-            }
+            
         }
 
         public Socket ClientSocket
@@ -368,15 +303,6 @@ namespace HappyHibachiServer
             {
                 clientID = value;
             }
-        }
-
-        public TimeoutState(Guid cid, Socket gcsocket, Socket osocket, Socket bsocket, Socket tsocket)
-        {
-            clientID = cid;
-            genComSocket = gcsocket;
-            overworldSocket = osocket;
-            battleSocket = bsocket;
-            clientSocket = tsocket;
         }
     }
 }

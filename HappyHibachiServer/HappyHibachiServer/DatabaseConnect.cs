@@ -13,6 +13,10 @@ namespace HappyHibachiServer
         private string uid;
         private string password;
 
+        private static readonly int LANDMARK_TYPE = 2;
+        private static readonly int COLOSSEUM_TYPE = 1;
+        private static readonly int PLAYER_TYPE = 0;
+
         //Constructor
         public DatabaseConnect()
         {
@@ -81,48 +85,82 @@ namespace HappyHibachiServer
         }
 
         //Select GUID, Lat, Lon and Type attributes from Player, landmark, and colosseum tables
-        public void findNearbyObjects(List<float> nearbyC, List<Guid> nearbyID)
+        public void findNearbyObjects(float lat, float lon, List<float> nearbyC, List<Guid> nearbyID)
         {
-            string query = "SELECT GUID, LAT, LON, TYPE FROM PLAYER UNION SELECT GUID, LAT, LON, TYPE FROM LANDMARK UNION SELECT GUID, LAT, LON, TYPE FROM COLOSSEUM";
-
-            //Open connection
-            if (this.OpenConnection() == true)
+            string queryLandmark = "SELECT GUID, LAT, LON, TYPE FROM LANDMARK";
+            string queryColosseum = "SELECT GUID, LAT, LON, TYPE FROM COLOSSEUM";
+            try
             {
-                //Create Command
-                MySqlCommand cmd = new MySqlCommand(query, connection);
-                //Create a data reader and Execute the command
-                MySqlDataReader dataReader = cmd.ExecuteReader();
-                //int i = 0;
-                //Read the data and store them in the list
-                //Console.WriteLine("Finding nearby objects:\n");
-                while (dataReader.Read())
+                //Open connection
+                if (OpenConnection() == true)
                 {
-                    //store GUID into nearbyID
-                    //Console.WriteLine(dataReader["GUID"].ToString());
-                    Guid GUID = Guid.Parse(dataReader["GUID"].ToString());
-                    nearbyID.Add(GUID);
+                    //Create Command
+                    MySqlCommand cmd = new MySqlCommand(queryLandmark, connection);
+                    //Create a data reader and Execute the command
+                    MySqlDataReader dataReader = cmd.ExecuteReader();
+                    //int i = 0;
+                    //Read the data and store them in the list
+                    //Console.WriteLine("Finding nearby objects:\n");
+                    while (dataReader.Read())
+                    {
+                        //store GUID into nearbyID
+                        //Console.WriteLine(dataReader["GUID"].ToString());
+                        Guid GUID = Guid.Parse(dataReader["GUID"].ToString());
+                        nearbyID.Add(GUID);
 
-                    //use latitude to include the type of object it is. Determine if object is a (player, colloseum, landmark) and add (0, 1, 2) * 181 to latitude respectively
-                    //latitudes range is -90 - 90, so by doing this the type of object can be determined without sending additional data (value < 91: player, 90 < value < 272: colloseum, 271 < value: colloseum)
-                    nearbyC.Add(float.Parse(dataReader["LAT"].ToString()) + float.Parse(dataReader["TYPE"].ToString()) * 181);
-                    nearbyC.Add(float.Parse(dataReader["LON"].ToString()));
+                        //use latitude to include the type of object it is. Determine if object is a (player, colloseum, landmark) and add (0, 1, 2) * 181 to latitude respectively
+                        //latitudes range is -90 - 90, so by doing this the type of object can be determined without sending additional data (value < 91: player, 90 < value < 272: colloseum, 271 < value: colloseum)
+                        nearbyC.Add(float.Parse(dataReader["LAT"].ToString()) + LANDMARK_TYPE * 181);
+                        nearbyC.Add(float.Parse(dataReader["LON"].ToString()));
 
-                    //i++;
+                    }
 
+                    //close Data Reader
+                    dataReader.Close();
+
+                    //get elements in colosseum db
+                    cmd = new MySqlCommand(queryColosseum, connection);
+                    dataReader = cmd.ExecuteReader();
+                    while (dataReader.Read())
+                    {
+                        //store GUID into nearbyID
+                        //Console.WriteLine(dataReader["GUID"].ToString());
+                        Guid GUID = Guid.Parse(dataReader["GUID"].ToString());
+                        nearbyID.Add(GUID);
+
+                        //use latitude to include the type of object it is. Determine if object is a (player, colloseum, landmark) and add (0, 1, 2) * 181 to latitude respectively
+                        //latitudes range is -90 - 90, so by doing this the type of object can be determined without sending additional data (value < 91: player, 90 < value < 272: colosseum, 271 < value: landmark)
+                        nearbyC.Add(float.Parse(dataReader["LAT"].ToString()) + COLOSSEUM_TYPE * 181);
+                        nearbyC.Add(float.Parse(dataReader["LON"].ToString()));
+
+                    }
+
+                    //Console.WriteLine("\n");
+                    //close Data Reader
+                    dataReader.Close();
+
+                    //close Connection
+                    CloseConnection();
+
+                    foreach(KeyValuePair<Guid, ClientState> cs in ConnectedPlayers.playerDetails)
+                    {
+                        nearbyID.Add(cs.Key);
+                        //LATER ADD MECHANISM TO ONLY GET NEARBY ONES USING LAT AND LON (FOR DB STUFF AS WELL)
+                    }
                 }
-                //Console.WriteLine("\n");
-                //close Data Reader
-                dataReader.Close();
-
-                //close Connection
-                this.CloseConnection();
+                else
+                {
+                    Console.WriteLine("Cannot connect to server.  Contact administrator");
+                }
             }
-            else
+            catch (Exception e)
             {
-                Console.WriteLine("Cannot connect to server.  Contact administrator");
+                Console.WriteLine(e);
+                Console.WriteLine("Error accessing database");
             }
+            
         }
-
+        /*
         //Update player coors based on guid
         public void UpdatePlayerCoor(byte[] update, Guid clientID)
         {
@@ -148,6 +186,8 @@ namespace HappyHibachiServer
                 //Console.WriteLine("Player coordinates updated sucessfully");
             }
         }
+        */
+
         //insert client id into db, use this as the key for identifying clients
         public void insertClientIdintoDB(Guid client_id)
         {

@@ -75,6 +75,7 @@ public class GenComManager : MonoBehaviour {
             Debug.Log("Connect GenCom Successful");
 
             update = new byte[UPDATE_SIZE];
+            update[0] = 255;
             type = new byte[1];
             landmarkInfo = new LandmarkInfo();
             colloseumInfo = new ColloseumInfo();
@@ -240,6 +241,7 @@ public class GenComManager : MonoBehaviour {
                 //when object touched, pack 
                 if (update[0] < 255)
                 {
+                    //Debug.Log("Update detected: " + update[0].ToString());
                     client.Send(update, UPDATE_SIZE, 0);
 
                     if (update[0] == 0)
