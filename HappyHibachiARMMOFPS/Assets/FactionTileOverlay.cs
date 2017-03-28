@@ -8,9 +8,14 @@ public class FactionTileOverlay : MonoBehaviour
 {
     // Overlay transparency
     [Range(0, 1)]
-    public float alpha = 0.5f;
+    public float alpha = 0.65f;
 
-    private float _alpha = 0.5f;
+    private float _alpha = 1f;
+
+    // Backtextures
+    public Texture2D ParagonTex;
+    public Texture2D SlayerTex;
+    public Texture2D HunterTex;
 
     private void Start()
     {
@@ -29,6 +34,14 @@ public class FactionTileOverlay : MonoBehaviour
         // Using tile.x and tile.y as indexing keys
         int tileFaction = 0;
         //-----server code-----//
+        // If we have reached the maximum zoom, get the tile's faction from the server
+        if (tile.zoom == 18)
+        {
+            // Use tile.x and tile.y to construct the query to the dictionary
+            // Server's dictionary should have ints from 0 to 3, and thousands of entries
+
+        }
+        // Otherwise, leave 0 and do nothing
 
         // Set texture based on faction in power
         switch (tileFaction)
@@ -36,18 +49,20 @@ public class FactionTileOverlay : MonoBehaviour
             case 0: // Neutral
                 break;
             case 1: // Paragon
-                tile.overlayBackTexture = Resources.Load<Texture2D>("Paragon_Tile_Blue.png");
+                tile.overlayBackTexture = ParagonTex;
                 break;
             case 2: // Slayer
-                tile.overlayBackTexture = Resources.Load<Texture2D>("Slayer_Tile_Red.png");
+                tile.overlayBackTexture = SlayerTex;
                 break;
             case 3: // Hunter
-                tile.overlayBackTexture = Resources.Load<Texture2D>("Hunter_Tile_Green.png");
+                tile.overlayBackTexture = HunterTex;
                 break;
             default: // Should not reach, error if so
                 // Don't put an overlay
                 break;
         }
+
+        tile.overlayBackAlpha = alpha;
 
         // Load the tile using a standard loader.
         OnlineMaps.instance.StartDownloadTile(tile);
