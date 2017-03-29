@@ -221,9 +221,14 @@ namespace HappyHibachiServer
                 else
                 {
                     //handle winner stuff (DB stuff, etc)
+                    if (win)
+                    {
+                        var dbCon = new DatabaseConnect();
+                        updatePlayerExpAfterBattle(state.ClientID);
+                    }
 
                     //clean up
-                    lock(ConnectedPlayers.DICTIONARY_LOCK)
+                    lock (ConnectedPlayers.DICTIONARY_LOCK)
                     {
                         ClientState removeSocket;
                         if(ConnectedPlayers.playerDetails.TryGetValue(state.ClientID, out removeSocket))

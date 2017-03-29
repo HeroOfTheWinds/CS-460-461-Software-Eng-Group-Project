@@ -248,6 +248,35 @@ namespace HappyHibachiServer
             }
         }
 
+        //select colosseum's name from colosseum based on guid
+        public void updatePlayerExpAfterBattle(Guid winner_id)
+        {
+            //exp is given only to winner of a battle
+            //the exp is currently set to increment by a value of 50 
+            //Later to implement: 
+            //  The level of both players will factor into how much exp the winner gets
+            //  If a player is 10 levels higher than the other then no exp is given
+            // the winner will get more exp if at a lower level and les if higher: need to know opponent_id
+
+            string query = "UPDATE PLAYER SET PLAYER_EXP = PLAYER_EXP + 50 WHERE GUID ='" + winner_id.ToString() + "';";
+            //Open connection
+            if (this.OpenConnection() == true)
+            {
+                //create command and assign the query and connection from the constructor
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+
+                //Execute command
+                cmd.ExecuteNonQuery();
+
+                //close connection
+                this.CloseConnection();
+                Console.WriteLine("Player exp updated sucessfully");
+            }
+            else
+            {
+                Console.WriteLine("Player exp update unsucessful");
+            }
+        }
 
     }
 }
