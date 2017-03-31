@@ -82,9 +82,6 @@
     <Reference Include="UnityEditor.iOS.Extensions.Xcode">
       <HintPath>Library\UnityAssemblies\UnityEditor.iOS.Extensions.Xcode.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEditor.iOS.Extensions.Xcode">
-      <HintPath>Library\UnityAssemblies\UnityEditor.iOS.Extensions.Xcode.dll</HintPath>
-    </Reference>
     <Reference Include="UnityEditor.iOS.Extensions.Common">
       <HintPath>Library\UnityAssemblies\UnityEditor.iOS.Extensions.Common.dll</HintPath>
     </Reference>
@@ -277,6 +274,7 @@
     <Compile Include="Assets\Infinity Code\Online maps\Scripts\XML\OnlineMapsXMLList.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Scripts\XML\OnlineMapsXMLNamespaceManager.cs" />
     <Compile Include="Assets\ItemList.cs" />
+    <Compile Include="Assets\Leaderboard.cs" />
     <Compile Include="Assets\Login.cs" />
     <Compile Include="Assets\MapHUD.cs" />
     <Compile Include="Assets\NetworkManagerCustom.cs" />
@@ -299,8 +297,6 @@
     <Compile Include="Assets\Scripts\LandMarkerScripts\take_picture.cs" />
     <Compile Include="Assets\Scripts\LandMarkerScripts\testbutton.cs" />
     <Compile Include="Assets\Scripts\Landmine.cs" />
-    <Compile Include="Assets\Scripts\Leaderboard\LeaderboardFilter.cs" />
-    <Compile Include="Assets\Scripts\Leaderboard\LeaderboardScroll.cs" />
     <Compile Include="Assets\Scripts\MoveShot.cs" />
     <Compile Include="Assets\ShowPlayerInfo.cs" />
     <Compile Include="Assets\TimeoutManager.cs" />
