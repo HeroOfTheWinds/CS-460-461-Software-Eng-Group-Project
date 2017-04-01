@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Diagnostics;
+using UnityEngine.SceneManagement;
 
 public class BattleNetManager : MonoBehaviour
 {
@@ -135,7 +136,11 @@ public class BattleNetManager : MonoBehaviour
             client.Send(BattleID.ToByteArray());
 
             //gets which spawn to use
-            client.Receive(spawn, 1, 0);
+            if(client.Receive(spawn, 1, 0) == 0)
+            {
+                //if socket closed by server throw exception to return to overworld
+                throw new Exception("Connection timed out");
+            }
             //get player spawn info from index of player given by server
             player.transform.position = spawns[spawn[0]].SpawnPos;
             player.transform.rotation = spawns[spawn[0]].SpawnRot;
@@ -159,8 +164,12 @@ public class BattleNetManager : MonoBehaviour
         //catch exception if fail to connect
         catch (Exception e)
         {
-            UnityEngine.Debug.Log(e.ToString());
-            UnityEngine.Debug.Log("Connection Failure");
+            UnityEngine.Debug.Log(e.Message);
+
+            //display message to user failed to connect to battle
+
+            //send back to overworld
+            SceneManager.LoadScene("Overworld");
         }
     }
 
@@ -195,12 +204,12 @@ public class BattleNetManager : MonoBehaviour
             }
             else
             {
-                UnityEngine.Debug.Log("before mre");
+                //UnityEngine.Debug.Log("before mre");
                 //make sure previous update has completed before overwriting
                 //add a buffer later for increased performance over phone networks with high jitter
                 updateFin.WaitOne();
                 updateFin.Reset();
-                UnityEngine.Debug.Log("after mre");
+                //UnityEngine.Debug.Log("after mre");
                 //asynchronously reveive and handle new update
                 client.BeginReceive(update, 0, UPDATE_SIZE, 0, new AsyncCallback(unpackUpdate), null);
                 //wait until data read before reading more data
@@ -230,7 +239,7 @@ public class BattleNetManager : MonoBehaviour
 
     private void unpackUpdate(IAsyncResult ar)
     {
-        UnityEngine.Debug.Log("begin unpack");
+        //UnityEngine.Debug.Log("begin unpack");
         //complete reading data
         client.EndReceive(ar);
         //signal update read has completed
@@ -241,7 +250,7 @@ public class BattleNetManager : MonoBehaviour
         //ensure not overwriting an update being performed (probably unnecessary due to updateFin, just to be safe)
         lock (I_FLAG_LOCK)
         {
-            UnityEngine.Debug.Log("in i flag lock");
+            //UnityEngine.Debug.Log("in i flag lock");
             //unpack update into EnemyUpdate object
             eUpdate.BattleEnd = (flags & 1) == 1 ? true : false;
             eUpdate.Win = ((flags >> 1) & 1) == 1 ? true : false;
@@ -251,9 +260,9 @@ public class BattleNetManager : MonoBehaviour
             eUpdate.Mso = ((flags >> 5) & 1) == 1 ? true : false;
             eUpdate.Phit = ((flags >> 6) & 1) == 1 ? true : false;
 
-            UnityEngine.Debug.Log("I must be the culprit");
+            //UnityEngine.Debug.Log("I must be the culprit");
             eUpdate.addUpdate(BitConverter.ToSingle(update, 1), BitConverter.ToSingle(update, 5), BitConverter.ToSingle(update, 9), updateTime.ElapsedMilliseconds);
-            UnityEngine.Debug.Log("I probably won't be reached");
+            //UnityEngine.Debug.Log("I probably won't be reached");
             eUpdate.Sfx = BitConverter.ToSingle(update, 13);
             eUpdate.Sfz = BitConverter.ToSingle(update, 17);
             eUpdate.Sfrx = BitConverter.ToSingle(update, 21);
@@ -264,7 +273,7 @@ public class BattleNetManager : MonoBehaviour
 
             //signal to main thread to update opponent
             receiveUpdate = true;
-            UnityEngine.Debug.Log("set receive update: " + receiveUpdate);
+            //UnityEngine.Debug.Log("set receive update: " + receiveUpdate);
         }
         
         //Debug.Log("end unpack");
@@ -286,14 +295,14 @@ public class BattleNetManager : MonoBehaviour
             //ensure update isn't overwritten
             lock(I_FLAG_LOCK)
             {
-                UnityEngine.Debug.Log("Receive update: " + receiveUpdate);
+                //UnityEngine.Debug.Log("Receive update: " + receiveUpdate);
                 //run update if available
                 if (receiveUpdate)
                 {
-                    UnityEngine.Debug.Log("Before run update");
+                    //UnityEngine.Debug.Log("Before run update");
                     //run the stored update on the opponent
                     eUpdate.runUpdate(controller, opponent);
-                    UnityEngine.Debug.Log("After run update");
+                    //UnityEngine.Debug.Log("After run update");
                     //Debug.Log("Update run");
 
                     //signal that the update has been run
@@ -401,6 +410,8 @@ public class BattleNetManager : MonoBehaviour
     {
         byte flags = 0;
         //convert flags into a byte
+        //battle end and win flags dealt with by server
+        //REMOVE THESE AFTER SWITHCED
         if (controller.BattleEnd) flags += 1;
         if (controller.Win) flags += (1 << 1);
         if (controller.Sf) flags += (1 << 2);
@@ -408,6 +419,8 @@ public class BattleNetManager : MonoBehaviour
         if (controller.Mp) flags += (1 << 4);
         if (controller.Mso) flags += (1 << 5);
         if (controller.Ehit) flags += (1 << 6);
+        //if (controller.Mho) flags += (1 << 7);
+        
 
         return flags;
     }

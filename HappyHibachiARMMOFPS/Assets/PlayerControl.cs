@@ -58,10 +58,12 @@ public class PlayerControl : MonoBehaviour {
     private bool hpr = false;
     //was a mine placed?
     private bool mp = false;
-    //was a mine set off? (unused)
+    //was a mine set off?
     private bool mso = false;
     //did a shot hit the player?
     private bool ehit = false;
+    //did a set off mine hit the opponent as well
+    private bool mho = false;
 
     //where was the player when it fired the shot?
     //x and z coords
@@ -202,12 +204,12 @@ public class PlayerControl : MonoBehaviour {
                         ehit = true;
                         Debug.Log("Hit enemy");
                         // Spawn some sparks to let you know you hit them
-                        GameObject sparks = (GameObject)Instantiate(SparkSys, hit.point, Quaternion.identity);
+                        GameObject sparks = Instantiate(SparkSys, hit.point, Quaternion.identity);
                         break;
                     default:
                         // Other cases to consider: wall, arena border, ground
                         // Spawn a cloud of dust
-                        GameObject dust = (GameObject)Instantiate(DustSys, hit.point, Quaternion.identity);
+                        GameObject dust = Instantiate(DustSys, hit.point, Quaternion.identity);
                         break;
                 }
             }
@@ -235,7 +237,7 @@ public class PlayerControl : MonoBehaviour {
     {
         
             // Instantiate a landmine at specified location
-            GameObject mine = (GameObject) Instantiate(minePrefab, position, rotation);
+            GameObject mine = Instantiate(minePrefab, position, rotation);
 
             // Tell the Landmine who placed it so it doesn't instantly blow up in their face (literally)
             // We're using the instance ID so that it is a unique identifier
@@ -245,7 +247,7 @@ public class PlayerControl : MonoBehaviour {
     public void DisplayLoss()
     {
         // Battle was lost, so create a lose screen overlay
-        GameObject loss = (GameObject)Instantiate(LoseCanvas);
+        GameObject loss = Instantiate(LoseCanvas);
 
         // Set it to render over the local Main Camera
         loss.GetComponent<Canvas>().worldCamera = Camera.main;
@@ -257,7 +259,7 @@ public class PlayerControl : MonoBehaviour {
     public void DisplayWin()
     {
         // Battle was won, so create a win screen overlay
-        GameObject win = (GameObject)Instantiate(WinCanvas);
+        GameObject win = Instantiate(WinCanvas);
 
         // Set it to render over the local Main Camera
         win.GetComponent<Canvas>().worldCamera = Camera.main;
@@ -269,7 +271,7 @@ public class PlayerControl : MonoBehaviour {
     //used to draw enemy shots
     public void makeShot(Vector3 shotPos, Quaternion shotRot, Vector3 endPoint)
     {
-        GameObject shot = (GameObject)Instantiate(shotPrefab, shotPos, shotRot);
+        GameObject shot = Instantiate(shotPrefab, shotPos, shotRot);
 
         // Re-orient shot to travel toward hit point, if applicable
         if (endPoint != Vector3.zero)
@@ -469,6 +471,19 @@ public class PlayerControl : MonoBehaviour {
         set
         {
             ehit = value;
+        }
+    }
+
+    public bool Mho
+    {
+        get
+        {
+            return mho;
+        }
+
+        set
+        {
+            mho = value;
         }
     }
 }

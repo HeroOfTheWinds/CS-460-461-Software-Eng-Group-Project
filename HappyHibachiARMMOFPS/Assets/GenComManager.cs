@@ -25,6 +25,7 @@ public class GenComManager : MonoBehaviour {
     private byte[] data;
 
     private static readonly object UPDATE_LOCK = new object();
+    private static readonly object TIMEOUT_LOCK = new object();
     private Timer timeout;
 
     private byte outAccepted;
@@ -36,12 +37,15 @@ public class GenComManager : MonoBehaviour {
 
     private ManualResetEvent processed;
 
+    private bool ackReceived;
+
     //connected socket
     private Socket client;
 
     private bool appClosed = false;
 
     //call on event where player touches something
+    //for type 5 com (battle response) objID should be the ID of the player that challenged me (stored in BattleNetManager.OpponentID)
     public static void setUpdate(byte type, Guid objID)
     {
         lock(UPDATE_LOCK)
@@ -76,6 +80,7 @@ public class GenComManager : MonoBehaviour {
 
             update = new byte[UPDATE_SIZE];
             update[0] = 255;
+            ackReceived = false;
             type = new byte[1];
             landmarkInfo = new LandmarkInfo();
             colloseumInfo = new ColloseumInfo();
@@ -120,13 +125,6 @@ public class GenComManager : MonoBehaviour {
             byte[] sizebuf = new byte[2];
             short size;
 
-            //INSTEAD OF CATCHING RESPONSE ASYNC AFTER UPDATE, SET TIMEOUT, MAKE IT A TYPE 5 COM
-            //ON TIMEOUT SET FLAG TO DISABLE INCOMING TYPE 5 COM (can just change battleid in battlenetmanager)
-            //ALSO HAVE BATTLE ID SENT BACK AND COMPARE IN CASE OLD TRYS TO INTERFERE WITH A NEW ONE
-            //WHILE REQUEST OUT, DISABLE CERTAIN THINGS, SUCH AS SENDING MORE BATTLE REQUESTS
-            //ALSO DISABLE INCOMING, HAVE IT RESPOND BUSY
-            //ALSO DISABLE OUTGOING ON INCOMING UNTIL ACCEPT OR DECLINE
-            //probably also should add some kind of disable after challenge so user cant spam someone with challenges (challenge cooldown)
             switch (type[0])
             {
                 case 0:
@@ -151,12 +149,12 @@ public class GenComManager : MonoBehaviour {
                     size = BitConverter.ToInt16(sizebuf, 0);
                     infoBuf = new byte[size];
                     client.Receive(infoBuf, 0, size, 0);
-                    colloseumInfo.Name = ASCIIEncoding.ASCII.GetString(infoBuf);
+                    colloseumInfo.Name = Encoding.ASCII.GetString(infoBuf);
                     client.Receive(sizebuf, 0, 2, 0);
                     size = BitConverter.ToInt16(sizebuf, 0);
                     infoBuf = new byte[size];
                     client.Receive(infoBuf, 0, size, 0);
-                    colloseumInfo.Description = ASCIIEncoding.ASCII.GetString(infoBuf);
+                    colloseumInfo.Description = Encoding.ASCII.GetString(infoBuf);
 
                     //receive info relevant to colloseum (rankings, etc)
                     //for now just name and description
@@ -169,12 +167,12 @@ public class GenComManager : MonoBehaviour {
                     size = BitConverter.ToInt16(sizebuf, 0);
                     infoBuf = new byte[size];
                     client.Receive(infoBuf, 0, size, 0);
-                    landmarkInfo.Name = ASCIIEncoding.ASCII.GetString(infoBuf);
+                    landmarkInfo.Name = Encoding.ASCII.GetString(infoBuf);
                     client.Receive(sizebuf, 0, 2, 0);
                     size = BitConverter.ToInt16(sizebuf, 0);
                     infoBuf = new byte[size];
                     client.Receive(infoBuf, 0, size, 0);
-                    landmarkInfo.Description = ASCIIEncoding.ASCII.GetString(infoBuf);
+                    landmarkInfo.Description = Encoding.ASCII.GetString(infoBuf);
                     client.Receive(sizebuf, 0, 2, 0);
                     size = BitConverter.ToInt16(sizebuf, 0);
                     infoBuf = new byte[size];
@@ -186,7 +184,6 @@ public class GenComManager : MonoBehaviour {
                     break;
                 case 3:
                     //what is the message being sent from server (special com)
-                    //implement later
                     processed.Reset();
                     processed.WaitOne();
                     break;
@@ -201,6 +198,10 @@ public class GenComManager : MonoBehaviour {
                     processed.WaitOne();
                     break;
                 case 5:
+                    lock(TIMEOUT_LOCK)
+                    {
+                        ackReceived = true;
+                    }
                     infoBuf = new byte[16];
                     //get battle id first
                     client.Receive(infoBuf, 16, 0);
@@ -209,15 +210,15 @@ public class GenComManager : MonoBehaviour {
                     client.Receive(infoBuf, 1, 0);
                     //check if expected battle id and set outAccepted accordingly
                     outAccepted = battleID == BattleNetManager.BattleID ? infoBuf[0] : (byte)3;
-
-
-                    processed.Reset();
-                    processed.WaitOne();
+                    
                     break;
                 default:
                     Debug.Log("Unexpected type");
                     break;
             }
+
+            processed.Reset();
+            processed.WaitOne();
 
             client.BeginReceive(type, 0, 1, 0, new AsyncCallback(updateDriver), null);
         }
@@ -246,21 +247,38 @@ public class GenComManager : MonoBehaviour {
 
                     if (update[0] == 0)
                     {
-                        Guid battleID = new Guid();
+                        Guid battleID = Guid.NewGuid();
                         BattleNetManager.BattleID = battleID;
                         BattleNetManager.OpponentID = getUpdateID(update);
                         client.Send(battleID.ToByteArray());
-                        //use this to receive acknoledgement when opponent received request
-                        //latency between starting timer on confirmation approximates adjustment for travel time for receiving the accept/decline packet
-                        //client.Receive(requestReceived, 0, 1, 0);
-                        //timeout = new Timer(setTimeout, null, 0, 15000);
+                        //one second wait period before starting timer should account for network latency
+                        timeout = new Timer(setTimeout, null, 1000, 15000);
+
+                        //might want to display timer to screen
                     }
                     else if (update[0] == 5)
                     {
+                        byte[] ack = new byte[1];
                         byte[] temp = new byte[17];
                         Array.Copy(BattleNetManager.BattleID.ToByteArray(), temp, 16);
                         temp[16] = inAccepted ? (byte)1 : (byte)0;
                         client.Send(temp, 17, 0);
+                        if(inAccepted)
+                        {
+                            //get acknowledgment that opponent still connected
+                            client.Receive(ack, 1, 0);
+                            if(ack[0] == 1)
+                            {
+                                //send user to battle scene
+                                SceneManager.LoadScene("Battle");
+                            }
+                            else
+                            {
+
+                                //indicate that opponent no longer available
+
+                            }
+                        }
                     }
                 }
                 update[0] = 255;
@@ -274,6 +292,7 @@ public class GenComManager : MonoBehaviour {
                 {
                     case 0:
                         //tell user they have been challenged and ask if accept
+                        //display for 15 seconds
                         //store whether they accept or not using method respondMatch(bool accepted)
                         //after user responds to match, call setUpdate(5, BattleNetManager.OpponenetID)
                         //if user accepted the request switch to the battle scene (will add final stage of verification both users connecting later)
@@ -289,7 +308,6 @@ public class GenComManager : MonoBehaviour {
                         break;
                     case 3:
                         //show user special com details
-                        //not implemented yet
                         break;
                     case 4:
                         //show user items they received, stored in itemInfo (list of byte item ids)
@@ -301,6 +319,9 @@ public class GenComManager : MonoBehaviour {
                     case 5:
                         if (outAccepted == 1)
                         {
+                            //pause for two seconds to give user time to comprehend what's going on in case ack received quickly
+                            Thread.Sleep(2000);
+                            //send user to battle scene
                             SceneManager.LoadScene("Battle");
                         }
                         else if (outAccepted == 0)
@@ -328,14 +349,23 @@ public class GenComManager : MonoBehaviour {
     private static Guid getUpdateID(byte[] update)
     {
         byte[] temp = new byte[16];
-        Array.Copy(update, temp, 16);
+        Array.Copy(update, 1, temp, 0, 16);
         return new Guid(temp);
     }
 
-    private void setTimout(object state)
+    private void setTimeout(object state)
     {
-        BattleNetManager.BattleID = new Guid();
-        timeout = null;
+        lock(TIMEOUT_LOCK)
+        {
+            if (!ackReceived)
+            {
+                BattleNetManager.BattleID = new Guid();
+                timeout.Dispose();
+                timeout = null;
+
+                //tell user the battle request timed out
+            }
+        } 
     }
 
     private void OnApplicationQuit()
