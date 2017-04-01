@@ -1,13 +1,14 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityStandardAssets.CrossPlatformInput;
+using System;
 
 public class EnemyUpdate
 {
     //where was the opponent when it sent the update?
-    private float xPos = 0;
-    private float zPos = 0;
-    private float rot = 0;
+    //private float xPos = 0;
+    //private float zPos = 0;
+    //private float rot = 0;
     
     //flags, least sig to most sig bit
     //is the battle over?
@@ -41,10 +42,88 @@ public class EnemyUpdate
     private float mpx = 0;
     private float mpz = 0;
 
-    void Start()
+    private static readonly int MAX_RECORDS = 5;
+    private int numRecords;
+    //store time as double precision to ensure minimal loss of precision (battle should never last long enough to overflow a float, but use doubles just to be safer)
+    private double[] t;
+    private float[] x;
+    private float[] z;
+    private float[] r;
+    //store last time for interpolation
+    private double lastT;
+
+    private bool updateRun;
+
+    public void addUpdate(float xPos, float zPos, float rot, double time)
+    {
+        Debug.Log("num records = " + numRecords);
+        //if buffer isn't full, store update in next position
+        if(numRecords < MAX_RECORDS)
+        {
+            x[numRecords] = xPos;
+            z[numRecords] = zPos;
+            r[numRecords] = rot;
+            t[numRecords] = time;
+            numRecords++;
+        }
+        //if buffer full, shift updates to the left and place current update at the end
+        else
+        {
+            Array.Copy(x, 1, x, 0, MAX_RECORDS - 1);
+            x[MAX_RECORDS - 1] = xPos;
+            Array.Copy(z, 1, z, 0, MAX_RECORDS - 1);
+            z[MAX_RECORDS - 1] = zPos;
+            Array.Copy(r, 1, r, 0, MAX_RECORDS - 1);
+            r[MAX_RECORDS - 1] = rot;
+            Array.Copy(t, 1, t, 0, MAX_RECORDS - 1);
+            t[MAX_RECORDS - 1] = time;
+        }
+    }
+
+    public EnemyUpdate()
     {
         // Retrieve Attack stat
         attack = GameObject.FindGameObjectWithTag("Enemy").GetComponent<EnemyStatus>().getAttack();
+        t = new double[MAX_RECORDS];
+        x = new float[MAX_RECORDS];
+        z = new float[MAX_RECORDS];
+        r = new float[MAX_RECORDS];
+        //initialize first record to initial opponent position at time 0;
+        t[0] = 0;
+        x[0] = 0;
+        z[0] = 12;
+        r[0] = 180;
+        lastT = 0;
+        numRecords = 1;
+        updateRun = false;
+    }
+
+    public void extrapolateMotion(double time, GameObject enemy)
+    {
+        //do not extrapolate motion until at least one update is received and run
+        if(updateRun)
+        {
+            float xPos, zPos, rot;
+            double[] a = new double[numRecords + 1];
+            double[] h = new double[numRecords + 1];
+            bSpline2Coef(numRecords, x, ref a, ref h);
+            xPos = bSpline2Eval(numRecords, a, h, time);
+            bSpline2Coef(numRecords, z, ref a, ref h);
+            zPos = bSpline2Eval(numRecords, a, h, time);
+            bSpline2Coef(numRecords, r, ref a, ref h);
+            rot = bSpline2Eval(numRecords, a, h, time);
+
+            //set up enemy's position and rotation from extrapolation
+            Vector3 updateVector = new Vector3(xPos, 0, zPos);
+            Quaternion updateQuat = Quaternion.Euler(0, rot, 0);
+
+            //set enemy position and rotation
+            enemy.transform.position = updateVector;
+            enemy.transform.rotation = updateQuat;
+
+            lastT = time;
+        }
+        
     }
 
     public void runUpdate(PlayerControl controller, GameObject enemy)
@@ -52,14 +131,45 @@ public class EnemyUpdate
         //Debug.Log(battleEnd);
         //Debug.Log("update run start");
         //Debug.Log(rot);
+        updateRun = true;
+        double time = t[numRecords - 1];
+        //interpolate 4 subintervals between last position and this position
+        double interval = (time - lastT) / 5;
+
+        float xPos, zPos, rot;
+        double[] a = new double[numRecords + 1];
+        double[] h = new double[numRecords + 1];
+        Vector3 updateVector;
+        Quaternion updateQuat;
+
+        //only estimate for 4 subintervals, use exact position for end point
+        for (int i = 0; i < 4; i++)
+        {
+            //start at the first time interval after current position
+            lastT += interval;
+            bSpline2Coef(numRecords, x, ref a, ref h);
+            xPos = bSpline2Eval(numRecords, a, h, lastT);
+            bSpline2Coef(numRecords, z, ref a, ref h);
+            zPos = bSpline2Eval(numRecords, a, h, lastT);
+            bSpline2Coef(numRecords, r, ref a, ref h);
+            rot = bSpline2Eval(numRecords, a, h, lastT);
+            updateVector = new Vector3(xPos, 0, zPos);
+            updateQuat = Quaternion.Euler(0, rot, 0);
+            enemy.transform.position = updateVector;
+            enemy.transform.rotation = updateQuat;
+        }
+
 
         //set up enemy's position and rotation from update
-        Vector3 updateVector = new Vector3(xPos, 0, zPos);
-        Quaternion updateQuat = Quaternion.Euler(0, rot, 0);
+        updateVector = new Vector3(x[numRecords - 1], 0, z[numRecords - 1]);
+        updateQuat = Quaternion.Euler(0, r[numRecords - 1], 0);
 
         //set enemy position and rotation
         enemy.transform.position = updateVector;
         enemy.transform.rotation = updateQuat;
+
+        //set the last time to the update time
+        lastT = time;
 
         //Debug.Log("update run end");
 
@@ -128,6 +238,55 @@ public class EnemyUpdate
         {
             enemy.GetComponent<EnemyStatus>().RestoreHP(50f);
         }
+    }
+
+    void bSpline2Coef(int n, float[] y, ref double[] a, ref double[] h)
+    {
+        int i;
+        double delta, gamma, p, q, r;
+        for (i = 1; i < n; i++)
+        {
+            h[i] = t[i] - t[i - 1];
+        }
+
+        h[0] = h[1];
+        h[n] = h[n - 1];
+        delta = -1;
+        gamma = 2 * y[0];
+        p = delta * gamma;
+        q = 2;
+        for (i = 1; i < n; i++)
+        {
+            r = h[i + 1] / h[i];
+            delta = -r * delta;
+            gamma = -r * gamma + y[i] * (r + 1);
+            p = p + gamma * delta;
+            q = q + Math.Pow(delta, 2);
+        }
+        a[0] = -p / q;
+        for (i = 1; i < n + 1; i++)
+        {
+            a[i] = ((h[i - 1] + h[i]) * y[i - 1] - h[i] * a[i - 1]) / h[i - 1];
+        }
+    }
+
+    //compute approximate value of function at given point
+    float bSpline2Eval(int n, double[] a, double[] h, double x)
+    {
+        int i;
+        double d, e;
+        for (i = n - 2; n >= 0; i--)
+        {
+            if (x - t[i] >= 0)
+            {
+                break;
+            }
+        }
+        i++;
+        d = (a[i + 1] * (x - t[i - 1]) + a[i] * (t[i] - x + h[i + 1])) / (h[i] + h[i + 1]);
+        e = (a[i] * (x - t[i - 1] + h[i - 1]) + a[i - 1] * (t[i - 1] - x + h[i])) / (h[i - 1] + h[i]);
+        //need a value in single precision for usage with unity methods
+        return (float)((d * (x - t[i - 1]) + e * (t[i] - x)) / h[i]);
     }
 
 
@@ -261,7 +420,7 @@ public class EnemyUpdate
             mpz = value;
         }
     }
-
+    /*
     public float XPos
     {
         get
@@ -300,7 +459,7 @@ public class EnemyUpdate
             rot = value;
         }
     }
-
+    */
     public float Sfrx
     {
         get
@@ -352,4 +511,21 @@ public class EnemyUpdate
             phit = value;
         }
     }
+
+    /*
+    public int NumRecords
+    {
+        set
+        {
+            if(value <= MAX_RECORDS)
+            {
+                numRecords = value;
+            }
+            else
+            {
+                numRecords = MAX_RECORDS;
+            }
+        }
+    }
+    */
 }

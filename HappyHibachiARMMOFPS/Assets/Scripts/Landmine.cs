@@ -29,7 +29,7 @@ public class Landmine : MonoBehaviour {
         // If the collider entering the detonation range isn't the placer, create explosion
         if (other.gameObject.GetInstanceID() != placer)
         {
-            GameObject explosion = (GameObject) Instantiate(Explosion, transform.position, transform.rotation); // Just the graphics
+            GameObject explosion = Instantiate(Explosion, transform.position, transform.rotation); // Just the graphics
 
             // Find everyone in range
             Collider[] hitPlayers = Physics.OverlapSphere(transform.position, 6f);

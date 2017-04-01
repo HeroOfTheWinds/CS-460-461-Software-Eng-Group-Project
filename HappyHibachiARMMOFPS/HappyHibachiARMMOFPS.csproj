@@ -96,16 +96,13 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\ARCamera.cs" />
     <Compile Include="Assets\ARControl.cs" />
     <Compile Include="Assets\BattleNetManager.cs" />
     <Compile Include="Assets\CallLandmark.cs" />
-    <Compile Include="Assets\DeviceRotation.cs" />
     <Compile Include="Assets\EnemyStatus.cs" />
     <Compile Include="Assets\EnemyUpdate.cs" />
     <Compile Include="Assets\FactionTileOverlay.cs" />
     <Compile Include="Assets\GenComManager.cs" />
-    <Compile Include="Assets\HanoiPuzzle.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Examples (API usage)\AMapSearchExample.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Examples (API usage)\BingMapsElevationsExample.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Examples (API usage)\BingMapsLocationAPIExample.cs" />
@@ -281,9 +278,9 @@
     <Compile Include="Assets\Infinity Code\Online maps\Scripts\XML\OnlineMapsXMLList.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Scripts\XML\OnlineMapsXMLNamespaceManager.cs" />
     <Compile Include="Assets\ItemList.cs" />
-    <Compile Include="Assets\Landmine.cs" />
+    <Compile Include="Assets\Leaderboard.cs" />
     <Compile Include="Assets\Login.cs" />
-    <Compile Include="Assets\MoveShot.cs" />
+    <Compile Include="Assets\MapHUD.cs" />
     <Compile Include="Assets\NetworkManagerCustom.cs" />
     <Compile Include="Assets\OverworldNetManager.cs" />
     <Compile Include="Assets\Player.cs" />
@@ -291,6 +288,10 @@
     <Compile Include="Assets\PlayerStatus.cs" />
     <Compile Include="Assets\Register.cs" />
     <Compile Include="Assets\ReturnToOverworld.cs" />
+    <Compile Include="Assets\Scripts\ARCamera.cs" />
+    <Compile Include="Assets\Scripts\DeviceRotation.cs" />
+    <Compile Include="Assets\Scripts\FactionTileOverlay.cs" />
+    <Compile Include="Assets\Scripts\HanoiPuzzle.cs" />
     <Compile Include="Assets\Scripts\LandMarkerScripts\LandmarkCamera.cs" />
     <Compile Include="Assets\Scripts\LandMarkerScripts\LandmarkClass.cs" />
     <Compile Include="Assets\Scripts\LandMarkerScripts\SendLandmark.cs" />
@@ -299,8 +300,10 @@
     <Compile Include="Assets\Scripts\LandMarkerScripts\get_coordinates.cs" />
     <Compile Include="Assets\Scripts\LandMarkerScripts\take_picture.cs" />
     <Compile Include="Assets\Scripts\LandMarkerScripts\testbutton.cs" />
+    <Compile Include="Assets\Scripts\Landmine.cs" />
     <Compile Include="Assets\Scripts\Leaderboard\LeaderboardFilter.cs" />
     <Compile Include="Assets\Scripts\Leaderboard\LeaderboardScroll.cs" />
+    <Compile Include="Assets\Scripts\MoveShot.cs" />
     <Compile Include="Assets\ShowPlayerInfo.cs" />
     <Compile Include="Assets\TimeoutManager.cs" />
     <Compile Include="Assets\UI\button.cs" />
@@ -310,12 +313,13 @@
     <Compile Include="Assets\UI\nearbyPlayers.cs" />
     <Compile Include="Assets\UI\start.cs" />
     <Compile Include="Assets\ViewLandmark.cs" />
+    <Compile Include="Assets\WantedNotice.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\FactionShader.shader" />
     <None Include="Assets\Infinity Code\Online maps\Shaders\TilesetCutoutShader.shader" />
     <None Include="Assets\Infinity Code\Online maps\Shaders\TilesetDrawingElement.shader" />
     <None Include="Assets\Infinity Code\Online maps\Shaders\TilesetShader.shader" />
+    <None Include="Assets\Shaders\FactionShader.shader" />
     <None Include="Assets\Shaders\InvisibleInvisibleShadowCaster.shader" />
     <None Include="Assets\Standard Assets\Cameras\CameraGuidelines.txt" />
     <None Include="Assets\Standard Assets\CrossPlatformInput\CrossPlatformInputGuidelines.txt" />

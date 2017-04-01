@@ -200,10 +200,10 @@
     <Compile Include="Assets\Infinity Code\Online maps\Scripts\Editor\PropertyDrawers\OnlineMapsRangePropertyDrawer.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\FactionShader.shader" />
     <None Include="Assets\Infinity Code\Online maps\Shaders\TilesetCutoutShader.shader" />
     <None Include="Assets\Infinity Code\Online maps\Shaders\TilesetDrawingElement.shader" />
     <None Include="Assets\Infinity Code\Online maps\Shaders\TilesetShader.shader" />
+    <None Include="Assets\Shaders\FactionShader.shader" />
     <None Include="Assets\Shaders\InvisibleInvisibleShadowCaster.shader" />
     <None Include="Assets\Standard Assets\Cameras\CameraGuidelines.txt" />
     <None Include="Assets\Standard Assets\CrossPlatformInput\CrossPlatformInputGuidelines.txt" />

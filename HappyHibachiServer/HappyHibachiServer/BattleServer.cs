@@ -66,29 +66,44 @@ namespace HappyHibachiServer
         //async method for connecting to clients
         public static void connect(IAsyncResult ar)
         {
+            //connection finished, allow others to connect
+            connectionFound.Set();
+
+            Console.WriteLine("\nPlayer connected");
+            //hold data about the incoming request
+            WaitConnection wait;
+            byte[] guid = new byte[16];
+            Guid battleGUID;
+            //tell player which spawn to use
+            byte[] spawn = new byte[1];
+            //stores items for communications
+            BattleState state = new BattleState();
+
+            //get socket for client
+            Socket listener = (Socket)ar.AsyncState;
+            Socket handler = listener.EndAccept(ar);
             try
             {
-                //connection finished, allow others to connect
-                connectionFound.Set();
-
-                Console.WriteLine("\nPlayer connected");
-                //hold data about the incoming request
-                WaitConnection wait;
-                byte[] guid = new byte[16];
-                Guid battleGUID;
-                //tell player which spawn to use
-                byte[] spawn = new byte[1];
-                //stores items for communications
-                BattleState state = new BattleState();
-
-                //get socket for client
-                Socket listener = (Socket)ar.AsyncState;
-                Socket handler = listener.EndAccept(ar);
-
-                //ADD TO CLIENT SIDE SO SENDS CLIENT ID
                 byte[] id = new byte[16];
                 handler.Receive(id, 16, 0);
                 state.ClientID = new Guid(id);
+            }
+            //separate try catches so second portion not hit until clientid set
+            catch(Exception)
+            {
+                try
+                {
+                    //try to cleanly close connection
+                    handler.Shutdown(SocketShutdown.Both);
+                    handler.Close();
+                }
+                catch (Exception) { }
+            }
+
+            try
+            {
+                //retrieve player level from the db and use to create player stats
+                state.ClientStats = new PlayerStats(new DatabaseConnect().getPlayerLevel(state.ClientID));
 
                 ClientState addSocket;
                 lock (ConnectedPlayers.DICTIONARY_LOCK)
@@ -120,8 +135,9 @@ namespace HappyHibachiServer
                     //if this is the first player, add the guid to the dictionary with a waitconnection object holding this client's socket
                     if (!inDict)
                     {
-                        wait = new WaitConnection(handler);
+                        wait = new WaitConnection(handler, state.ClientStats);
                         wait.WriteLock = new object();
+                        wait.StatsLock = new object();
                         waiting.Add(battleGUID, wait);
                     }
                 }
@@ -130,9 +146,12 @@ namespace HappyHibachiServer
                 {
                     //set second socket to this client's socket
                     wait.Socket2 = handler;
+                    wait.P2 = state.ClientStats;
                     //set this client's opponent to the first client in wait
                     state.OpponentSocket = wait.Socket1;
+                    state.OpponentStats = wait.P1;
                     state.WriteLock = wait.WriteLock;
+                    state.StatsLock = wait.StatsLock;
                     //set event indicating both clients are connected
                     wait.setWait();
                     //indicate to client to spawn at second location
@@ -142,11 +161,18 @@ namespace HappyHibachiServer
                 {
                     //add some sort of timeout?
                     //wait until second client connects
-                    wait.Wait.Wait();
+                    if(!wait.Wait.Wait(5000))
+                    {
+                        //remove from waiting list, and throw exception so connection cleaned up
+                        waiting.Remove(battleGUID);
+                        throw new Exception("Timeout");
+                    }
                     //pass lock to both clients for writing to each others socket
                     state.WriteLock = wait.WriteLock;
+                    state.StatsLock = wait.StatsLock;
                     //set this client's opponent to the second client in wait
                     state.OpponentSocket = wait.Socket2;
+                    state.OpponentStats = wait.P2;
                     //both clients are connected, remove from waiting
                     //maybe move this later so players can reconnect
                     waiting.Remove(battleGUID);
@@ -158,7 +184,6 @@ namespace HappyHibachiServer
                 state.ClientSocket = handler;
                 //initialize buffer
                 state.Update = new byte[UPDATE_SIZE];
-
                 //lock write operations on the socket
                 lock(state.WriteLock)
                 {
@@ -172,6 +197,21 @@ namespace HappyHibachiServer
             //catch connection errors
             catch(Exception)
             {
+                lock (ConnectedPlayers.DICTIONARY_LOCK)
+                {
+                    ClientState removeSocket;
+                    if (ConnectedPlayers.playerDetails.TryGetValue(state.ClientID, out removeSocket))
+                    {
+                        removeSocket.BattleSocket = null;
+                        try
+                        {
+                            //if value not found then connection should already be closed by cleanup procedure
+                            handler.Shutdown(SocketShutdown.Both);
+                            handler.Close();
+                        }
+                        catch (Exception) { }
+                    }
+                }
                 Console.WriteLine("\nPlayer disconnected");
             }
         }
@@ -179,17 +219,13 @@ namespace HappyHibachiServer
         //read updates from clients
         public static void readUpdate(IAsyncResult ar)
         {
-            Socket handler = null;
+            //retreive the state object and socket
+            BattleState state = (BattleState)ar.AsyncState;
+            Socket handler = state.ClientSocket;
             try
             {
-                bool battleEnd;
-                bool win;
-
-                //STORE HP AND LOCATIONS IN STATE, UPDATE AND USE FOR THINGS (anti-cheat stuff)
-
-                //retreive the state object and socket
-                BattleState state = (BattleState)ar.AsyncState;
-                handler = state.ClientSocket;
+                //bool battleEnd;
+                //bool win;
 
                 //NEED TO DEAL WITH SIZES AND STUFF, MAYBE SEND A MESSAGE WITH THE SIZE
                 //for now everything sent as 41 bytes
@@ -202,13 +238,29 @@ namespace HappyHibachiServer
 
 
                 byte flags = state.Update[0];
+                /*
+                lock (state.StatsLock)
+                {
+                    if (((flags >> 5) & 1) == 1)
+                    {
+                        //HOW MUCH DAMAGE?
+                    }
+                    if (((flags >> 6) & 1) == 1)
+                    {
+                        state.OpponentStats.HP -= state.ClientStats.Attack - state.OpponentStats.Defense;
+                    }
 
+                }
+                */
                 //determine winner and if battle ended, change so can't cheat
-                battleEnd = (flags & 1) == 1 ? true : false;
-                win = ((flags >> 1) & 1) == 1 ? true : false;
-
+                bool battleEnd = (flags & 1) == 1 ? true : false;
+                bool win = ((flags >> 1) & 1) == 1 ? true : false;
+                /*
+                if (state.OpponentStats) flags += 1;
+                if (controller.Win) flags += (1 << 1);
+                */
                 //lock write operations and pass along and acknowledge update
-                lock(state.WriteLock)
+                lock (state.WriteLock)
                 {
                     send(state);
                 }
@@ -221,9 +273,14 @@ namespace HappyHibachiServer
                 else
                 {
                     //handle winner stuff (DB stuff, etc)
+                    if (win)
+                    {
+                        var dbCon = new DatabaseConnect();
+                        dbCon.updatePlayerExpAfterBattle(state.ClientID);
+                    }
 
                     //clean up
-                    lock(ConnectedPlayers.DICTIONARY_LOCK)
+                    lock (ConnectedPlayers.DICTIONARY_LOCK)
                     {
                         ClientState removeSocket;
                         if(ConnectedPlayers.playerDetails.TryGetValue(state.ClientID, out removeSocket))
@@ -241,8 +298,22 @@ namespace HappyHibachiServer
             //end communications gracefully if player disconnects before battle ends
             catch (Exception)
             {
+                lock (ConnectedPlayers.DICTIONARY_LOCK)
+                {
+                    ClientState removeSocket;
+                    if (ConnectedPlayers.playerDetails.TryGetValue(state.ClientID, out removeSocket))
+                    {
+                        removeSocket.BattleSocket = null;
+                        try
+                        {
+                            //if value not found then connection should already be closed
+                            handler.Shutdown(SocketShutdown.Both);
+                            handler.Close();
+                        }
+                        catch(Exception) { }
+                    }
+                }
                 Console.WriteLine("\nPlayer disconnected");
-                
             }
         }
 
@@ -262,16 +333,106 @@ namespace HappyHibachiServer
         }
     }
 
+    internal class PlayerStats
+    {
+        private float hp;
+        private float attack;
+        private float defense;
+        //items that are used during the battle to be refunded if opponent disconnects
+        //not currently handled since items are not stored in db at the moment
+        private int healthPots;
+        private int landmines;
+
+
+        public PlayerStats(int playerLevel)
+        {
+            hp = 100 + (playerLevel - 1) * 21;
+            attack = 15 + (playerLevel - 1) * 4;
+            defense = 10 + (playerLevel - 1) * 3;
+            healthPots = 0;
+            landmines = 0;
+        }
+
+        public void landmineUsed()
+        {
+            landmines++;
+        }
+
+        public void healthPotUsed()
+        {
+            healthPots++;
+        }
+
+        public int HealthPots
+        {
+            get
+            {
+                return healthPots;
+            }
+        }
+
+        public int Landmines
+        {
+            get
+            {
+                return landmines;
+            }
+        }
+
+        public float HP
+        {
+            get
+            {
+                return hp;
+            }
+
+            set
+            {
+                hp = value;
+            }
+        }
+
+        public float Attack
+        {
+            get
+            {
+                return attack;
+            }
+
+            set
+            {
+                attack = value;
+            }
+        }
+
+        public float Defense
+        {
+            get
+            {
+                return defense;
+            }
+
+            set
+            {
+                defense = value;
+            }
+        }
+    }
+
     //stores information about a waiting battle
     internal class WaitConnection
     {
         //lock for write operations after connection
         private object writeLock;
+        private object statsLock;
         //blocks until both players connect
         private ManualResetEventSlim wait;
         //sockets of the clients in the battle
         private Socket socket1;
         private Socket socket2;
+
+        private PlayerStats p1;
+        private PlayerStats p2;
 
         public WaitConnection()
         {
@@ -279,10 +440,11 @@ namespace HappyHibachiServer
         }
 
         //set up a wait connection with the specified player socket
-        public WaitConnection(Socket socket)
+        public WaitConnection(Socket socket, PlayerStats stats)
         {
             wait = new ManualResetEventSlim();
             socket1 = socket;
+            p1 = stats;
         }
 
         //getters and setters
@@ -342,6 +504,45 @@ namespace HappyHibachiServer
                 writeLock = value;
             }
         }
+
+        internal PlayerStats P1
+        {
+            get
+            {
+                return p1;
+            }
+
+            set
+            {
+                p1 = value;
+            }
+        }
+
+        internal PlayerStats P2
+        {
+            get
+            {
+                return p2;
+            }
+
+            set
+            {
+                p2 = value;
+            }
+        }
+
+        public object StatsLock
+        {
+            get
+            {
+                return statsLock;
+            }
+
+            set
+            {
+                statsLock = value;
+            }
+        }
     }
 
 
@@ -350,6 +551,7 @@ namespace HappyHibachiServer
     {
         //lock for asyncronous write operations
         private object writeLock;
+        private object statsLock;
         //client's socket
         private Socket clientSocket;
         //opponents socket
@@ -357,6 +559,9 @@ namespace HappyHibachiServer
         //buffer for updates
         private byte[] update;
         private Guid clientID;
+
+        private PlayerStats clientStats;
+        private PlayerStats opponentStats;
 
         //getters and setters
         public Socket ClientSocket
@@ -422,6 +627,45 @@ namespace HappyHibachiServer
             set
             {
                 clientID = value;
+            }
+        }
+
+        internal PlayerStats ClientStats
+        {
+            get
+            {
+                return clientStats;
+            }
+
+            set
+            {
+                clientStats = value;
+            }
+        }
+
+        internal PlayerStats OpponentStats
+        {
+            get
+            {
+                return opponentStats;
+            }
+
+            set
+            {
+                opponentStats = value;
+            }
+        }
+
+        public object StatsLock
+        {
+            get
+            {
+                return statsLock;
+            }
+
+            set
+            {
+                statsLock = value;
             }
         }
     }

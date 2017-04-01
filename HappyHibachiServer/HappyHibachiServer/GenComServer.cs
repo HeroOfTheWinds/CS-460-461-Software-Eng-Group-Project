@@ -181,6 +181,7 @@ namespace HappyHibachiServer
         private static void processBattleResponse(ComState state)
         {
             byte[] response = new byte[18];
+            byte[] ack = { 1 };
             response[0] = 5;
             state.ClientSocket.Receive(response, 1, 17, 0);
             ClientState opponent;
@@ -193,11 +194,10 @@ namespace HappyHibachiServer
             }
             else
             {
-                //need some way to indicate player no longer available
-                //Console.WriteLine("What, why am I here?");
-                //temporarily write console message for potential troubleshooting
-                Console.WriteLine("Received ID not in player table");
+                //indicate player no longer there
+                ack[0] = 0;
             }
+            state.ClientSocket.Send(ack, 1, 0);
         }
 
         //use shorts for sizes (in bytes) to save data
@@ -213,6 +213,20 @@ namespace HappyHibachiServer
             //place item ids (item ids are bytes) in itemIDs
             //store number of items in size
             //maybe a random number of items? not sure how you want to deal with that
+
+            //------------------TEMPORARY TEST CODE, NO DB BACKING------------------
+
+            Random r = new Random();
+            r.Next(1, 4);
+            for(int i = 0; i < size; i++)
+            {
+                //lets say 0 is a health pot and 1 is a landmine
+                itemIDs.Add((byte)r.Next(0, 1));
+            }
+
+            //----------------------------------------------------------------------
+
+
             lock (state.WRITE_LOCK)
             {
                 state.ClientSocket.Send(BitConverter.GetBytes(size));
@@ -302,7 +316,7 @@ namespace HappyHibachiServer
             {
                 lock(opponent.GENCOM_WRITE_LOCK)
                 {
-                    opponent.GenComSocket.Send(outUpdate, 17, 0);
+                    opponent.GenComSocket.Send(outUpdate, 33, 0);
                 }
             }
             else
@@ -331,7 +345,7 @@ namespace HappyHibachiServer
         private static Guid getUpdateID(byte[] update)
         {
             byte[] temp = new byte[16];
-            Array.Copy(update, temp, 16);
+            Array.Copy(update, 1, temp, 0, 16);
             return new Guid(temp);
         }
 

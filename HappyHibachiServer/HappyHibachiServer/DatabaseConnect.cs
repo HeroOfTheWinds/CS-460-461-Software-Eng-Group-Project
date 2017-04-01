@@ -87,8 +87,8 @@ namespace HappyHibachiServer
         //Select GUID, Lat, Lon and Type attributes from Player, landmark, and colosseum tables
         public void findNearbyObjects(float lat, float lon, List<float> nearbyC, List<Guid> nearbyID)
         {
-            string queryLandmark = "SELECT GUID, LAT, LON, TYPE FROM LANDMARK";
-            string queryColosseum = "SELECT GUID, LAT, LON, TYPE FROM COLOSSEUM";
+            string queryLandmark = "SELECT GUID, LAT, LON FROM LANDMARK";
+            string queryColosseum = "SELECT GUID, LAT, LON FROM COLOSSEUM";
             try
             {
                 //Open connection
@@ -145,6 +145,8 @@ namespace HappyHibachiServer
                     foreach(KeyValuePair<Guid, ClientState> cs in ConnectedPlayers.playerDetails)
                     {
                         nearbyID.Add(cs.Key);
+                        nearbyC.Add(cs.Value.Latitude[0]);
+                        nearbyC.Add(cs.Value.Longtitude[0]);
                         //LATER ADD MECHANISM TO ONLY GET NEARBY ONES USING LAT AND LON (FOR DB STUFF AS WELL)
                     }
                 }
@@ -199,7 +201,7 @@ namespace HappyHibachiServer
         {
             string query = "SELECT LANDMARK_NAME FROM LANDMARK WHERE GUID ='" + landmark_id.ToString() + "';";
             //Open connection
-            if (this.OpenConnection() == true)
+            if (OpenConnection() == true)
             {
                 //Create Command
                 MySqlCommand cmd = new MySqlCommand(query, connection);
@@ -217,7 +219,7 @@ namespace HappyHibachiServer
                 dataReader.Close();
 
                 //close Connection
-                this.CloseConnection();
+                CloseConnection();
             }
         }
 
@@ -226,7 +228,7 @@ namespace HappyHibachiServer
         {
             string query = "SELECT COLOSSEUM_NAME FROM COLOSSEUM WHERE GUID ='" + colosseum_id.ToString() + "';";
             //Open connection
-            if (this.OpenConnection() == true)
+            if (OpenConnection() == true)
             {
                 //Create Command
                 MySqlCommand cmd = new MySqlCommand(query, connection);
@@ -244,10 +246,75 @@ namespace HappyHibachiServer
                 dataReader.Close();
 
                 //close Connection
-                this.CloseConnection();
+                CloseConnection();
             }
         }
 
+        //select colosseum's name from colosseum based on guid
+        public void updatePlayerExpAfterBattle(Guid winner_id)
+        {
+            //exp is given only to winner of a battle
+            //the exp is currently set to increment by a value of 50 
+            //Later to implement: 
+            //  The level of both players will factor into how much exp the winner gets
+            //  If a player is 10 levels higher than the other then no exp is given
+            // the winner will get more exp if at a lower level and les if higher: need to know opponent_id
+
+            string query = "UPDATE PLAYER SET PLAYER_EXP = PLAYER_EXP + 50 WHERE GUID ='" + winner_id.ToString() + "';";
+            //Open connection
+            if (OpenConnection() == true)
+            {
+                //create command and assign the query and connection from the constructor
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+
+                //Execute command
+                cmd.ExecuteNonQuery();
+
+                //close connection
+                CloseConnection();
+                Console.WriteLine("Player exp updated sucessfully");
+            }
+            else
+            {
+                Console.WriteLine("Player exp update unsucessful");
+            }
+        }
+
+        public int getPlayerLevel(Guid playerID)
+        {
+            //exp is given only to winner of a battle
+            //the exp is currently set to increment by a value of 50 
+            //Later to implement: 
+            //  The level of both players will factor into how much exp the winner gets
+            //  If a player is 10 levels higher than the other then no exp is given
+            // the winner will get more exp if at a lower level and les if higher: need to know opponent_id
+
+            //for testing return default 0 if not in db
+            int level = 0;
+
+            string query = "SELECT PLAYER_LEVEL FROM PLAYER WHERE GUID ='" + playerID.ToString() + "';";
+            //Open connection
+            if (OpenConnection() == true)
+            {
+                //Create Command
+                MySqlCommand cmd = new MySqlCommand(query, connection);
+                //Create a data reader and Execute the command
+                MySqlDataReader dataReader = cmd.ExecuteReader();
+
+                //Read the player's level
+                if(dataReader.Read())
+                {
+                    level = (int)dataReader["PLAYER_LEVEL"];
+                }
+                //close Data Reader
+                dataReader.Close();
+
+                //close Connection
+                CloseConnection();
+            }
+
+            return level;
+        }
 
     }
 }

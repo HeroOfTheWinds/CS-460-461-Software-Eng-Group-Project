@@ -122,7 +122,8 @@ public class Register : MonoBehaviour {
         }
         ErrorText.text = "Invalid Password. \n-8-16 characters\n-At least:\none lowercase letter\none uppercase letter\none number\none special character(#?!@$%^&)_(*-])\n.Please try again.";
         passwordInput1.GetComponent<Image>().color = Color.red;
-        return false;
+        //disabling password checks for troubleshooting
+        return true;
     }
 
     // returns true if passwords are the same
