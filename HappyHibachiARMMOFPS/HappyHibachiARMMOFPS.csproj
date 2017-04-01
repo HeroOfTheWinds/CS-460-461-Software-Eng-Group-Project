@@ -277,6 +277,7 @@
     <Compile Include="Assets\Infinity Code\Online maps\Scripts\XML\OnlineMapsXMLList.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Scripts\XML\OnlineMapsXMLNamespaceManager.cs" />
     <Compile Include="Assets\ItemList.cs" />
+    <Compile Include="Assets\Leaderboard.cs" />
     <Compile Include="Assets\Login.cs" />
     <Compile Include="Assets\MapHUD.cs" />
     <Compile Include="Assets\NetworkManagerCustom.cs" />
