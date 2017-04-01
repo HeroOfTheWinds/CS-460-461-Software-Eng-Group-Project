@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Collections.Generic;
 using System.Diagnostics;
+using UnityEngine.SceneManagement;
 
 public class OverworldNetManager : MonoBehaviour {
 
@@ -22,11 +23,14 @@ public class OverworldNetManager : MonoBehaviour {
     private float latitude;
     private float longtitude;
     private bool update;
+    public OnlineMaps map;
+    public Canvas Land;
 
     //private bool upNearbyObj;
     private ManualResetEvent waitUpdate;
 
     private List<NearbyObject> nearbyObjects;
+    public List<Texture> textures;
 
     private byte[] size;
 
@@ -224,12 +228,59 @@ public class OverworldNetManager : MonoBehaviour {
                 //place objects on screen or update position if guid already present, store respective guid with object for later use
                 //objects stored in list nearbyObjects which is a list of NearbyObjects that contain lat, long, object type, and id
                 //note: should check which scene is active before drawing, should be able to do that with scenemanager.getactivescene
+                if (SceneManager.GetActiveScene().Equals("Overworld"))
+                {
+                    foreach (NearbyObject nearbyObject in nearbyObjects)
+                    {
+                        OnlineMapsMarker3D newMarker = new OnlineMapsMarker3D();
+                        newMarker.id = nearbyObject.Id;
+                        newMarker.lat = nearbyObject.Latitude;
+                        newMarker.lon = nearbyObject.Longtitude;
+
+                        switch (nearbyObject.Type)
+                        {
+                            case 0:
+                                newMarker.prefab = (GameObject)Instantiate(Resources.Load("EnemyPlayer"));
+                                break;
+                            case 1:
+                                newMarker.prefab = (GameObject)Instantiate(Resources.Load("Colosseum"));
+                                break;
+                            case 2:
+                                newMarker.prefab = (GameObject)Instantiate(Resources.Load("Landmark"));
+                                break;
+                            default:
+                                break;
+                        }
+
+
+                    }
+                }
 
                 waitUpdate.Set();
             }
         }
         catch(Exception) { }
-        
+
+        //if (Input.touchCount == 1)
+        //{
+        //    RaycastHit hit;
+        //    if (Input.GetTouch(0).phase == TouchPhase.Began)
+        //    {
+        //        Ray ray = Camera.main.ScreenPointToRay(Input.GetTouch(0).position);
+        //        if (Physics.Raycast(ray, out hit))
+        //        {
+        //            /*if (hit.transform.name == "Landmark")
+        //            {
+        //                GenComManager.setUpdate(2, guid);
+        //            }*/
+        //            if (hit.collider.tag == "Landmark")
+        //            {
+        //                Land.enabled = true;
+        //            }
+        //        }
+        //    }
+        //}
+
     }
 
     private void setUpdate(object state)

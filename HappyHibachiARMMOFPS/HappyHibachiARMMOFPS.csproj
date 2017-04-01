@@ -82,11 +82,11 @@
     <Reference Include="UnityEditor.iOS.Extensions.Xcode">
       <HintPath>Library\UnityAssemblies\UnityEditor.iOS.Extensions.Xcode.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEditor.iOS.Extensions.Xcode">
-      <HintPath>Library\UnityAssemblies\UnityEditor.iOS.Extensions.Xcode.dll</HintPath>
-    </Reference>
     <Reference Include="UnityEditor.iOS.Extensions.Common">
       <HintPath>Library\UnityAssemblies\UnityEditor.iOS.Extensions.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Facebook.Unity.Settings">
+      <HintPath>Library\FacebookSDK\Facebook.Unity.Settings.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -103,6 +103,7 @@
     <Compile Include="Assets\DeviceRotation.cs" />
     <Compile Include="Assets\EnemyStatus.cs" />
     <Compile Include="Assets\EnemyUpdate.cs" />
+    <Compile Include="Assets\FactionTileOverlay.cs" />
     <Compile Include="Assets\GenComManager.cs" />
     <Compile Include="Assets\HanoiPuzzle.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Examples (API usage)\AMapSearchExample.cs" />

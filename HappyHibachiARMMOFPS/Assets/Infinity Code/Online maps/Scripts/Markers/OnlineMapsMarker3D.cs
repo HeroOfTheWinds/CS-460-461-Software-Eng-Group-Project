@@ -57,6 +57,10 @@ public class OnlineMapsMarker3D : OnlineMapsMarkerBase
     /// </summary>
     public GameObject prefab;
 
+    public Guid id;
+    public double lat;
+    public double lon;
+
     private GameObject _prefab;
     private Vector3 _relativePosition;
     private bool _visible = true;
