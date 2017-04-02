@@ -85,6 +85,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\ARControl.cs" />
+    <Compile Include="Assets\ARDowsing.cs" />
     <Compile Include="Assets\BattleNetManager.cs" />
     <Compile Include="Assets\CallLandmark.cs" />
     <Compile Include="Assets\EnemyStatus.cs" />
@@ -265,6 +266,7 @@
     <Compile Include="Assets\Infinity Code\Online maps\Scripts\XML\OnlineMapsXMLList.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Scripts\XML\OnlineMapsXMLNamespaceManager.cs" />
     <Compile Include="Assets\ItemList.cs" />
+    <Compile Include="Assets\Leaderboard.cs" />
     <Compile Include="Assets\Login.cs" />
     <Compile Include="Assets\MapHUD.cs" />
     <Compile Include="Assets\NetworkManagerCustom.cs" />
