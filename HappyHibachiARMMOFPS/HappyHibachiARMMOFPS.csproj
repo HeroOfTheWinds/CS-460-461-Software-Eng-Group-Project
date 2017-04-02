@@ -97,6 +97,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\ARControl.cs" />
+    <Compile Include="Assets\ARDowsing.cs" />
     <Compile Include="Assets\BattleNetManager.cs" />
     <Compile Include="Assets\CallLandmark.cs" />
     <Compile Include="Assets\EnemyStatus.cs" />

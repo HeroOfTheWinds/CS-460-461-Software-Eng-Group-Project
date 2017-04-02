@@ -8,9 +8,9 @@ using System.Net.Sockets;
 public class PlayerControl : MonoBehaviour {
 
 
-    public static readonly object ACTION_LOCK;
+    public static readonly object ACTION_LOCK = new object();
     //no need stop other motion while processing mine colliders (after setting them)
-    public static readonly object MINE_LOCK;
+    public static readonly object MINE_LOCK = new object();
 
     //public GameObject ARCam; // Link to the main camera
     public GameObject shotPrefab; // What does the bullet look like?

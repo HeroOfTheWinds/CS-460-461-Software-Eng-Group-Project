@@ -15,23 +15,27 @@ public class CallLandmark : MonoBehaviour
     {
         //Disables the menu
         landmark.enabled = false;
-        isShowing = true;
+        isShowing = false;
     }
 
     private void Update()
     {
-        Ray ray = Camera.main.ScreenPointToRay(Input.GetTouch(0).position);
-        Physics.Raycast(ray, out hit);
-        if (hit.collider.tag == "Landmark")
-        {
-            isShowing = true;
-            landmark.enabled = true;
-        }
-        if (Input.GetButtonUp("Exit"))
-        {
-            isShowing = false;
-            landmark.enabled = false;
-        }
+        //if (isShowing == true) landmark.enabled = true;
+        //if (Input.touchCount == 1)
+        //{
+        //    Ray ray = Camera.main.ScreenPointToRay(Input.GetTouch(0).position);
+        //    Physics.Raycast(ray, out hit);
+        //    if (hit.collider.tag == "Landmark")
+        //    {
+        //        isShowing = true;
+        //        landmark.enabled = true;
+        //    }
+        //    if (Input.GetButtonUp("Exit"))
+        //    {
+        //        isShowing = false;
+        //        landmark.enabled = false;
+        //    }
+        //}
     }
 
     public void callLandmark()
