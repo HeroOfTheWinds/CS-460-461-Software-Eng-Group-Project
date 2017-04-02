@@ -12,9 +12,9 @@ public class EnemyUpdate
     
     //flags, least sig to most sig bit
     //is the battle over?
-    private bool battleEnd = false;
+    //private bool battleEnd = false;
     //did the enemy win? (unused)
-    private bool win = false;
+    //private bool win = false;
 
     // Attack stat of the enemy player
     private int attack;
@@ -231,7 +231,6 @@ public class EnemyUpdate
         if (mp)
         {
             controller.PlaceLandmine(new Vector3(mpx, 0, mpz), updateQuat, enemy.GetInstanceID());
-
         }
         
         if(hpr)
@@ -291,6 +290,7 @@ public class EnemyUpdate
 
 
     //getters and setters
+    /*
     public bool BattleEnd
     {
         get
@@ -316,7 +316,7 @@ public class EnemyUpdate
             win = value;
         }
     }
-
+    */
     public bool Sf
     {
         get

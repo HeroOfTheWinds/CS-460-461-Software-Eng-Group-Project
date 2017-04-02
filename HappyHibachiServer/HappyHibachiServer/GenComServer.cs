@@ -328,9 +328,6 @@ namespace HappyHibachiServer
                 //where receiving a 2 in a type 5 com means client busy (0 declined, 1 accepted)
 
                 //temporarily write console message for potential troubleshooting
-
-                //Console.WriteLine("I probably shouldn't be here either");
-                //RECEIVED THIS MESSAGE WHEN THIS METHOD SHOULD NOT HAVE BEEN CALLED
                 Console.WriteLine("Received ID not in player table");
             }
         }

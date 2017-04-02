@@ -57,6 +57,8 @@ public class EnemyStatus : MonoBehaviour
         if (currentHP < 0)
             currentHP = 0;
         //is the enemy dead?
+        //server keeps track now
+        /*
         if (currentHP <= 0)
         {
             GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerControl>().DisplayWin();
@@ -67,7 +69,7 @@ public class EnemyStatus : MonoBehaviour
             controller.BattleEnd = true;
             controller.Win = true;
         }
-
+        */
         // Play the recoil animation
         animator.SetTrigger("Damage");
     }

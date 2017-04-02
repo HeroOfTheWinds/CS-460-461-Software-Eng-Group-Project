@@ -24,7 +24,7 @@ public class PlayerStatus : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         // Code for retrieving level from server should go here //
-        playerID = BattleNetManager.BattleID.ToString();
+        playerID = Player.playerID.ToString();
         level = retrieveLevelDB(playerID);
         Debug.Log("Player level: " + level);
 
@@ -52,6 +52,8 @@ public class PlayerStatus : MonoBehaviour {
             currentHP = 0;
 
         // Check if HP <= 0, lose battle if so
+        //dealt with by server now
+        /*
         if (currentHP <= 0)
         {
             gameObject.GetComponent<PlayerControl>().DisplayLoss();
@@ -61,6 +63,7 @@ public class PlayerStatus : MonoBehaviour {
             controller.Win = false;
             Debug.Log(currentHP);
         }
+        */
         Debug.Log(currentHP);
     }
 

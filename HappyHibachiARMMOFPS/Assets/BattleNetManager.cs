@@ -44,6 +44,9 @@ public class BattleNetManager : MonoBehaviour
     private ManualResetEvent readUpdate;
     private ManualResetEvent updateFin;
 
+    private bool battleEnded = false;
+    private bool endGameDisplayed = false;
+
     //connected socket
     private Socket client;
     //local player
@@ -181,8 +184,8 @@ public class BattleNetManager : MonoBehaviour
 
         UnityEngine.Debug.Log(responseTime.ElapsedMilliseconds);
 
-        //send updates until both players verify the battle is over, then disconnect
-        if(!(eUpdate.BattleEnd && controller.BattleEnd))
+        //send updates until server says the battle is over, then disconnect;
+        if(isClient[0] != 3)
         {
             //Debug.Log("begin update");
             //Debug.Log(isClient[0]);
@@ -202,7 +205,7 @@ public class BattleNetManager : MonoBehaviour
                 
                 
             }
-            else
+            else if(isClient[0] == 0)
             {
                 //UnityEngine.Debug.Log("before mre");
                 //make sure previous update has completed before overwriting
@@ -221,14 +224,18 @@ public class BattleNetManager : MonoBehaviour
             client.BeginReceive(isClient, 0, 1, 0, new AsyncCallback(updateDriver), null);
             //Debug.Log("end update");
         }
+        //battle is over
         else
         {
+            //use isClient to get win, loss, or draw byte
+            client.Receive(isClient, 1, 0);
+            
             // Release the socket.
             client.Shutdown(SocketShutdown.Both);
             client.Close();
             updateTime.Stop();
             UnityEngine.Debug.Log("Disconnected");
-            
+            battleEnded = true;
         }
 
 
@@ -252,8 +259,8 @@ public class BattleNetManager : MonoBehaviour
         {
             //UnityEngine.Debug.Log("in i flag lock");
             //unpack update into EnemyUpdate object
-            eUpdate.BattleEnd = (flags & 1) == 1 ? true : false;
-            eUpdate.Win = ((flags >> 1) & 1) == 1 ? true : false;
+            //eUpdate.BattleEnd = (flags & 1) == 1 ? true : false;
+            //eUpdate.Win = ((flags >> 1) & 1) == 1 ? true : false;
             eUpdate.Sf = ((flags >> 2) & 1) == 1 ? true : false;
             eUpdate.Hpr = ((flags >> 3) & 1) == 1 ? true : false;
             eUpdate.Mp = ((flags >> 4) & 1) == 1 ? true : false;
@@ -280,7 +287,7 @@ public class BattleNetManager : MonoBehaviour
     }
 
 
-
+    //legacy code, unused
     private void testCallback(IAsyncResult ar)
     {
         UnityEngine.Debug.Log("Callback success, damn unity");
@@ -288,63 +295,81 @@ public class BattleNetManager : MonoBehaviour
 
     private void Update()
     {
-        //make sure update flags aren't toggled between use and reset
-        lock (UPDATE_LOCK)
+        //if battle over, and the end game screen has not already been displayed, display appropriate screen based on details stored in isClient[0]
+        if (battleEnded && !endGameDisplayed)
         {
-            //Debug.Log(client.IsBound);
-            //ensure update isn't overwritten
-            lock(I_FLAG_LOCK)
+            //battle won
+            if (isClient[0] == 1)
             {
-                //UnityEngine.Debug.Log("Receive update: " + receiveUpdate);
-                //run update if available
-                if (receiveUpdate)
-                {
-                    //UnityEngine.Debug.Log("Before run update");
-                    //run the stored update on the opponent
-                    eUpdate.runUpdate(controller, opponent);
-                    //UnityEngine.Debug.Log("After run update");
-                    //Debug.Log("Update run");
-
-                    //signal that the update has been run
-                    updateFin.Set();
-
-                }
-                else
-                {
-                    //eUpdate.extrapolateMotion(updateTime.ElapsedMilliseconds, opponent);
-                }
+                GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerControl>().DisplayWin();
             }
-            
-            //PLAYERS MOTION ISNT LOCKED WHILE READING POSITION (WTH)
-            if (sendUpdate)
+            //loss and draw display loss for now
+            else
             {
-                try
+                GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerControl>().DisplayLoss();
+            }
+            endGameDisplayed = true;
+        }
+        //run updates while battle is not complete
+        else if (!battleEnded)
+        {
+            //make sure update flags aren't toggled between use and reset
+            lock (UPDATE_LOCK)
+            {
+                //Debug.Log(client.IsBound);
+                //ensure update isn't overwritten
+                lock (I_FLAG_LOCK)
                 {
-                    //send current information on player position
-                    client.Send(getUpdate());
-                    //Debug.Log("Update sent");
-
-                    if (responseTime.IsRunning)
+                    //UnityEngine.Debug.Log("Receive update: " + receiveUpdate);
+                    //run update if available
+                    if (receiveUpdate)
                     {
-                        responseTime.Reset();
+                        //UnityEngine.Debug.Log("Before run update");
+                        //run the stored update on the opponent
+                        eUpdate.runUpdate(controller, opponent);
+                        //UnityEngine.Debug.Log("After run update");
+                        //Debug.Log("Update run");
+
+                        //signal that the update has been run
+                        updateFin.Set();
+
                     }
                     else
                     {
-                        responseTime.Start();
+                        //use something else, b-splines make opponent run around like a madman
+                        //eUpdate.extrapolateMotion(updateTime.ElapsedMilliseconds, opponent);
                     }
                 }
-                //catch exception if opponent disconnects
-                catch (Exception) { }
+
+                if (sendUpdate)
+                {
+                    try
+                    {
+                        //send current information on player position
+                        client.Send(getUpdate());
+                        //Debug.Log("Update sent");
+
+                        if (responseTime.IsRunning)
+                        {
+                            responseTime.Reset();
+                        }
+                        else
+                        {
+                            responseTime.Start();
+                        }
+                    }
+                    //catch exception if opponent disconnects
+                    catch (Exception) { }
+
+                    //reset flags
+                    reset();
+                }
 
                 //reset flags
-                reset();
+                receiveUpdate = false;
+                sendUpdate = false;
             }
-            
-            //reset flags
-            receiveUpdate = false;
-            sendUpdate = false;
         }
-        
     }
 
     private void OnApplicationQuit()
@@ -376,16 +401,27 @@ public class BattleNetManager : MonoBehaviour
         //array to store update
         byte[] up = new byte[UPDATE_SIZE];
         //players current position
-        float xPos = player.transform.position.x;
-        float zPos = player.transform.position.z;
-        //players rotation
-        float rot = player.transform.rotation.eulerAngles.y;
+        float xPos;
+        float zPos;
+        float rot;
+        //lock player actions while getting update
+        lock (PlayerControl.ACTION_LOCK)
+        {
+            xPos = player.transform.position.x;
+            zPos = player.transform.position.z;
+            //players rotation
+            rot = player.transform.rotation.eulerAngles.y;
 
-        //Debug.Log(rot);
-
-        //can send less data in certain cases, deal with this later
-        //set up flags in first byte
-        up[0] = setFlags();
+            //Debug.Log(rot);
+            
+            //lock mine flag updates
+            lock(PlayerControl.MINE_LOCK)
+            {
+                //set up flags in first byte
+                up[0] = setFlags();
+            }
+            
+        }
         //populate update
         BitConverter.GetBytes(xPos).CopyTo(up, 1);
         BitConverter.GetBytes(zPos).CopyTo(up, 5);
@@ -410,16 +446,15 @@ public class BattleNetManager : MonoBehaviour
     {
         byte flags = 0;
         //convert flags into a byte
-        //battle end and win flags dealt with by server
-        //REMOVE THESE AFTER SWITHCED
-        if (controller.BattleEnd) flags += 1;
-        if (controller.Win) flags += (1 << 1);
+        //battleEnd and win flags no longer used, coordinated by server
+        //if (controller.BattleEnd) flags += 1;
+        //if (controller.Win) flags += (1 << 1);
         if (controller.Sf) flags += (1 << 2);
         if (controller.Hpr) flags += (1 << 3);
         if (controller.Mp) flags += (1 << 4);
         if (controller.Mso) flags += (1 << 5);
         if (controller.Ehit) flags += (1 << 6);
-        //if (controller.Mho) flags += (1 << 7);
+        if (controller.Mho) flags += (1 << 7);
         
 
         return flags;
