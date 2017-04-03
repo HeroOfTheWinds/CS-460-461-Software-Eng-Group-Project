@@ -28,23 +28,25 @@ public class ARDowsing : MonoBehaviour {
     bool isAnimating = false;
     float animTime = 5f; // 3 seconds
     float animSpeed = 0f;
+    bool found = false;
 
     float totalTime = 0f;
 
     GameObject beaconInstance;
-    Animation anim;
+    Animator anim;
 
     // DEBUG ZONE
-    public Text xx;
+    /*public Text xx;
     public Text yy;
     public Text zz;
+    */
 
     // TODO: change circle's color in addition to speed
 
 	// Use this for initialization
 	void Start () {
         choiceDialogue.enabled = false;
-        anim = dowser.GetComponent<Animation>();
+        anim = dowser.GetComponent<Animator>();
 		// Randomly generate target angle
 	}
 	
@@ -56,45 +58,45 @@ public class ARDowsing : MonoBehaviour {
             // check how close the angle is to the camera's angle
             Vector3 curAngle = cam.transform.rotation.eulerAngles;
 
+        /* // DEBUG
         xx.text = curAngle.x.ToString();
         yy.text = curAngle.y.ToString();
         zz.text = curAngle.z.ToString();
+        */
 
         // xy deviation
         float xdev, ydev;
 
-            // Calc how far off we are
-            xdev = Mathf.Abs(curAngle.x - targetAngle.x);
-            ydev = Mathf.Abs(curAngle.y - targetAngle.y);
+        // Calc how far off we are
+        xdev = Mathf.Abs(curAngle.x - targetAngle.x);
+        ydev = Mathf.Abs(curAngle.y - targetAngle.y);
 
-            // Check if we're within tolerance range
-            if (xdev <= thres && ydev <= thres)
-            {
-                // Hey, we found it! Display what needs to be shown
-                GameObject newObj = (GameObject)Instantiate(beacon, cam.transform.position, cam.transform.rotation);
-                newObj.transform.Translate(newObj.transform.forward * 3);
-                beaconInstance = newObj; // store for later use
+        // Check if we're within tolerance range
+        if (xdev <= thres && ydev <= thres && !found)
+        {
+            // Hey, we found it! Display what needs to be shown
+            GameObject newObj = (GameObject)Instantiate(beacon, cam.transform.position, cam.transform.rotation);
+            newObj.transform.Translate(newObj.transform.forward * 3);
+            beaconInstance = newObj; // store for later use
 
-                // Display the prompt
-                choiceDialogue.enabled = true;
-            }
-            else // Animate to show how close we are
-            {
-                // derive how fast to make the dowse
-                // should weight between 0 and 1
-                float modifier = ((xdev + ydev) / 2f) / 180f;
-                if (modifier < 0.1f)
-                    modifier = 0.1f;
+            // Display the prompt
+            choiceDialogue.enabled = true;
+            found = true;
+        }
+        else // Animate to show how close we are
+        {
+            // derive how fast to make the dowse
+            // should weight between 0 and 1
+            float modifier = ((xdev + ydev) / 2f) / 180f;
+            if (modifier < 0.1f)
+                modifier = 0.1f;
 
-                animSpeed = modifier * speed;
+            //animSpeed = modifier * speed;
 
-                // state that we're animating now
-                isAnimating = true;
+            // state that we're animating now
+            isAnimating = true;
 
-            foreach (AnimationState state in anim)
-            {
-                state.speed = modifier;
-            }
+            anim.speed = 1f / modifier;
         }
         //}
 
