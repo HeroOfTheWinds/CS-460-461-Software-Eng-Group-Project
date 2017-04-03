@@ -238,31 +238,81 @@ namespace HappyHibachiServer
 
 
                 byte flags = state.Update[0];
-                /*
+
+                //determine winner and if battle ended
+                bool battleEnd = false;
+                //currently treat loss and draw the same, so only indicate win
+                bool win = false;
+
+                byte clientWinLoseDraw = 0;
+
+                //whichever update gets here first receives authority over end game, lock the other out until complete processing hits
                 lock (state.StatsLock)
                 {
-                    if (((flags >> 5) & 1) == 1)
+                    //if battle over do not evaluate this round of damage
+                    if(!(state.OpponentStats.HP <= 0 || state.ClientStats.HP <= 0))
                     {
-                        //HOW MUCH DAMAGE?
-                    }
-                    if (((flags >> 6) & 1) == 1)
-                    {
-                        state.OpponentStats.HP -= state.ClientStats.Attack - state.OpponentStats.Defense;
-                    }
+                        if (((flags >> 5) & 1) == 1)
+                        {
+                            state.ClientStats.HP -= 75;
 
+                            Console.WriteLine("mine");
+                            Console.WriteLine("My life: " + state.ClientStats.HP.ToString());
+                        }
+                        if (((flags >> 6) & 1) == 1)
+                        {
+                            state.OpponentStats.HP -= state.ClientStats.Attack - state.OpponentStats.Defense;
+                            Console.WriteLine("shot");
+                            Console.WriteLine("Opponent life: " + state.OpponentStats.HP.ToString());
+                        }
+                        if (((flags >> 7) & 1) == 1)
+                        {
+                            state.OpponentStats.HP -= 75;
+                            Console.WriteLine("mine hit opponent");
+                            Console.WriteLine("Opponent life: " + state.OpponentStats.HP.ToString());
+                        }
+                        if (((flags >> 3) & 1) == 1)
+                        {
+                            if(state.ClientStats.HP + 50 <= state.ClientStats.MaxHP)
+                            {
+                                state.ClientStats.HP += 50;
+                            }
+                            else
+                            {
+                                state.ClientStats.HP = state.ClientStats.MaxHP;
+                            }
+                            Console.WriteLine("health pot");
+                            Console.WriteLine("My life: " + state.ClientStats.HP.ToString());
+                        }
+                    }
                 }
-                */
-                //determine winner and if battle ended, change so can't cheat
-                bool battleEnd = (flags & 1) == 1 ? true : false;
-                bool win = ((flags >> 1) & 1) == 1 ? true : false;
-                /*
-                if (state.OpponentStats) flags += 1;
-                if (controller.Win) flags += (1 << 1);
-                */
+                //if client has no hp indicate battle over and match lost
+                if (state.ClientStats.HP <= 0 && state.OpponentStats.HP <= 0)
+                {
+                    battleEnd = true;
+                    //draws are indicated by a 3, because apparently numbers go 0, 1, 3
+                    clientWinLoseDraw = 3;
+                }
+                //if client has health and opponent doesnt indicate match over and battle won
+                else if (state.ClientStats.HP <= 0)
+                {
+                    battleEnd = true;
+                    //client lost, clientWinLoseDraw already initialized to 0
+                }
+                else if (state.OpponentStats.HP <= 0)
+                {
+                    battleEnd = true;
+                    win = true;
+                    //client won
+                    clientWinLoseDraw = 1;
+                }
+                
+
+
                 //lock write operations and pass along and acknowledge update
                 lock (state.WriteLock)
                 {
-                    send(state);
+                    send(state, battleEnd, clientWinLoseDraw);
                 }
                 
                 //recursively read updates until the battle is over
@@ -318,24 +368,66 @@ namespace HappyHibachiServer
         }
 
         //send updates and acknowledgements
-        private static void send(BattleState state)
+        private static void send(BattleState state, bool battleOver, byte clientWinLoseDraw)
         {
+            //send last update even if battle is over
             //indicate this is an update for the opponent
             byte[] isClient = new byte[1] { 0 };
             //send update to opponent
             state.OpponentSocket.Send(isClient);
             state.OpponentSocket.Send(state.Update);
-
-            //indicate this is an acknowledgement for an update sent
-            isClient[0] = 1;
-            //send ack
-            state.ClientSocket.Send(isClient);
+            //if battle over indicate to clients and tell them the outcomes
+            if(battleOver)
+            {
+                isClient[0] = 3;
+                state.OpponentSocket.Send(isClient);
+                state.ClientSocket.Send(isClient);
+                //use isClient to store winlosedraw info to send to clients
+                //if client lost
+                if(clientWinLoseDraw == 0)
+                {
+                    //indicate to client they lost
+                    isClient[0] = 0;
+                    state.ClientSocket.Send(isClient);
+                    //indicate to opponent they won
+                    isClient[0] = 1;
+                    state.OpponentSocket.Send(isClient);
+                }
+                //if client won
+                else if (clientWinLoseDraw == 1)
+                {
+                    //indicate to opponent they lost
+                    isClient[0] = 0;
+                    state.OpponentSocket.Send(isClient);
+                    //indicate to client they won
+                    isClient[0] = 1;
+                    state.ClientSocket.Send(isClient);
+                }
+                //match was drawn
+                else
+                {
+                    //indicate to both match drawn
+                    //isClient[0] should already be set to 3
+                    state.OpponentSocket.Send(isClient);
+                    state.ClientSocket.Send(isClient);
+                }
+            }
+            //otherwise acknowledge to get next update
+            else
+            {
+                //indicate this is an acknowledgement for an update sent
+                isClient[0] = 1;
+                //send ack
+                state.ClientSocket.Send(isClient);
+            }
+            
         }
     }
 
     internal class PlayerStats
     {
         private float hp;
+        private float maxHP;
         private float attack;
         private float defense;
         //items that are used during the battle to be refunded if opponent disconnects
@@ -346,9 +438,10 @@ namespace HappyHibachiServer
 
         public PlayerStats(int playerLevel)
         {
-            hp = 100 + (playerLevel - 1) * 21;
-            attack = 15 + (playerLevel - 1) * 4;
-            defense = 10 + (playerLevel - 1) * 3;
+            maxHP = 100 + playerLevel * 21;
+            hp = maxHP;
+            attack = 15 + playerLevel * 4;
+            defense = 10 + playerLevel * 3;
             healthPots = 0;
             landmines = 0;
         }
@@ -415,6 +508,19 @@ namespace HappyHibachiServer
             set
             {
                 defense = value;
+            }
+        }
+
+        public float MaxHP
+        {
+            get
+            {
+                return maxHP;
+            }
+
+            set
+            {
+                maxHP = value;
             }
         }
     }

@@ -27,6 +27,8 @@ public class TimeoutManager : MonoBehaviour {
 
         try
         {
+            DontDestroyOnLoad(gameObject);
+
             //remote endpoint of the server
             IPEndPoint remoteEP = new IPEndPoint(IP, T_PORT);
 

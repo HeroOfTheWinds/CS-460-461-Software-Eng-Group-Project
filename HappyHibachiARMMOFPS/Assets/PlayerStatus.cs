@@ -10,7 +10,7 @@ public class PlayerStatus : MonoBehaviour {
     private string playerID;
     private int level = 1;
     private int maxHP = 100;
-    private int attack = 18;
+    private int attack = 15;
     private int defense = 10;
     private float atkSpeed = 0.5f;
 
@@ -24,7 +24,7 @@ public class PlayerStatus : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         // Code for retrieving level from server should go here //
-        playerID = BattleNetManager.BattleID.ToString();
+        playerID = Player.playerID.ToString();
         level = retrieveLevelDB(playerID);
         Debug.Log("Player level: " + level);
 
@@ -52,6 +52,8 @@ public class PlayerStatus : MonoBehaviour {
             currentHP = 0;
 
         // Check if HP <= 0, lose battle if so
+        //dealt with by server now
+        /*
         if (currentHP <= 0)
         {
             gameObject.GetComponent<PlayerControl>().DisplayLoss();
@@ -61,6 +63,7 @@ public class PlayerStatus : MonoBehaviour {
             controller.Win = false;
             Debug.Log(currentHP);
         }
+        */
         Debug.Log(currentHP);
     }
 
@@ -83,10 +86,10 @@ public class PlayerStatus : MonoBehaviour {
     private void CalcStats()
     {
         // Using linear for now, will do something robust later
-        maxHP = 100 + (level - 1) * 21;
-        attack = 15 + (level - 1) * 4;
-        defense = 10 + (level - 1) * 3;
-        atkSpeed = 0.5f + 0.05f * (level - 1);
+        maxHP = 100 + level * 21;
+        attack = 15 + level * 4;
+        defense = 10 + level * 3;
+        atkSpeed = 0.5f + 0.05f * level;
     }
 
     //function to retrieve the player's level based off their guid
@@ -95,10 +98,12 @@ public class PlayerStatus : MonoBehaviour {
         int level = 1;
         var form = new WWWForm();
         form.AddField("playerID", playerID);
-        WWW send = new WWW("http://132.160.49.90:7001/level.php", form);
+        WWW send = new WWW("http://13.84.163.243/level.php", form);
         StartCoroutine(WaitForLevelRequest(send, level));
 
-        return level;
+        //return level;
+        //return level 0 until complete
+        return 0;
     }
 
     //function sends guid to level.php to retrieve level from server
@@ -111,6 +116,8 @@ public class PlayerStatus : MonoBehaviour {
             Debug.Log(www.text);
             string text = Regex.Replace(www.text, @"\s", ""); //strip www.text of any whitespace
             level = Convert.ToInt32(text);
+            Debug.Log(level);
+            //CalcStats();
         }
         else
         {

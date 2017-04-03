@@ -8,7 +8,9 @@ using System.Net.Sockets;
 public class PlayerControl : MonoBehaviour {
 
 
-    
+    public static readonly object ACTION_LOCK = new object();
+    //no need stop other motion while processing mine colliders (after setting them)
+    public static readonly object MINE_LOCK = new object();
 
     //public GameObject ARCam; // Link to the main camera
     public GameObject shotPrefab; // What does the bullet look like?
@@ -48,9 +50,9 @@ public class PlayerControl : MonoBehaviour {
 
     //flags, least sig to most sig bit
     //is the battle over?
-    private bool battleEnd = false;
+    //private bool battleEnd = false;
     //did the player win? (unused)
-    private bool win = false;
+    //private bool win = false;
 
     //was a shot fired?
     private bool sf = false;
@@ -58,11 +60,11 @@ public class PlayerControl : MonoBehaviour {
     private bool hpr = false;
     //was a mine placed?
     private bool mp = false;
-    //was a mine set off?
+    //was a mine set off (by me)?
     private bool mso = false;
     //did a shot hit the player?
     private bool ehit = false;
-    //did a set off mine hit the opponent as well
+    //did a set off mine hit the opponent as well (player reports when they set off a mine)
     private bool mho = false;
 
     //where was the player when it fired the shot?
@@ -99,132 +101,135 @@ public class PlayerControl : MonoBehaviour {
             
     // Update is called once per frame
     void Update () {
-        
-        // Add time since last frame to LastShotTime to advance the cooldown
-        LastShotTime += Time.deltaTime;
-
-        // Get player's CharacterController so we can move them around
-        CharacterController player = GetComponent<CharacterController>();
-
-        // Get touch joystick input as horizontal and vertical components
-        float hor = CrossPlatformInputManager.GetAxis("Horizontal");
-        float vert = CrossPlatformInputManager.GetAxis("Vertical");
-
-        // Set running state based on input
-        animator.SetFloat("Moving", Mathf.Abs(vert));
-
-        // Move player based on input and speed
-        player.SimpleMove(transform.forward * vert * MoveSpeed);
-        player.SimpleMove(transform.right * hor * MoveSpeed);
-
-        //Move camera with player
-        cam.transform.position = transform.position + offset;
-
-        // ------------- Camera rotation based on gyroscope input ----------------
-
-        // Grab the reference matrix for quaternions, as a base
-        Quaternion referenceRotation = Quaternion.identity;
-        // Get the current rotation of the phone 
-        Quaternion deviceRotation = DeviceRotation.Get();
-
-        //never mind (keep for now just in case)
-        //offset device rotation's y axis by -90 degrees because it defaults to a 90 degree rotation for some reason
-        //deviceRotation.eulerAngles.Set(deviceRotation.eulerAngles.x, deviceRotation.eulerAngles.y - 90, deviceRotation.eulerAngles.z);
-
-        if (Input.gyro.enabled)
+        //dont want player doing things while updating networking
+        lock (ACTION_LOCK)
         {
-            yRotation += -Input.gyro.rotationRateUnbiased.y * 4f;
-            xRotation += -Input.gyro.rotationRateUnbiased.x * 4f;
+            // Add time since last frame to LastShotTime to advance the cooldown
+            LastShotTime += Time.deltaTime;
 
-            cam.transform.eulerAngles = new Vector3(xRotation, yRotation, 0f);
+            // Get player's CharacterController so we can move them around
+            CharacterController player = GetComponent<CharacterController>();
 
-            // Rotate Camera based on gyroscope (more free)
-            //cam.transform.rotation = deviceRotation;
+            // Get touch joystick input as horizontal and vertical components
+            float hor = CrossPlatformInputManager.GetAxis("Horizontal");
+            float vert = CrossPlatformInputManager.GetAxis("Vertical");
 
-            // Rotate the player's Y axis to match the camera's
-            Quaternion newRot = transform.rotation;
-            Vector3 euler = newRot.eulerAngles;
-            //euler.y = deviceRotation.eulerAngles.y;
-            euler.y = cam.transform.eulerAngles.y;
-            newRot.eulerAngles = euler;
-            transform.rotation = newRot;
-            // This wouldn't be so wasteful if Unity let you actually edit returned quaternions directly
-        }
-        //don't want both
-        else
-        {
-            // ------------- Alternate camera controls: swipe to rotate --------------
+            // Set running state based on input
+            animator.SetFloat("Moving", Mathf.Abs(vert));
 
-            float rotX = CrossPlatformInputManager.GetAxis("CamHorizontal");
+            // Move player based on input and speed
+            player.SimpleMove(transform.forward * vert * MoveSpeed);
+            player.SimpleMove(transform.right * hor * MoveSpeed);
 
-            // Only rotate on Y axis (Prevents camera clip issues)
-            //cam.transform.Rotate(new Vector3(0f, -rotX * RotSpeed * Time.deltaTime, 0f));
-            transform.Rotate(new Vector3(0f, -rotX * RotSpeed * Time.deltaTime, 0f));
-        }
-        // ------------- Firing shots ----------------
+            //Move camera with player
+            cam.transform.position = transform.position + offset;
 
-        // Check if player pressed Fire, and cooldown has expired
-        if (CrossPlatformInputManager.GetButtonDown("Fire") && LastShotTime >= Cooldown)
-        {
-            sf = true;
-            sfx = cam.transform.position.x;
-            sfz = cam.transform.position.z;
-            sfrx = cam.transform.forward.x; //cam.transform.rotation.eulerAngles.x;
-            sfry = cam.transform.forward.y; //cam.transform.rotation.eulerAngles.y;
-            sfrz = cam.transform.forward.z; //cam.transform.rotation.eulerAngles.z;
+            // ------------- Camera rotation based on gyroscope input ----------------
 
-            // Fire a shot by instantiating a bullet and calculating with a raycast
-            // First get orientation of camera and adjust laser's start position so it's outside the player's collider
-            Vector3 shotPos = transform.TransformDirection(1f, -0.5f, 1f) + cam.transform.position;
-            Quaternion shotRot = cam.transform.rotation;
+            // Grab the reference matrix for quaternions, as a base
+            Quaternion referenceRotation = Quaternion.identity;
+            // Get the current rotation of the phone 
+            Quaternion deviceRotation = DeviceRotation.Get();
 
-            // Make a raycast from the camera to check for target hit
-            RaycastHit hit; // Var to store info on what got hit
-            // Location in world space of the ray's endpoint
-            Vector3 endPoint = Vector3.zero;
+            //never mind (keep for now just in case)
+            //offset device rotation's y axis by -90 degrees because it defaults to a 90 degree rotation for some reason
+            //deviceRotation.eulerAngles.Set(deviceRotation.eulerAngles.x, deviceRotation.eulerAngles.y - 90, deviceRotation.eulerAngles.z);
 
-            //Debug.DrawRay(cam.transform.position, cam.transform.forward*200f, Color.red, 20f, true);
-
-            // Test if the raycast hits anything
-            if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, 200f))
+            if (Input.gyro.enabled)
             {
-                // Retrieve endpoint
-                endPoint = hit.point;
-                
-                // Check what we hit and act accordingly
-                switch (hit.collider.tag)
-                {
-                    case "Enemy":
-                        // Get that player's stats and take off some HP
-                        e_defense = hit.collider.gameObject.GetComponent<EnemyStatus>().getDefense();
-                        float damage = attack - e_defense;
-                        if (damage < 0)
-                            damage = 0f;
-                        hit.collider.gameObject.GetComponent<EnemyStatus>().TakeHP(damage);
-                        ehit = true;
-                        Debug.Log("Hit enemy");
-                        // Spawn some sparks to let you know you hit them
-                        GameObject sparks = Instantiate(SparkSys, hit.point, Quaternion.identity);
-                        break;
-                    default:
-                        // Other cases to consider: wall, arena border, ground
-                        // Spawn a cloud of dust
-                        GameObject dust = Instantiate(DustSys, hit.point, Quaternion.identity);
-                        break;
-                }
+                yRotation += -Input.gyro.rotationRateUnbiased.y * 4f;
+                xRotation += -Input.gyro.rotationRateUnbiased.x * 4f;
+
+                cam.transform.eulerAngles = new Vector3(xRotation, yRotation, 0f);
+
+                // Rotate Camera based on gyroscope (more free)
+                //cam.transform.rotation = deviceRotation;
+
+                // Rotate the player's Y axis to match the camera's
+                Quaternion newRot = transform.rotation;
+                Vector3 euler = newRot.eulerAngles;
+                //euler.y = deviceRotation.eulerAngles.y;
+                euler.y = cam.transform.eulerAngles.y;
+                newRot.eulerAngles = euler;
+                transform.rotation = newRot;
+                // This wouldn't be so wasteful if Unity let you actually edit returned quaternions directly
             }
+            //don't want both
+            else
+            {
+                // ------------- Alternate camera controls: swipe to rotate --------------
 
-            // Change origin of shot to make it look like it's coming from the gun
-            //shotPos = transform.TransformDirection(1f, -0.5f, 1f) + cam.transform.position;
+                float rotX = CrossPlatformInputManager.GetAxis("CamHorizontal");
 
-            // Instantiate shot where camera is
-            makeShot(shotPos, shotRot, endPoint);
-            
-            // Reset time since last shot to enforce cooldown
-            LastShotTime = 0f;
+                // Only rotate on Y axis (Prevents camera clip issues)
+                //cam.transform.Rotate(new Vector3(0f, -rotX * RotSpeed * Time.deltaTime, 0f));
+                transform.Rotate(new Vector3(0f, -rotX * RotSpeed * Time.deltaTime, 0f));
+            }
+            // ------------- Firing shots ----------------
 
-            // Animate the player
-            animator.SetTrigger("FireT");
+            // Check if player pressed Fire, and cooldown has expired
+            if (CrossPlatformInputManager.GetButtonDown("Fire") && LastShotTime >= Cooldown)
+            {
+                sf = true;
+                sfx = cam.transform.position.x;
+                sfz = cam.transform.position.z;
+                sfrx = cam.transform.forward.x; //cam.transform.rotation.eulerAngles.x;
+                sfry = cam.transform.forward.y; //cam.transform.rotation.eulerAngles.y;
+                sfrz = cam.transform.forward.z; //cam.transform.rotation.eulerAngles.z;
+
+                // Fire a shot by instantiating a bullet and calculating with a raycast
+                // First get orientation of camera and adjust laser's start position so it's outside the player's collider
+                Vector3 shotPos = transform.TransformDirection(1f, -0.5f, 1f) + cam.transform.position;
+                Quaternion shotRot = cam.transform.rotation;
+
+                // Make a raycast from the camera to check for target hit
+                RaycastHit hit; // Var to store info on what got hit
+                                // Location in world space of the ray's endpoint
+                Vector3 endPoint = Vector3.zero;
+
+                //Debug.DrawRay(cam.transform.position, cam.transform.forward*200f, Color.red, 20f, true);
+
+                // Test if the raycast hits anything
+                if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, 200f))
+                {
+                    // Retrieve endpoint
+                    endPoint = hit.point;
+
+                    // Check what we hit and act accordingly
+                    switch (hit.collider.tag)
+                    {
+                        case "Enemy":
+                            // Get that player's stats and take off some HP
+                            e_defense = hit.collider.gameObject.GetComponent<EnemyStatus>().getDefense();
+                            float damage = attack - e_defense;
+                            if (damage < 0)
+                                damage = 0f;
+                            hit.collider.gameObject.GetComponent<EnemyStatus>().TakeHP(damage);
+                            ehit = true;
+                            Debug.Log("Hit enemy");
+                            // Spawn some sparks to let you know you hit them
+                            GameObject sparks = Instantiate(SparkSys, hit.point, Quaternion.identity);
+                            break;
+                        default:
+                            // Other cases to consider: wall, arena border, ground
+                            // Spawn a cloud of dust
+                            GameObject dust = Instantiate(DustSys, hit.point, Quaternion.identity);
+                            break;
+                    }
+                }
+
+                // Change origin of shot to make it look like it's coming from the gun
+                //shotPos = transform.TransformDirection(1f, -0.5f, 1f) + cam.transform.position;
+
+                // Instantiate shot where camera is
+                makeShot(shotPos, shotRot, endPoint);
+
+                // Reset time since last shot to enforce cooldown
+                LastShotTime = 0f;
+
+                // Animate the player
+                animator.SetTrigger("FireT");
+            }
         }
     }
 
@@ -236,12 +241,15 @@ public class PlayerControl : MonoBehaviour {
     public void PlaceLandmine(Vector3 position, Quaternion rotation, int placerID)
     {
         
-            // Instantiate a landmine at specified location
-            GameObject mine = Instantiate(minePrefab, position, rotation);
+        // Instantiate a landmine at specified location
+        GameObject mine = Instantiate(minePrefab, position, rotation);
 
-            // Tell the Landmine who placed it so it doesn't instantly blow up in their face (literally)
-            // We're using the instance ID so that it is a unique identifier
-            mine.GetComponent<Landmine>().placer = placerID;
+        // Tell the Landmine who placed it so it doesn't instantly blow up in their face (literally)
+        // We're using the instance ID so that it is a unique identifier
+        mine.GetComponent<Landmine>().placer = placerID;
+        //for coord
+        mine.GetComponent<Landmine>().MineOrderID = ++Landmine.NumMinesPlaced;
+
     }
 
     public void DisplayLoss()
@@ -292,6 +300,7 @@ public class PlayerControl : MonoBehaviour {
 
 
     //getters and setters
+    /*
     public bool BattleEnd
     {
         get
@@ -317,7 +326,7 @@ public class PlayerControl : MonoBehaviour {
             win = value;
         }
     }
-
+    */
     public bool Sf
     {
         get

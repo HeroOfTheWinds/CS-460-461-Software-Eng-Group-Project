@@ -30,7 +30,7 @@ public class nearbyPlayers : MonoBehaviour {
 		{
 			textOne.text = "Player ID";
 			textTwo.text = i.ToString();
-			GameObject goButton = (GameObject)Instantiate(prefabButton);
+			GameObject goButton = Instantiate(prefabButton);
 			goButton.transform.SetParent(nearbyButtonsPanel, false);
 			goButton.transform.localScale = new Vector3(1, 1, 1);
 
@@ -56,7 +56,7 @@ public class nearbyPlayers : MonoBehaviour {
 	public void openBattle()
 	{
 		//Loads the battle scence
-		SceneManager.LoadScene ("Battle");
+		//SceneManager.LoadScene ("Battle");
 
 		//Active Nearby Players Canvas
 		//nearbyCanvasActivate();

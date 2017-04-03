@@ -56,8 +56,12 @@ public class itemScript : MonoBehaviour {
             controller.PlaceLandmine(player.transform.position, player.transform.rotation, player.GetInstanceID());
             //indicate a mine was placed and where
             controller.Mp = true;
-            controller.Mpx = player.transform.position.x;
-            controller.Mpz = player.transform.position.z;
+            //stop player motion while checking position
+            lock(PlayerControl.ACTION_LOCK)
+            {
+                controller.Mpx = player.transform.position.x;
+                controller.Mpz = player.transform.position.z;
+            }
         }
         // Auto-close menu
         itemMenu.enabled = false;

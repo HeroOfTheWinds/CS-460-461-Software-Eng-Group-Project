@@ -45,18 +45,18 @@ public class ARControl : MonoBehaviour {
                 xRotation += -Input.gyro.rotationRateUnbiased.x * 4f;
 
                 cam.transform.eulerAngles = new Vector3(xRotation, yRotation, 0f);
-                euler.y = cam.transform.eulerAngles.y;
+                //euler.y = cam.transform.eulerAngles.y;
             }
             else
             {
                 // Use the nice solution
                 // Rotate Camera based on gyroscope (more free)
                 cam.transform.rotation = deviceRotation;
-                euler.y = deviceRotation.eulerAngles.y;
+                //euler.y = deviceRotation.eulerAngles.y;
             }
             
-            newRot.eulerAngles = euler;
-            transform.rotation = newRot;
+            //newRot.eulerAngles = euler;
+            //transform.rotation = newRot;
             // This wouldn't be so wasteful if Unity let you actually edit returned quaternions directly
         }
     }

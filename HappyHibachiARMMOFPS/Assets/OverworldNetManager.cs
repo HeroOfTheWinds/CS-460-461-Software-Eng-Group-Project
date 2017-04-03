@@ -61,7 +61,9 @@ public class OverworldNetManager : MonoBehaviour {
 
             locService.Start();
 
-            int timeout = 30;
+            //isnt working so remove location startup stuff so dont have to wait
+            //MAKE SURE YOU CHANGE BACK LATER (SHOULD BE 30)
+            int timeout = 0;
 
             //potentially display some sort of loading screen while waiting for location services, etc.
             while(Input.location.status == LocationServiceStatus.Initializing && timeout > 0)
@@ -74,6 +76,8 @@ public class OverworldNetManager : MonoBehaviour {
             {
                 //display some sort of error message, failed to start location services
             }
+
+            //DontDestroyOnLoad(gameObject);
 
             coords = new byte[UPDATE_SIZE];
             size = new byte[4];
@@ -127,7 +131,7 @@ public class OverworldNetManager : MonoBehaviour {
                 return;
             }
 
-            UnityEngine.Debug.Log(responseTime.ElapsedMilliseconds);
+            //UnityEngine.Debug.Log(responseTime.ElapsedMilliseconds);
 
             int nearby = BitConverter.ToInt32(size, 0);
             int numObjects = nearby / 24;
@@ -151,6 +155,7 @@ public class OverworldNetManager : MonoBehaviour {
                 {
                     o.Type = 0;
                     o.Latitude = lat;
+
                 }
                 else if (lat < 272)
                 {
@@ -165,11 +170,23 @@ public class OverworldNetManager : MonoBehaviour {
 
 
                 o.Longtitude = BitConverter.ToSingle(buf, i * 8 + 4);
-                Buffer.BlockCopy(buf, 8 * numObjects + i, idBytes, 0, 16);
+                Buffer.BlockCopy(buf, 8 * numObjects + i * 16, idBytes, 0, 16);
                 o.Id = new Guid(idBytes);
 
+                //UnityEngine.Debug.Log(o.Id);
+
+                //-----------------TEMPORARY TEST CODE----------------------
+
+                if (o.Type == 0 && o.Id != Player.playerID)
+                {
+                    menuScript.opponentID = o.Id;
+                    UnityEngine.Debug.Log("Opponent ID set: " + o.Id);
+                }
+
+                //----------------------------------------------------------
+
                 nearbyObjects.Add(o);
-                UnityEngine.Debug.Log(o.Longtitude);
+                //UnityEngine.Debug.Log(o.Longtitude);
             }
 
 
@@ -200,7 +217,7 @@ public class OverworldNetManager : MonoBehaviour {
         {
             if (update)
             {
-                UnityEngine.Debug.Log("Test");
+                //UnityEngine.Debug.Log("Test");
                 loc = locService.lastData;
                 latitude = loc.latitude;
                 longtitude = loc.longitude;

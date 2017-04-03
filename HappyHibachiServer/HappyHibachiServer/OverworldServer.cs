@@ -89,7 +89,8 @@ namespace HappyHibachiServer
                 {
                     if (ConnectedPlayers.playerDetails.TryGetValue(state.ClientID, out addSocket))
                     {
-                        addSocket.OverworldSocket = handler;                    }
+                        addSocket.OverworldSocket = handler;
+                    }
                     else
                     {
                         addSocket = new ClientState(null, handler, null, null);
