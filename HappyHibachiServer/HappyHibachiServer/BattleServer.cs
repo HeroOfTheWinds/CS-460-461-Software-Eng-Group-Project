@@ -255,14 +255,34 @@ namespace HappyHibachiServer
                         if (((flags >> 5) & 1) == 1)
                         {
                             state.ClientStats.HP -= 75;
+
+                            Console.WriteLine("mine");
+                            Console.WriteLine("My life: " + state.ClientStats.HP.ToString());
                         }
                         if (((flags >> 6) & 1) == 1)
                         {
                             state.OpponentStats.HP -= state.ClientStats.Attack - state.OpponentStats.Defense;
+                            Console.WriteLine("shot");
+                            Console.WriteLine("Opponent life: " + state.OpponentStats.HP.ToString());
                         }
                         if (((flags >> 7) & 1) == 1)
                         {
                             state.OpponentStats.HP -= 75;
+                            Console.WriteLine("mine hit opponent");
+                            Console.WriteLine("Opponent life: " + state.OpponentStats.HP.ToString());
+                        }
+                        if (((flags >> 3) & 1) == 1)
+                        {
+                            if(state.ClientStats.HP + 50 <= state.ClientStats.MaxHP)
+                            {
+                                state.ClientStats.HP += 50;
+                            }
+                            else
+                            {
+                                state.ClientStats.HP = state.ClientStats.MaxHP;
+                            }
+                            Console.WriteLine("health pot");
+                            Console.WriteLine("My life: " + state.ClientStats.HP.ToString());
                         }
                     }
                 }
@@ -407,6 +427,7 @@ namespace HappyHibachiServer
     internal class PlayerStats
     {
         private float hp;
+        private float maxHP;
         private float attack;
         private float defense;
         //items that are used during the battle to be refunded if opponent disconnects
@@ -417,9 +438,10 @@ namespace HappyHibachiServer
 
         public PlayerStats(int playerLevel)
         {
-            hp = 100 + (playerLevel - 1) * 21;
-            attack = 15 + (playerLevel - 1) * 4;
-            defense = 10 + (playerLevel - 1) * 3;
+            maxHP = 100 + playerLevel * 21;
+            hp = maxHP;
+            attack = 15 + playerLevel * 4;
+            defense = 10 + playerLevel * 3;
             healthPots = 0;
             landmines = 0;
         }
@@ -486,6 +508,19 @@ namespace HappyHibachiServer
             set
             {
                 defense = value;
+            }
+        }
+
+        public float MaxHP
+        {
+            get
+            {
+                return maxHP;
+            }
+
+            set
+            {
+                maxHP = value;
             }
         }
     }

@@ -65,6 +65,8 @@ public class GenComManager : MonoBehaviour {
 
         try
         {
+            //DontDestroyOnLoad(gameObject);
+
             //remote endpoint of the server
             IPEndPoint remoteEP = new IPEndPoint(IP, GC_PORT);
 
@@ -85,7 +87,7 @@ public class GenComManager : MonoBehaviour {
             landmarkInfo = new LandmarkInfo();
             colloseumInfo = new ColloseumInfo();
             battleInfo = new BattleInfo();
-            processed = new ManualResetEvent(false);
+            processed = new ManualResetEvent(true);
             ItemList.populateItemList();
 
             //Debug.Log("Send Update Successful");
@@ -193,7 +195,6 @@ public class GenComManager : MonoBehaviour {
                     infoBuf = new byte[size];
                     client.Receive(infoBuf, 0, size, 0);
                     itemInfo = new List<byte>(infoBuf);
-
                     processed.Reset();
                     processed.WaitOne();
                     break;
@@ -210,15 +211,13 @@ public class GenComManager : MonoBehaviour {
                     client.Receive(infoBuf, 1, 0);
                     //check if expected battle id and set outAccepted accordingly
                     outAccepted = battleID == BattleNetManager.BattleID ? infoBuf[0] : (byte)3;
-                    
+                    processed.Reset();
+                    processed.WaitOne();
                     break;
                 default:
-                    Debug.Log("Unexpected type");
+                    Debug.Log("Unexpected type: " + type[0]);
                     break;
             }
-
-            processed.Reset();
-            processed.WaitOne();
 
             client.BeginReceive(type, 0, 1, 0, new AsyncCallback(updateDriver), null);
         }
@@ -270,6 +269,7 @@ public class GenComManager : MonoBehaviour {
                             if(ack[0] == 1)
                             {
                                 //send user to battle scene
+                                update[0] = 255;
                                 SceneManager.LoadScene("Battle");
                             }
                             else
@@ -297,13 +297,27 @@ public class GenComManager : MonoBehaviour {
                         //after user responds to match, call setUpdate(5, BattleNetManager.OpponenetID)
                         //if user accepted the request switch to the battle scene (will add final stage of verification both users connecting later)
                         //details of battle will be implemented later
+
+                        //-----------------TEMPORARY TEST CODE----------------------
+
+                        Debug.Log("Received Match request");
+                        respondMatch(true);
+                        setUpdate(5, BattleNetManager.OpponentID);
+
+                        //----------------------------------------------------------
+
                         break;
                     case 1:
                         //draw colloseum info to screen, stored in colloseumInfo
+                        Debug.Log("Colloseum name: " + colloseumInfo.Name);
+                        Debug.Log("Colloseum description: " + colloseumInfo.Name);
                         break;
                     case 2:
                         //draw landmark info to screen, stored in landmarkInfo
-                        GUI.Box(new Rect(0, 0, Screen.width, Screen.height), landmarkInfo.Name);
+                        //this gui.box thingy doesnt seem to do anything
+                        //GUI.Box(new Rect(0, 0, Screen.width, Screen.height), landmarkInfo.Name);
+                        Debug.Log("Colloseum name: " + landmarkInfo.Name);
+                        Debug.Log("Colloseum description: " + landmarkInfo.Name);
 
                         break;
                     case 3:
@@ -315,8 +329,22 @@ public class GenComManager : MonoBehaviour {
                         //for now can just put name or something
                         //if itemInfo is empty, display try again later message (can't get items)
                         //place items in users inventory (even if not drawn to screen), can store as a mapping of the items id and the number held or something like that
+
+                        //-----------------TEMPORARY TEST CODE----------------------
+
+                        Debug.Log("Received Items");
+                        ItemDetails receivedItem;
+                        foreach (byte item in itemInfo)
+                        {
+                            receivedItem = ItemList.getDetails(item);
+                            Debug.Log("Received Item: " + receivedItem.Name);
+                        }
+
+                        //----------------------------------------------------------
+
                         break;
                     case 5:
+                        Debug.Log("Received Match response");
                         if (outAccepted == 1)
                         {
                             //pause for two seconds to give user time to comprehend what's going on in case ack received quickly

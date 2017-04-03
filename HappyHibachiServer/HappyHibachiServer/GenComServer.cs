@@ -189,7 +189,8 @@ namespace HappyHibachiServer
             {
                 lock(opponent.GENCOM_WRITE_LOCK)
                 {
-                    opponent.GenComSocket.Send(response, 17, 0);
+                    //Console.WriteLine(response[0]);
+                    opponent.GenComSocket.Send(response, 18, 0);
                 }
             }
             else
@@ -197,7 +198,14 @@ namespace HappyHibachiServer
                 //indicate player no longer there
                 ack[0] = 0;
             }
-            state.ClientSocket.Send(ack, 1, 0);
+            //if match accepted send acknowledgment to player to connect to battle scene or not depending on if opponent still online
+            if (response[17] == 1)
+            {
+                lock (state.WRITE_LOCK)
+                {
+                    state.ClientSocket.Send(ack, 1, 0);
+                }
+            }
         }
 
         //use shorts for sizes (in bytes) to save data
@@ -217,18 +225,19 @@ namespace HappyHibachiServer
             //------------------TEMPORARY TEST CODE, NO DB BACKING------------------
 
             Random r = new Random();
-            r.Next(1, 4);
+            size = (short)r.Next(1, 4);
             for(int i = 0; i < size; i++)
             {
                 //lets say 0 is a health pot and 1 is a landmine
-                itemIDs.Add((byte)r.Next(0, 1));
+                itemIDs.Add((byte)r.Next(0, 2));
             }
 
             //----------------------------------------------------------------------
 
-
+            byte[] type = { 4 };
             lock (state.WRITE_LOCK)
             {
+                state.ClientSocket.Send(type);
                 state.ClientSocket.Send(BitConverter.GetBytes(size));
                 state.ClientSocket.Send(itemIDs.ToArray());
             }
@@ -254,21 +263,23 @@ namespace HappyHibachiServer
             //process database stuff and provide info on landmark
             //store landmark name description and image in respective vars
             var dbCon = new DatabaseConnect();
-            dbCon.provideLandmarkInfoFromDB(state.ClientID, ref name, ref description, ref image);
+            dbCon.provideLandmarkInfoFromDB(getUpdateID(state.Update), ref name, ref description, ref image);
             Console.WriteLine("Landmark GUID: " + state.ClientID.ToString());
             Console.WriteLine("Landmark Name: " + name);
             Console.WriteLine("Landmark description: " + description);
             Console.WriteLine("Landmark image: " + image);
 
-            sizeName = (short)ASCIIEncoding.ASCII.GetByteCount(name);
-            sizeDescription = (short)ASCIIEncoding.ASCII.GetByteCount(description);
+            sizeName = (short)Encoding.ASCII.GetByteCount(name);
+            sizeDescription = (short)Encoding.ASCII.GetByteCount(description);
             //imagesize here
+            byte[] type = { 2 };
             lock (state.WRITE_LOCK)
             {
+                state.ClientSocket.Send(type);
                 state.ClientSocket.Send(BitConverter.GetBytes(sizeName));
-                state.ClientSocket.Send(ASCIIEncoding.ASCII.GetBytes(name));
+                state.ClientSocket.Send(Encoding.ASCII.GetBytes(name));
                 state.ClientSocket.Send(BitConverter.GetBytes(sizeDescription));
-                state.ClientSocket.Send(ASCIIEncoding.ASCII.GetBytes(description));
+                state.ClientSocket.Send(Encoding.ASCII.GetBytes(description));
                 state.ClientSocket.Send(BitConverter.GetBytes(sizeImage));
             }
             //send image
@@ -287,21 +298,23 @@ namespace HappyHibachiServer
             //store colloseum name and description in respective vars
             //add other details later
             var dbCon = new DatabaseConnect();
-            dbCon.provideColosseumInfoFromDB(state.ClientID, ref name, ref description, ref image);
+            dbCon.provideColosseumInfoFromDB(getUpdateID(state.Update), ref name, ref description, ref image);
             Console.WriteLine("Colloseum GUID: " + state.ClientID.ToString());
             Console.WriteLine("Colloseum Name: " + name);
             Console.WriteLine("Colloseum description: " + description);
             Console.WriteLine("Colloseum image: " + image);
 
-            sizeName = (short)ASCIIEncoding.ASCII.GetByteCount(name);
-            sizeDescription = (short)ASCIIEncoding.ASCII.GetByteCount(description);
+            sizeName = (short)Encoding.ASCII.GetByteCount(name);
+            sizeDescription = (short)Encoding.ASCII.GetByteCount(description);
 
+            byte[] type = { 1 };
             lock (state.WRITE_LOCK)
             {
+                state.ClientSocket.Send(type);
                 state.ClientSocket.Send(BitConverter.GetBytes(sizeName));
-                state.ClientSocket.Send(ASCIIEncoding.ASCII.GetBytes(name));
+                state.ClientSocket.Send(Encoding.ASCII.GetBytes(name));
                 state.ClientSocket.Send(BitConverter.GetBytes(sizeDescription));
-                state.ClientSocket.Send(ASCIIEncoding.ASCII.GetBytes(description));
+                state.ClientSocket.Send(Encoding.ASCII.GetBytes(description));
             }
         }
 
@@ -337,6 +350,11 @@ namespace HappyHibachiServer
             //send stuff to client
             //this will have the type id of 3
             //implement later
+            byte[] type = { 3 };
+            lock (state.WRITE_LOCK)
+            {
+                state.ClientSocket.Send(type);
+            }
         }
 
         private static Guid getUpdateID(byte[] update)

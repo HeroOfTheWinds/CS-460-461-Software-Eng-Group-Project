@@ -11,7 +11,7 @@ public class EnemyStatus : MonoBehaviour
     private string enemyID;
     private int level = 1;
     private int maxHP = 100;
-    private int attack = 18;
+    private int attack = 15;
     private int defense = 10;
     private float atkSpeed = 0.5f;
 
@@ -89,10 +89,10 @@ public class EnemyStatus : MonoBehaviour
     private void CalcStats()
     {
         // Using linear for now, will do something robust later
-        maxHP = 100 + (level - 1) * 21;
-        attack = 15 + (level - 1) * 4;
-        defense = 10 + (level - 1) * 3;
-        atkSpeed = 0.5f + 0.05f * (level - 1);
+        maxHP = 100 + level * 21;
+        attack = 15 + level * 4;
+        defense = 10 + level * 3;
+        atkSpeed = 0.5f + 0.05f * level;
     }
 
     //function to retrieve the opponent's level based off their guid
@@ -100,10 +100,12 @@ public class EnemyStatus : MonoBehaviour
     {
         var form = new WWWForm();
         form.AddField("playerID", playerID);
-        WWW send = new WWW("http://132.160.49.90:7001/level.php", form);
+        WWW send = new WWW("http://13.84.163.243/level.php", form);
         StartCoroutine(WaitForLevelRequest(send, level));
 
-        return level;
+        //return level;
+        //return level 0 until complete
+        return 0;
     }
 
     //function sends guid to level.php to retrieve level from server
@@ -113,9 +115,10 @@ public class EnemyStatus : MonoBehaviour
         if (www.error == null) //connection is good and string recieved from server
         {
             Debug.Log("Connection good.");
-            Debug.Log(www.text);
             string text = Regex.Replace(www.text, @"\s", ""); //strip www.text of any whitespace
             level = Convert.ToInt32(text);
+            Debug.Log(level);
+            //CalcStats();
         }
         else
         {

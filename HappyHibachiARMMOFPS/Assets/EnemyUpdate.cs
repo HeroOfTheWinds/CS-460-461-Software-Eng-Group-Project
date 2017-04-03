@@ -25,10 +25,12 @@ public class EnemyUpdate
     private bool hpr = false;
     //was a mine placed?
     private bool mp = false;
-    //was a mine set off? (unused)
+    //was a mine set off?
     private bool mso = false;
     //did a shot hit the player?
     private bool phit = false;
+    //did the mine hit the player?
+    private bool mho;
 
     //where was the opponent when it fired the shot?
     //x and z coords
@@ -56,7 +58,7 @@ public class EnemyUpdate
 
     public void addUpdate(float xPos, float zPos, float rot, double time)
     {
-        Debug.Log("num records = " + numRecords);
+        //Debug.Log("num records = " + numRecords);
         //if buffer isn't full, store update in next position
         if(numRecords < MAX_RECORDS)
         {
@@ -100,18 +102,17 @@ public class EnemyUpdate
 
     public void extrapolateMotion(double time, GameObject enemy)
     {
-        //do not extrapolate motion until at least one update is received and run
+        //do not extrapolate motion until at least three updates are received and run
         if(updateRun)
         {
             float xPos, zPos, rot;
-            double[] a = new double[numRecords + 1];
-            double[] h = new double[numRecords + 1];
-            bSpline2Coef(numRecords, x, ref a, ref h);
-            xPos = bSpline2Eval(numRecords, a, h, time);
-            bSpline2Coef(numRecords, z, ref a, ref h);
-            zPos = bSpline2Eval(numRecords, a, h, time);
-            bSpline2Coef(numRecords, r, ref a, ref h);
-            rot = bSpline2Eval(numRecords, a, h, time);
+            double[] c = new double[numRecords];
+            spline3Coef(numRecords, t, x, ref c);
+            xPos = spline3Eval(numRecords, t, x, c, time);
+            spline3Coef(numRecords, t, z, ref c);
+            zPos = spline3Eval(numRecords, t, z, c, time);
+            spline3Coef(numRecords, t, r, ref c);
+            rot = spline3Eval(numRecords, t, r, c, time);
 
             //set up enemy's position and rotation from extrapolation
             Vector3 updateVector = new Vector3(xPos, 0, zPos);
@@ -130,35 +131,40 @@ public class EnemyUpdate
     {
         //Debug.Log(battleEnd);
         //Debug.Log("update run start");
-        //Debug.Log(rot);
-        updateRun = true;
+        //Debug.Log(rot);  
         double time = t[numRecords - 1];
         //interpolate 4 subintervals between last position and this position
         double interval = (time - lastT) / 5;
 
-        float xPos, zPos, rot;
-        double[] a = new double[numRecords + 1];
-        double[] h = new double[numRecords + 1];
+        //float xPos, zPos, rot;
+        double[] c = new double[numRecords];
         Vector3 updateVector;
         Quaternion updateQuat;
-
-        //only estimate for 4 subintervals, use exact position for end point
-        for (int i = 0; i < 4; i++)
+        //can only use splines when three records exist
+        if (numRecords >= 3)
         {
-            //start at the first time interval after current position
-            lastT += interval;
-            bSpline2Coef(numRecords, x, ref a, ref h);
-            xPos = bSpline2Eval(numRecords, a, h, lastT);
-            bSpline2Coef(numRecords, z, ref a, ref h);
-            zPos = bSpline2Eval(numRecords, a, h, lastT);
-            bSpline2Coef(numRecords, r, ref a, ref h);
-            rot = bSpline2Eval(numRecords, a, h, lastT);
-            updateVector = new Vector3(xPos, 0, zPos);
-            updateQuat = Quaternion.Euler(0, rot, 0);
-            enemy.transform.position = updateVector;
-            enemy.transform.rotation = updateQuat;
+            updateRun = true;
+            //doesnt really make a difference, too fast (if anything might make it worse)
+            //possibly come up with an improved version to smooth transitions so keep for now
+            /*
+            //only estimate for 4 subintervals, use exact position for end point
+            for (int i = 0; i < 4; i++)
+            {
+                //start at the first time interval after current position
+                lastT += interval;
+                spline3Coef(numRecords, t, x, ref c);
+                xPos = spline3Eval(numRecords, t, x, c, lastT);
+                spline3Coef(numRecords, t, z, ref c);
+                zPos = spline3Eval(numRecords, t, z, c, lastT);
+                spline3Coef(numRecords, t, r, ref c);
+                rot = spline3Eval(numRecords, t, r, c, lastT);
+                updateVector = new Vector3(xPos, 0, zPos);
+                updateQuat = Quaternion.Euler(0, rot, 0);
+                enemy.transform.position = updateVector;
+                enemy.transform.rotation = updateQuat;
+            }
+            */
         }
-
 
         //set up enemy's position and rotation from update
         updateVector = new Vector3(x[numRecords - 1], 0, z[numRecords - 1]);
@@ -239,6 +245,64 @@ public class EnemyUpdate
         }
     }
 
+    void spline3Coef(int n, double[] t, float[] y, ref double[] z)
+    {
+        int i;
+        double[] h = new double[n - 1];
+        double[] b = new double[n - 1];
+        double[] u = new double[n - 2];
+        double[] v = new double[n - 2];
+
+        for (i = 0; i < n - 1; i++)
+        {
+            h[i] = t[i + 1] - t[i];
+            b[i] = (y[i + 1] - y[i]) / h[i];
+            //if (double.IsNaN(b[i])) Debug.Log("times are same");
+        }
+        u[0] = 2 * (h[0] + h[1]);
+        v[0] = 6 * (b[1] - b[0]);
+
+        for (i = 1; i < n - 2; i++)
+        {
+            u[i] = 2 * (h[i] + h[i - 1]) - Math.Pow(h[i - 1], 2) / u[i - 1];
+            v[i] = 6 * (b[i] - b[i - 1]) - h[i - 1] * v[i - 1] / u[i - 1];
+        }
+
+        z[n - 1] = 0;
+
+        for (i = n - 3; i > 0; i--)
+        {
+            z[i] = (v[i] - h[i] * z[i + 1]) / u[i];
+        }
+        z[0] = 0;
+    }
+
+
+    float spline3Eval(int n, double[] t, float[] y, double[] z, double x)
+    {
+        int i;
+        double h, tmp;
+
+        for (i = n - 2; i >= 0; i--)
+        {
+            if (x - t[i] >= 0)
+            {
+                break;
+            }
+        }
+
+        h = t[i + 1] - t[i];
+        
+        tmp = (z[i] / 2) + (x - t[i]) * (z[i + 1] - z[i]) / (6 * h);
+        tmp = -(h / 6) * (z[i + 1] + 2 * z[i]) + (y[i + 1] - y[i]) / h + (x - t[i]) * tmp;
+
+        return (float)(y[i] + (x - t[i]) * tmp);
+    }
+
+
+
+    //not working properly, save until test normal splines
+    /*
     void bSpline2Coef(int n, float[] y, ref double[] a, ref double[] h)
     {
         int i;
@@ -287,7 +351,7 @@ public class EnemyUpdate
         //need a value in single precision for usage with unity methods
         return (float)((d * (x - t[i - 1]) + e * (t[i] - x)) / h[i]);
     }
-
+    */
 
     //getters and setters
     /*
@@ -509,6 +573,19 @@ public class EnemyUpdate
         set
         {
             phit = value;
+        }
+    }
+
+    public bool Mho
+    {
+        get
+        {
+            return mho;
+        }
+
+        set
+        {
+            mho = value;
         }
     }
 

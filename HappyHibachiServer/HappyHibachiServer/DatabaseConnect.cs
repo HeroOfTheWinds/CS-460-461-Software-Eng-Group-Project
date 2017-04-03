@@ -144,6 +144,7 @@ namespace HappyHibachiServer
 
                     foreach(KeyValuePair<Guid, ClientState> cs in ConnectedPlayers.playerDetails)
                     {
+                        //Console.WriteLine(cs.Key);
                         nearbyID.Add(cs.Key);
                         nearbyC.Add(cs.Value.Latitude[0]);
                         nearbyC.Add(cs.Value.Longtitude[0]);

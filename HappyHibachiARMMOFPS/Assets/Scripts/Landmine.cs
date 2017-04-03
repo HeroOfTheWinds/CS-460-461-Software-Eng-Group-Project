@@ -77,7 +77,7 @@ public class Landmine : MonoBehaviour {
                 // Decrease health of everyone/everything hit
                 for (int i = 0; i < hitPlayers.Length; i++)
                 {
-                    PlayerControl controller = hitPlayers[i].gameObject.GetComponent<PlayerControl>();
+                    PlayerControl controller = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerControl>();
                     // Check if the object is a player, decrease health if so
                     if (hitPlayers[i].tag == "Player")
                     {
@@ -87,6 +87,7 @@ public class Landmine : MonoBehaviour {
                         {
                             //if I was the one to set off this mine then report to server
                             controller.Mso = true;
+                            //Debug.Log("mso set");
                         }
                     }
                     else if (hitPlayers[i].tag == "Enemy")
@@ -96,6 +97,7 @@ public class Landmine : MonoBehaviour {
                         {
                             //if I was the one to set off this mine, did it also hit the opponent?
                             controller.Mho = true;
+                            //Debug.Log(controller.Mho);
                         }
                     }
                 }

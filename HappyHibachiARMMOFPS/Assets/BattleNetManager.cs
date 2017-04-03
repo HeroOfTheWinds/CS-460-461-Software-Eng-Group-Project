@@ -64,8 +64,11 @@ public class BattleNetManager : MonoBehaviour
     //signal that an update should be sent
     private bool sendUpdate;
 
+    //used for movement prediction
     private Stopwatch updateTime = new Stopwatch();
+    private long lastUpdateTime = 0;
 
+    //troubleshooting
     private Stopwatch responseTime = new Stopwatch();
 
     public static Guid BattleID
@@ -179,70 +182,85 @@ public class BattleNetManager : MonoBehaviour
 
     private void updateDriver(IAsyncResult ar)
     {
-        //complete async data read
-        client.EndReceive(ar);
-
-        UnityEngine.Debug.Log(responseTime.ElapsedMilliseconds);
-
-        //send updates until server says the battle is over, then disconnect;
-        if(isClient[0] != 3)
+        try
         {
-            //Debug.Log("begin update");
-            //Debug.Log(isClient[0]);
+            //complete async data read
+            client.EndReceive(ar);
 
-            //check if message from server is an acknowledgement or an update from the enemy
-            if (isClient[0] == 1)
+            //UnityEngine.Debug.Log(responseTime.ElapsedMilliseconds);
+
+            //send updates until server says the battle is over, then disconnect;
+            if (isClient[0] != 3)
             {
-                //Debug.Log("ack");
-                //getClient.Set();
+                //Debug.Log("begin update");
+                //Debug.Log(isClient[0]);
 
-                //need to delegate to main thread in order to update Unity objects
-                //indicate an new update should be sent
-                lock(UPDATE_LOCK)
+                //check if message from server is an acknowledgement or an update from the enemy
+                if (isClient[0] == 1)
                 {
-                    sendUpdate = true;
+                    //Debug.Log("ack");
+                    //getClient.Set();
+
+                    //need to delegate to main thread in order to update Unity objects
+                    //indicate an new update should be sent
+                    lock (UPDATE_LOCK)
+                    {
+                        sendUpdate = true;
+                    }
+
+
                 }
-                
-                
+                else if (isClient[0] == 0)
+                {
+                    //UnityEngine.Debug.Log("before mre");
+                    //make sure previous update has completed before overwriting
+                    //add a buffer later for increased performance over phone networks with high jitter
+                    updateFin.WaitOne();
+                    updateFin.Reset();
+                    //UnityEngine.Debug.Log("after mre");
+                    //asynchronously reveive and handle new update
+                    client.BeginReceive(update, 0, UPDATE_SIZE, 0, new AsyncCallback(unpackUpdate), null);
+                    //wait until data read before reading more data
+                    readUpdate.WaitOne();
+                    readUpdate.Reset();
+
+                }
+                //recursively read data while battle is going
+                client.BeginReceive(isClient, 0, 1, 0, new AsyncCallback(updateDriver), null);
+                //Debug.Log("end update");
             }
-            else if(isClient[0] == 0)
+            //battle is over
+            else
             {
-                //UnityEngine.Debug.Log("before mre");
-                //make sure previous update has completed before overwriting
-                //add a buffer later for increased performance over phone networks with high jitter
-                updateFin.WaitOne();
-                updateFin.Reset();
-                //UnityEngine.Debug.Log("after mre");
-                //asynchronously reveive and handle new update
-                client.BeginReceive(update, 0, UPDATE_SIZE, 0, new AsyncCallback(unpackUpdate), null);
-                //wait until data read before reading more data
-                readUpdate.WaitOne();
-                readUpdate.Reset();
+                //use isClient to get win, loss, or draw byte
+                client.Receive(isClient, 1, 0);
 
+                // Release the socket.
+                client.Shutdown(SocketShutdown.Both);
+                client.Close();
+                updateTime.Stop();
+                UnityEngine.Debug.Log("Disconnected");
+                battleEnded = true;
             }
-            //recursively read data while battle is going
-            client.BeginReceive(isClient, 0, 1, 0, new AsyncCallback(updateDriver), null);
-            //Debug.Log("end update");
+
         }
-        //battle is over
-        else
+        catch (Exception)
         {
-            //use isClient to get win, loss, or draw byte
-            client.Receive(isClient, 1, 0);
-            
-            // Release the socket.
-            client.Shutdown(SocketShutdown.Both);
-            client.Close();
-            updateTime.Stop();
-            UnityEngine.Debug.Log("Disconnected");
-            battleEnded = true;
+            //socket will already be closed if battle ended
+            try
+            {
+                client.Shutdown(SocketShutdown.Both);
+                client.Close();
+                updateTime.Stop();
+                UnityEngine.Debug.Log("Disconnected");
+            }
+            catch(Exception) { }
         }
-
-
         
     }
 
-
+    //IN ORDER TO ENSURE MINE IS DETONATED ON BOTH SCREENS, WHEN A MINE IS SET OFF SEND PLAYER COORDINATES (PROLLY SAME WHEN INITIALLY PLACED TO ENSURE PROPER COORDINATION)
+    //THEN USE FLAGS TO ENSURE HEALTH COORDINATION
 
     private void unpackUpdate(IAsyncResult ar)
     {
@@ -259,6 +277,7 @@ public class BattleNetManager : MonoBehaviour
         {
             //UnityEngine.Debug.Log("in i flag lock");
             //unpack update into EnemyUpdate object
+            //first two bits not currently used
             //eUpdate.BattleEnd = (flags & 1) == 1 ? true : false;
             //eUpdate.Win = ((flags >> 1) & 1) == 1 ? true : false;
             eUpdate.Sf = ((flags >> 2) & 1) == 1 ? true : false;
@@ -266,10 +285,17 @@ public class BattleNetManager : MonoBehaviour
             eUpdate.Mp = ((flags >> 4) & 1) == 1 ? true : false;
             eUpdate.Mso = ((flags >> 5) & 1) == 1 ? true : false;
             eUpdate.Phit = ((flags >> 6) & 1) == 1 ? true : false;
-
-            //UnityEngine.Debug.Log("I must be the culprit");
-            eUpdate.addUpdate(BitConverter.ToSingle(update, 1), BitConverter.ToSingle(update, 5), BitConverter.ToSingle(update, 9), updateTime.ElapsedMilliseconds);
-            //UnityEngine.Debug.Log("I probably won't be reached");
+            eUpdate.Mho = ((flags >> 7) & 1) == 1 ? true : false;
+            UnityEngine.Debug.Log("before");
+            long t = updateTime.ElapsedMilliseconds;
+            //if updates are backed up and attempt to be processed in the same millisecond, add one ms to the time so errors do not occur
+            if(t == lastUpdateTime)
+            {
+                t++;
+            }
+            eUpdate.addUpdate(BitConverter.ToSingle(update, 1), BitConverter.ToSingle(update, 5), BitConverter.ToSingle(update, 9), t);
+            lastUpdateTime = t;
+            UnityEngine.Debug.Log("after");
             eUpdate.Sfx = BitConverter.ToSingle(update, 13);
             eUpdate.Sfz = BitConverter.ToSingle(update, 17);
             eUpdate.Sfrx = BitConverter.ToSingle(update, 21);
@@ -311,7 +337,7 @@ public class BattleNetManager : MonoBehaviour
             endGameDisplayed = true;
         }
         //run updates while battle is not complete
-        else if (!battleEnded)
+        if (!battleEnded)
         {
             //make sure update flags aren't toggled between use and reset
             lock (UPDATE_LOCK)
@@ -334,11 +360,7 @@ public class BattleNetManager : MonoBehaviour
                         updateFin.Set();
 
                     }
-                    else
-                    {
-                        //use something else, b-splines make opponent run around like a madman
-                        //eUpdate.extrapolateMotion(updateTime.ElapsedMilliseconds, opponent);
-                    }
+                        
                 }
 
                 if (sendUpdate)
@@ -368,7 +390,23 @@ public class BattleNetManager : MonoBehaviour
                 //reset flags
                 receiveUpdate = false;
                 sendUpdate = false;
+
+                //use something else, b-splines make opponent run around like a madman
+                //using normal splines now (degree 3)
+                //UnityEngine.Debug.Log("before");
+                long t = updateTime.ElapsedMilliseconds;
+                //use change in time / 100 because otherwise change much too extreme at high latency
+                eUpdate.extrapolateMotion(lastUpdateTime + Math.Pow((t - lastUpdateTime), 2.0 / 3.0) / 30.0, opponent);
+                //UnityEngine.Debug.Log("after");
             }
+        }
+        //complete final update if battle ended and final update has not been run
+        else if(receiveUpdate)
+        {
+            eUpdate.runUpdate(controller, opponent);
+            //unblock so method can exit (sockets should be closed, so will throw an exception)
+            updateFin.Set();
+            receiveUpdate = false;
         }
     }
 
@@ -391,6 +429,7 @@ public class BattleNetManager : MonoBehaviour
         controller.Mp = false;
         controller.Mso = false;
         controller.Ehit = false;
+        controller.Mho = false;
     }
 
     
@@ -452,10 +491,17 @@ public class BattleNetManager : MonoBehaviour
         if (controller.Sf) flags += (1 << 2);
         if (controller.Hpr) flags += (1 << 3);
         if (controller.Mp) flags += (1 << 4);
-        if (controller.Mso) flags += (1 << 5);
+        if (controller.Mso)
+        {
+            flags += (1 << 5);
+            UnityEngine.Debug.Log("mso flag set in update");
+        }
         if (controller.Ehit) flags += (1 << 6);
-        if (controller.Mho) flags += (1 << 7);
-        
+        if (controller.Mho)
+        {
+            flags += (1 << 7);
+            UnityEngine.Debug.Log("mho flag set in update");
+        }
 
         return flags;
     }
