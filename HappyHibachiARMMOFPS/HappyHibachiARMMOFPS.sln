@@ -1,10 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-<<<<<<< HEAD
 # Visual Studio 2017
-=======
-# Visual Studio 2015
->>>>>>> ddce7191a1cecf3a81c91e323d0ed94fa41b38bf
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HappyHibachiARMMOFPS.Plugins", "HappyHibachiARMMOFPS.Plugins.csproj", "{31CC3D61-0801-AF09-AE99-C19235A194DE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HappyHibachiARMMOFPS", "HappyHibachiARMMOFPS.csproj", "{C0B1AE3B-A411-B2C0-7196-667FD1D0C848}"
