@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class ARDowsing : MonoBehaviour {
@@ -136,11 +137,15 @@ public class ARDowsing : MonoBehaviour {
     public void RepairBeacon()
     {
         // Code here to award Paragon experience and return to overworld
+        Player.addFactionEXP(1, 75);
+        SceneManager.LoadScene("Overworld");
     }
 
     public void IgnoreBeacon()
     {
         // Code here to award Hunter experience and return to overworld
+        Player.addFactionEXP(3, 75);
+        SceneManager.LoadScene("Overworld");
     }
 
     public void DestroyBeacon()
@@ -151,5 +156,7 @@ public class ARDowsing : MonoBehaviour {
         Destroy(beaconInstance);
 
         // Code here to award Slayer experience and return to overworld
+        Player.addFactionEXP(2, 75);
+        SceneManager.LoadScene("Overworld");
     }
 }

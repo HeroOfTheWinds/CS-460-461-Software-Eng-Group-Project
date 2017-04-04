@@ -82,9 +82,6 @@
     <Reference Include="UnityEditor.iOS.Extensions.Xcode">
       <HintPath>Library\UnityAssemblies\UnityEditor.iOS.Extensions.Xcode.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEditor.iOS.Extensions.Xcode">
-      <HintPath>Library\UnityAssemblies\UnityEditor.iOS.Extensions.Xcode.dll</HintPath>
-    </Reference>
     <Reference Include="UnityEditor.iOS.Extensions.Common">
       <HintPath>Library\UnityAssemblies\UnityEditor.iOS.Extensions.Common.dll</HintPath>
     </Reference>
@@ -102,6 +99,7 @@
     <Compile Include="Assets\CallLandmark.cs" />
     <Compile Include="Assets\EnemyStatus.cs" />
     <Compile Include="Assets\EnemyUpdate.cs" />
+    <Compile Include="Assets\FactionUpdate.cs" />
     <Compile Include="Assets\GenComManager.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Examples (API usage)\AMapSearchExample.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Examples (API usage)\BingMapsElevationsExample.cs" />

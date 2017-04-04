@@ -51,7 +51,7 @@ public class Player : MonoBehaviour
     }
 
     //function to increase/decrease faction EXP based on action, tenative
-    public void addFactionEXP(int action_type, int value)
+    public static void addFactionEXP(int action_type, int value)
     {
         if (action_type == faction) //increase faction EXP
         {
@@ -61,7 +61,14 @@ public class Player : MonoBehaviour
         {
             factionEXP -= value;
         }
-        updateFaction(action_type);
+        //DEBUG ZONE 
+        //later display to screen
+        if (action_type == 1) { Debug.Log(Player.playername + " " + value + " " + " Paragon Exp gained!"); }
+        if (action_type == 2) { Debug.Log(Player.playername + " " + value + " " + " Slayer Exp gained!"); }
+        if (action_type == 3) { Debug.Log(Player.playername + " " + value + " " + "Hunter Exp gained!"); }
+        GameObject fu = new GameObject();
+        fu.AddComponent<FactionUpdate>();
+        fu.GetComponent<FactionUpdate>().updateFaction(action_type);
     }
 
     //functin to add item to inventory, if item already exist amount is incresed
