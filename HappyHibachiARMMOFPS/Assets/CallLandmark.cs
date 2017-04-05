@@ -6,6 +6,7 @@ using System.Collections;
 public class CallLandmark : MonoBehaviour
 {
     public Canvas landmark; // Assign in inspector
+    public Canvas items;
     //Used for checking if menu is active
     private bool isShowing;
     private RaycastHit hit;
@@ -20,22 +21,6 @@ public class CallLandmark : MonoBehaviour
 
     private void Update()
     {
-        //if (isShowing == true) landmark.enabled = true;
-        //if (Input.touchCount == 1)
-        //{
-        //    Ray ray = Camera.main.ScreenPointToRay(Input.GetTouch(0).position);
-        //    Physics.Raycast(ray, out hit);
-        //    if (hit.collider.tag == "Landmark")
-        //    {
-        //        isShowing = true;
-        //        landmark.enabled = true;
-        //    }
-        //    if (Input.GetButtonUp("Exit"))
-        //    {
-        //        isShowing = false;
-        //        landmark.enabled = false;
-        //    }
-        //}
     }
 
     public void callLandmark()
@@ -45,5 +30,6 @@ public class CallLandmark : MonoBehaviour
     public void exitLandmark()
     {
         landmark.enabled = false;
+        items.enabled = false;
     }
 }

@@ -26,6 +26,7 @@ public class OverworldNetManager : MonoBehaviour {
     private bool update;
     public OnlineMaps map;
     public Canvas Land;
+    public Canvas Colosseum;
     public Dropdown enemyRadar;
     List<NearbyObject> enemyList;
 
@@ -293,25 +294,21 @@ public class OverworldNetManager : MonoBehaviour {
             waitUpdate.Set();
         }
 
-        if (Input.touchCount > 0)
+        if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
         {
             RaycastHit hit;
-            if (Input.GetTouch(0).phase==TouchPhase.Began)
+            Ray ray = Camera.main.ScreenPointToRay(Input.GetTouch(0).position);
+            //Ray ray2 = Camera.main.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out hit))
             {
-                Ray ray = Camera.main.ScreenPointToRay(Input.GetTouch(0).position);
-                //Ray ray2 = Camera.main.ScreenPointToRay(Input.mousePosition);
-                if (Physics.Raycast(ray, out hit))
+                if (hit.collider.CompareTag("Landmark"))
                 {
-                    UnityEngine.Debug.Log("In raycast");
-                    /*if (hit.transform.name == "Landmark")
-                    {
-                        GenComManager.setUpdate(2, guid);
-                    }*/
-                    if (hit.collider.CompareTag("Landmark"))
-                    {
-                        UnityEngine.Debug.Log("Land ahoy");
-                        Land.enabled = true;
-                    }
+                    Land.enabled = true;
+                    GenComManager.setUpdate(4, Player.playerID);
+                }
+                else if (hit.collider.CompareTag("Colosseum"))
+                {
+                    Colosseum.enabled = true;
                 }
             }
         }

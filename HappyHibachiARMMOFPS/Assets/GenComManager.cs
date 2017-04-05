@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System;
 using System.Net;
 using System.Net.Sockets;
@@ -34,6 +35,7 @@ public class GenComManager : MonoBehaviour {
     private ColloseumInfo colloseumInfo;
     private List<byte> itemInfo;
     private BattleInfo battleInfo;
+    public Canvas items;
 
     private ManualResetEvent processed;
 
@@ -62,6 +64,7 @@ public class GenComManager : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
+        items = items.GetComponent<Canvas>();
 
         try
         {
@@ -332,13 +335,17 @@ public class GenComManager : MonoBehaviour {
 
                         //-----------------TEMPORARY TEST CODE----------------------
 
+                        items.enabled = true;
                         Debug.Log("Received Items");
                         ItemDetails receivedItem;
+                        String info = "";
                         foreach (byte item in itemInfo)
                         {
                             receivedItem = ItemList.getDetails(item);
+                            info += receivedItem.Name + "\n";
                             Debug.Log("Received Item: " + receivedItem.Name);
                         }
+                        items.GetComponentInChildren<Text>().text = info;
 
                         //----------------------------------------------------------
 
