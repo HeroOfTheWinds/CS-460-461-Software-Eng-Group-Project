@@ -115,7 +115,6 @@
     <Reference Include="UnityEditor.WSA.Extensions">
       <HintPath>Library\UnityAssemblies\UnityEditor.WSA.Extensions.dll</HintPath>
     </Reference>
-<<<<<<< HEAD
     <Reference Include="UnityEditor.WebGL.Extensions">
       <HintPath>Library\UnityAssemblies\UnityEditor.WebGL.Extensions.dll</HintPath>
     </Reference>
@@ -125,11 +124,6 @@
     <Reference Include="UnityEditor.Facebook.Extensions">
       <HintPath>Library\UnityAssemblies\UnityEditor.Facebook.Extensions.dll</HintPath>
     </Reference>
-=======
-    <Reference Include="UnityEditor.WindowsStandalone.Extensions">
-      <HintPath>Library\UnityAssemblies\UnityEditor.WindowsStandalone.Extensions.dll</HintPath>
-    </Reference>
->>>>>>> b6224c386fe569900cab1b9cae84605db2dc5786
     <Reference Include="SyntaxTree.VisualStudio.Unity.Bridge">
       <HintPath>Library\UnityAssemblies\SyntaxTree.VisualStudio.Unity.Bridge.dll</HintPath>
     </Reference>

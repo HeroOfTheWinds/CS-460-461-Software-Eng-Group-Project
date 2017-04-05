@@ -34,6 +34,7 @@ public class menuScript : MonoBehaviour {
         //use random id, not currently used for anything, should be id of landmark receiving items from
         //GenComManager.setUpdate(4, Guid.NewGuid());
         //GenComManager.setUpdate(1, new Guid("d585781ee9d521e687d200155d2a070e"));
+        Debug.Log("We in here!");
         GenComManager.setUpdate(2, new Guid("e5cadae5-e9d5-11e6-55d2-00155d2a070d"));
 
 

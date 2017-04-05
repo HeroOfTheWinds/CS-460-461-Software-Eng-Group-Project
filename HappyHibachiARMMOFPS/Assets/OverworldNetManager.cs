@@ -216,6 +216,7 @@ public class OverworldNetManager : MonoBehaviour {
 
     private void Update()
     {
+       
         try
         {
             if (update)
@@ -248,8 +249,11 @@ public class OverworldNetManager : MonoBehaviour {
                 //place objects on screen or update position if guid already present, store respective guid with object for later use
                 //objects stored in list nearbyObjects which is a list of NearbyObjects that contain lat, long, object type, and id
                 //note: should check which scene is active before drawing, should be able to do that with scenemanager.getactivescene
-                if (SceneManager.GetActiveScene().Equals("Overworld"))
+                if (SceneManager.GetActiveScene().name.Equals("Overworld"))
                 {
+                    enemyList = new List<NearbyObject>();
+                    enemyRadar.options.Clear();
+                    enemyRadar.options.Add(new Dropdown.OptionData("None"));
                     foreach (NearbyObject nearbyObject in nearbyObjects)
                     {
                         OnlineMapsMarker3D newMarker = new OnlineMapsMarker3D();
@@ -260,59 +264,56 @@ public class OverworldNetManager : MonoBehaviour {
                         switch (nearbyObject.Type)
                         {
                             case 0:
-                                newMarker.prefab = (GameObject)Instantiate(Resources.Load("EnemyPlayer"));
+                                //newMarker.prefab = (GameObject)Instantiate(Resources.Load("EnemyPlayer"));
                                 enemyList.Add(nearbyObject);
                                 break;
                             case 1:
-                                newMarker.prefab = (GameObject)Instantiate(Resources.Load("Colosseum"));
+                                //newMarker.prefab = (GameObject)Instantiate(Resources.Load("Colosseum"));
                                 break;
                             case 2:
-                                newMarker.prefab = (GameObject)Instantiate(Resources.Load("Landmark"));
+                                //newMarker.prefab = (GameObject)Instantiate(Resources.Load("Landmark"));
                                 break;
                             default:
                                 break;
                         }
                     }
-                    foreach (NearbyObject nearby in enemyList)
-                    {
-                        enemyRadar.options.Add(new Dropdown.OptionData(nearby.Id.ToString()));
-                    }
+                }
+
+                // Add the enemies to the dropdown menu
+                foreach (NearbyObject enemy in enemyList)
+                {
+                    enemyRadar.options.Add(new Dropdown.OptionData(enemy.Id.ToString()));
                 }
 
                 waitUpdate.Set();
             }
         }
-        catch(Exception) { }
+        catch(Exception) {
+            //  UnityEngine.Debug.Log(e.ToString());
+            waitUpdate.Set();
+        }
 
-        if (Input.touchCount == 1)
+        if (Input.touchCount > 0)
         {
             RaycastHit hit;
             if (Input.GetTouch(0).phase==TouchPhase.Began)
             {
                 Ray ray = Camera.main.ScreenPointToRay(Input.GetTouch(0).position);
-                //if (Physics.Raycast(ray, out hit))
-                //{
-                //    /*if (hit.transform.name == "Landmark")
-                //    {
-                //        GenComManager.setUpdate(2, guid);
-                //    }*/
-                //    hit.collider.BroadcastMessage("Land ahoy");
-                //    if (hit.collider.tag == "Landmark")
-                //    {
-                //        Land.enabled = true;
-                //    }
-                //}
-                if (Physics.Raycast(transform.position, transform.forward, out hit, 5))
+                //Ray ray2 = Camera.main.ScreenPointToRay(Input.mousePosition);
+                if (Physics.Raycast(ray, out hit))
                 {
-                    print("The Raycast is working");
-                    if (hit.collider.gameObject.CompareTag("Landmark"))
+                    /*if (hit.transform.name == "Landmark")
                     {
-                        print("This shit worked");
+                        GenComManager.setUpdate(2, guid);
+                    }*/
+                    UnityEngine.Debug.Log("Land ahoy");
+                    if (hit.collider.tag == "Landmark")
+                    {
+                        Land.enabled = true;
                     }
                 }
             }
         }
-
     }
 
     private void setUpdate(object state)
