@@ -28,7 +28,13 @@ public class MapHUD : MonoBehaviour {
     // Add function to update display with new data at will (better than pinging update constantly)
     public void UpdateHUD(int level, int exp)
     {
-        XP_Bar.rectTransform.localScale = new Vector3((float)exp / (float)(level * 100), 1f, 1f);
+        // Calculate a summation needed for experience determination
+        int sum = 1;
+        for (int i = level; i > 1; i--)
+        {
+            sum += i;
+        }
+        XP_Bar.rectTransform.localScale = new Vector3((float)exp / (float)(sum * 100), 1f, 1f);
         levelText.text = level.ToString();
     }
 
@@ -66,7 +72,13 @@ public class MapHUD : MonoBehaviour {
 
             // Reflect changes
             pText.text = pName;
-            XP_Bar.rectTransform.localScale = new Vector3((float)EXP / (float)(pLevel * 100), 1f, 1f);
+            // Calculate a summation needed for experience determination
+            int sum = 1;
+            for (int i = pLevel; i > 1; i--)
+            {
+                sum += i;
+            }
+            XP_Bar.rectTransform.localScale = new Vector3((float)EXP / (float)(sum * 100), 1f, 1f);
             levelText.text = pLevel.ToString();
 
             // change color based on faction

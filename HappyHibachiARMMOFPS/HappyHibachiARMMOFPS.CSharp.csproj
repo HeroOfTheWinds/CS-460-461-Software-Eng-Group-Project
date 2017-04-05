@@ -90,6 +90,7 @@
     <Compile Include="Assets\CallLandmark.cs" />
     <Compile Include="Assets\EnemyStatus.cs" />
     <Compile Include="Assets\EnemyUpdate.cs" />
+    <Compile Include="Assets\FactionUpdate.cs" />
     <Compile Include="Assets\GenComManager.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Examples (API usage)\AMapSearchExample.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Examples (API usage)\BingMapsElevationsExample.cs" />
