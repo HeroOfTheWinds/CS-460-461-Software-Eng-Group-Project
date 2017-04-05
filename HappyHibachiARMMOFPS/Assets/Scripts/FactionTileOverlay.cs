@@ -2,6 +2,8 @@
 /*     INFINITY CODE 2013-2017      */
 /*   http://www.infinity-code.com   */
 
+using System.Collections;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 public class FactionTileOverlay : MonoBehaviour
@@ -16,6 +18,9 @@ public class FactionTileOverlay : MonoBehaviour
     public Texture2D ParagonTex;
     public Texture2D SlayerTex;
     public Texture2D HunterTex;
+
+    //global faction holder
+    int faction_num = 0;
 
     private void Start()
     {
@@ -39,11 +44,21 @@ public class FactionTileOverlay : MonoBehaviour
         {
             // Use tile.x and tile.y to construct the query to the dictionary
             // Server's dictionary should have ints from 0 to 3, and thousands of entries
-
+            //create form
+            var form = new WWWForm();
+            form.AddField("xtile", tile.x);
+            Debug.Log("x = " + tile.x);
+            form.AddField("ytile", tile.y);
+            Debug.Log("y = " + tile.y);
+            //send form to returnFactionTile.php
+            string url = "http://13.84.163.243/returnFactionTile.php"; //script that handles faction tiles
+            WWW send = new WWW(url, form);
+            StartCoroutine(GrabTileInfo(send));
+            // Set texture based on faction in power
+            tileFaction = faction_num;
         }
         // Otherwise, leave 0 and do nothing
-
-        // Set texture based on faction in power
+        
         switch (tileFaction)
         {
             case 0: // Neutral
@@ -80,4 +95,20 @@ public class FactionTileOverlay : MonoBehaviour
             }
         }
     }
+
+    IEnumerator GrabTileInfo(WWW www)
+    {
+        yield return www;
+        if (www.error == null) //connection is good and string recieved from server
+        {
+            Debug.Log("Faction Tile Connection good.");
+            string text = Regex.Replace(www.text, @"\s", ""); //strip www.text of any whitespace
+            Debug.Log(text);
+            faction_num = System.Int32.Parse(text.TrimStart());
+        }
+        else
+        {
+            Debug.Log("Connection error.");
+        }
     }
+}
