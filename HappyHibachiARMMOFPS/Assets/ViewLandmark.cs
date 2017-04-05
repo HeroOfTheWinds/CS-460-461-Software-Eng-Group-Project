@@ -8,6 +8,7 @@ public class ViewLandmark : MonoBehaviour
     public double lat, lon;
     public string landmarktype = "Landmark";
     private Guid guid;
+    public Canvas land;
 
     public struct location
     {

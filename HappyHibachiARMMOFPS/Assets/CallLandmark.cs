@@ -42,4 +42,8 @@ public class CallLandmark : MonoBehaviour
     {
         SceneManager.LoadScene("ViewLandmark");
     }
+    public void exitLandmark()
+    {
+        landmark.enabled = false;
+    }
 }

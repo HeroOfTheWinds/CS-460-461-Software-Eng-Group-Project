@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 using System;
 using System.Net;
@@ -25,6 +26,8 @@ public class OverworldNetManager : MonoBehaviour {
     private bool update;
     public OnlineMaps map;
     public Canvas Land;
+    public Dropdown enemyRadar;
+    List<NearbyObject> enemyList;
 
     //private bool upNearbyObj;
     private ManualResetEvent waitUpdate;
@@ -63,7 +66,7 @@ public class OverworldNetManager : MonoBehaviour {
 
             //isnt working so remove location startup stuff so dont have to wait
             //MAKE SURE YOU CHANGE BACK LATER (SHOULD BE 30)
-            int timeout = 0;
+            int timeout = 30;
 
             //potentially display some sort of loading screen while waiting for location services, etc.
             while(Input.location.status == LocationServiceStatus.Initializing && timeout > 0)
@@ -258,6 +261,7 @@ public class OverworldNetManager : MonoBehaviour {
                         {
                             case 0:
                                 newMarker.prefab = (GameObject)Instantiate(Resources.Load("EnemyPlayer"));
+                                enemyList.Add(nearbyObject);
                                 break;
                             case 1:
                                 newMarker.prefab = (GameObject)Instantiate(Resources.Load("Colosseum"));
@@ -268,8 +272,10 @@ public class OverworldNetManager : MonoBehaviour {
                             default:
                                 break;
                         }
-
-
+                    }
+                    foreach (NearbyObject nearby in enemyList)
+                    {
+                        enemyRadar.options.Add(new Dropdown.OptionData(nearby.Id.ToString()));
                     }
                 }
 
@@ -278,25 +284,34 @@ public class OverworldNetManager : MonoBehaviour {
         }
         catch(Exception) { }
 
-        //if (Input.touchCount == 1)
-        //{
-        //    RaycastHit hit;
-        //    if (Input.GetTouch(0).phase == TouchPhase.Began)
-        //    {
-        //        Ray ray = Camera.main.ScreenPointToRay(Input.GetTouch(0).position);
-        //        if (Physics.Raycast(ray, out hit))
-        //        {
-        //            /*if (hit.transform.name == "Landmark")
-        //            {
-        //                GenComManager.setUpdate(2, guid);
-        //            }*/
-        //            if (hit.collider.tag == "Landmark")
-        //            {
-        //                Land.enabled = true;
-        //            }
-        //        }
-        //    }
-        //}
+        if (Input.touchCount == 1)
+        {
+            RaycastHit hit;
+            if (Input.GetTouch(0).phase==TouchPhase.Began)
+            {
+                Ray ray = Camera.main.ScreenPointToRay(Input.GetTouch(0).position);
+                //if (Physics.Raycast(ray, out hit))
+                //{
+                //    /*if (hit.transform.name == "Landmark")
+                //    {
+                //        GenComManager.setUpdate(2, guid);
+                //    }*/
+                //    hit.collider.BroadcastMessage("Land ahoy");
+                //    if (hit.collider.tag == "Landmark")
+                //    {
+                //        Land.enabled = true;
+                //    }
+                //}
+                if (Physics.Raycast(transform.position, transform.forward, out hit, 5))
+                {
+                    print("The Raycast is working");
+                    if (hit.collider.gameObject.CompareTag("Landmark"))
+                    {
+                        print("This shit worked");
+                    }
+                }
+            }
+        }
 
     }
 

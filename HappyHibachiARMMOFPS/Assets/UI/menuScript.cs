@@ -6,6 +6,7 @@ using System;
 
 public class menuScript : MonoBehaviour {
 
+    public Dropdown enemyRadar;
     public Canvas menu; // Assign in inspector
     //Used for checking if menu is active
     private bool isShowing;
