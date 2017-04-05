@@ -251,7 +251,6 @@ public class OverworldNetManager : MonoBehaviour {
                 //note: should check which scene is active before drawing, should be able to do that with scenemanager.getactivescene
                 if (SceneManager.GetActiveScene().name.Equals("Overworld"))
                 {
-                    //enemyList.Clear();
                     enemyList = new List<NearbyObject>();
                     enemyRadar.options.Clear();
                     enemyRadar.options.Add(new Dropdown.OptionData("(Select)"));
@@ -303,13 +302,14 @@ public class OverworldNetManager : MonoBehaviour {
                 //Ray ray2 = Camera.main.ScreenPointToRay(Input.mousePosition);
                 if (Physics.Raycast(ray, out hit))
                 {
+                    UnityEngine.Debug.Log("In raycast");
                     /*if (hit.transform.name == "Landmark")
                     {
                         GenComManager.setUpdate(2, guid);
                     }*/
-                    UnityEngine.Debug.Log("Land ahoy");
-                    if (hit.collider.tag == "Landmark")
+                    if (hit.collider.CompareTag("Landmark"))
                     {
+                        UnityEngine.Debug.Log("Land ahoy");
                         Land.enabled = true;
                     }
                 }
