@@ -251,9 +251,10 @@ public class OverworldNetManager : MonoBehaviour {
                 //note: should check which scene is active before drawing, should be able to do that with scenemanager.getactivescene
                 if (SceneManager.GetActiveScene().name.Equals("Overworld"))
                 {
+                    //enemyList.Clear();
                     enemyList = new List<NearbyObject>();
                     enemyRadar.options.Clear();
-                    enemyRadar.options.Add(new Dropdown.OptionData("None"));
+                    enemyRadar.options.Add(new Dropdown.OptionData("(Select)"));
                     foreach (NearbyObject nearbyObject in nearbyObjects)
                     {
                         OnlineMapsMarker3D newMarker = new OnlineMapsMarker3D();

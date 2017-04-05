@@ -6,7 +6,7 @@ using System;
 
 public class menuScript : MonoBehaviour {
 
-    public Dropdown enemyRadar;
+    public GameObject enemyRadar;
     public Canvas menu; // Assign in inspector
     //Used for checking if menu is active
     private bool isShowing;
@@ -29,13 +29,13 @@ public class menuScript : MonoBehaviour {
     public void callBattle()
     {
         //-----------------TEMPORARY TEST CODE----------------------
-
-        //GenComManager.setUpdate(0, opponentID);
+        enemyRadar = GameObject.Find("Dropdown");
+        opponentID = new Guid(enemyRadar.GetComponent<Dropdown>().captionText.text);
+        GenComManager.setUpdate(0, opponentID);
         //use random id, not currently used for anything, should be id of landmark receiving items from
         //GenComManager.setUpdate(4, Guid.NewGuid());
         //GenComManager.setUpdate(1, new Guid("d585781ee9d521e687d200155d2a070e"));
-        Debug.Log("We in here!");
-        GenComManager.setUpdate(2, new Guid("e5cadae5-e9d5-11e6-55d2-00155d2a070d"));
+        //GenComManager.setUpdate(2, new Guid("e5cadae5-e9d5-11e6-55d2-00155d2a070d"));
 
 
         //----------------------------------------------------------
