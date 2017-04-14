@@ -303,6 +303,7 @@
     <Compile Include="Assets\Scripts\Leaderboard\LeaderboardFilter.cs" />
     <Compile Include="Assets\Scripts\Leaderboard\LeaderboardScroll.cs" />
     <Compile Include="Assets\Scripts\MoveShot.cs" />
+    <Compile Include="Assets\SetLandmark.cs" />
     <Compile Include="Assets\ShowItems.cs" />
     <Compile Include="Assets\ShowPlayerInfo.cs" />
     <Compile Include="Assets\TimeoutManager.cs" />

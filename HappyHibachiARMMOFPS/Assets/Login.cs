@@ -14,9 +14,47 @@ public class Login : MonoBehaviour
     public Text ErrorText; //outputs errors to screen
     private string url = "http://13.84.163.243/login.php"; //script that handles login
 
+    [Serializable]
+    public class LoginSave
+    {
+        public string username { get; set; }
+        public string password { get; set; }
+    }
+
     void Start()
     {
         userInput.text = Register.username; //if coming from successful Register, username field displays choosen username
+        LoginSave Info = new LoginSave();
+        Info = LoadLogin();
+        userInput.text = Info.username;
+        passwordInput.text = Info.password;
+    }
+
+    public LoginSave LoadLogin()
+    {
+        //check if login save file exist
+        if (File.Exists(Application.persistentDataPath + "/login.dat")) //true, insest username and password
+        {
+            BinaryFormatter bf = new BinaryFormatter();
+            FileStream file = File.Open(Application.persistentDataPath + "/login.dat", FileMode.Open);
+            LoginSave LoginSaved = (LoginSave)bf.Deserialize(file);
+            file.Close();
+            return LoginSaved;
+        }
+        else //false do nothing
+        {
+            Debug.Log(string.Format("Login file doesn't exist at path: {0}{1}", Application.persistentDataPath, "/login.dat"));
+            return null;
+        }
+
+    }
+
+    public void SaveLogin(LoginSave Info)
+    {
+        BinaryFormatter bf = new BinaryFormatter();
+        FileStream file = File.Create(Application.persistentDataPath + "/login.dat");
+        bf.Serialize(file, Info);
+        file.Close();
     }
 
     public void checkLogin() //sends username and password to login.php
@@ -29,10 +67,10 @@ public class Login : MonoBehaviour
         form.AddField("passwordFromUnity", password);
         //send form to login.php
         WWW send = new WWW(url, form);
-        StartCoroutine(WaitForRequest(send));
+        StartCoroutine(WaitForRequest(send, password));
     }
 
-    IEnumerator WaitForRequest(WWW www)
+    IEnumerator WaitForRequest(WWW www, string passw)
     {
         yield return www;
         if (www.error == null) //connection is good and string recieved from server
@@ -57,9 +95,12 @@ public class Login : MonoBehaviour
                 Debug.Log("Logged In");
                 //display welcome
                 ErrorText.text = "Welcome, " + username;
-                yield return new WaitForSeconds(2);
+                //yield return new WaitForSeconds(2);
                 parsePlayerInfo(text);
-                Debug.Log(Player.playerID.ToString());
+                LoginSave Info = new LoginSave();
+                Info.username = Player.playername;
+                Info.password = passw;
+                SaveLogin(Info);
                 goToOverworld(); // proceed to Overworld
             }
         }
