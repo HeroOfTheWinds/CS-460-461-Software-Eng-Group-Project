@@ -47,9 +47,9 @@ public class FactionTileOverlay : MonoBehaviour
             //create form
             var form = new WWWForm();
             form.AddField("xtile", tile.x);
-            Debug.Log("x = " + tile.x);
+            //Debug.Log("x = " + tile.x);
             form.AddField("ytile", tile.y);
-            Debug.Log("y = " + tile.y);
+            //Debug.Log("y = " + tile.y);
             //send form to returnFactionTile.php
             string url = "http://13.84.163.243/returnFactionTile.php"; //script that handles faction tiles
             WWW send = new WWW(url, form);
@@ -101,9 +101,9 @@ public class FactionTileOverlay : MonoBehaviour
         yield return www;
         if (www.error == null) //connection is good and string recieved from server
         {
-            Debug.Log("Faction Tile Connection good.");
+            //Debug.Log("Faction Tile Connection good.");
             string text = Regex.Replace(www.text, @"\s", ""); //strip www.text of any whitespace
-            Debug.Log(text);
+            //Debug.Log(text);
             faction_num = System.Int32.Parse(text.TrimStart());
         }
         else

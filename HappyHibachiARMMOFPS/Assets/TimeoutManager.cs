@@ -22,38 +22,51 @@ public class TimeoutManager : MonoBehaviour {
 
     private bool appClosed = false;
 
+    private static bool started = false;
+
+    private void Awake()
+    {
+        if(started)
+        {
+            DestroyImmediate(gameObject);
+        }
+    }
+
     // Use this for initialization
     void Start () {
-
-        try
+        if (!started)
         {
+            started = true;
+            Debug.Log("Started");
             DontDestroyOnLoad(gameObject);
+            try
+            {
+                //remote endpoint of the server
+                IPEndPoint remoteEP = new IPEndPoint(IP, T_PORT);
 
-            //remote endpoint of the server
-            IPEndPoint remoteEP = new IPEndPoint(IP, T_PORT);
+                //create TCP socket
+                client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
-            //create TCP socket
-            client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                //connect to remote endpoint
+                client.Connect(remoteEP);
+                //send the players id to the server
+                client.Send(Player.playerID.ToByteArray());
 
-            //connect to remote endpoint
-            client.Connect(remoteEP);
-            //send the players id to the server
-            client.Send(Player.playerID.ToByteArray());
+                Debug.Log("Connect Timeout Successful");
 
-            Debug.Log("Connect Timeout Successful");
+                client.Send(update);
 
-            client.Send(update);
+                Debug.Log("Update Sent");
 
-            Debug.Log("Update Sent");
-
-            //start receiving updates from server
-            client.BeginReceive(update, 0, 1, 0, new AsyncCallback(updateDriver), null);
-        }
-        //catch exception if fail to connect
-        catch (Exception e)
-        {
-            Debug.Log(e.ToString());
-            Debug.Log("Connection Failure");
+                //start receiving updates from server
+                client.BeginReceive(update, 0, 1, 0, new AsyncCallback(updateDriver), null);
+            }
+            //catch exception if fail to connect
+            catch (Exception e)
+            {
+                Debug.Log(e.ToString());
+                Debug.Log("Connection Failure");
+            }
         }
     }
 
@@ -65,6 +78,7 @@ public class TimeoutManager : MonoBehaviour {
             {
                 if (!appClosed)
                 {
+                    started = false;
                     Start();
                 }
                 return;
@@ -78,6 +92,7 @@ public class TimeoutManager : MonoBehaviour {
             Debug.Log("Connection Failure");
             if(!appClosed)
             {
+                started = false;
                 Start();
             }
         }
@@ -85,7 +100,7 @@ public class TimeoutManager : MonoBehaviour {
 
     // Update is called once per frame
     void Update () {
-		
+        //Debug.Log("update");
 	}
 
     private void OnApplicationQuit()

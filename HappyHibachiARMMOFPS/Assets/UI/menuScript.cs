@@ -28,10 +28,20 @@ public class menuScript : MonoBehaviour {
 
     public void callBattle()
     {
-        //-----------------TEMPORARY TEST CODE----------------------
         enemyRadar = GameObject.Find("Dropdown");
-        opponentID = new Guid(enemyRadar.GetComponent<Dropdown>().captionText.text);
+        string id = enemyRadar.GetComponent<Dropdown>().captionText.text;
+        if (id != "(Select)")
+        {
+            opponentID = new Guid(id);
+        }
         GenComManager.setUpdate(0, opponentID);
+
+        //-----------------TEMPORARY TEST CODE----------------------
+
+        //enemyRadar = GameObject.Find("Dropdown");
+        //SceneManager.LoadScene("Battle");
+
+
         //use random id, not currently used for anything, should be id of landmark receiving items from
         //GenComManager.setUpdate(4, Guid.NewGuid());
         //GenComManager.setUpdate(1, new Guid("d585781ee9d521e687d200155d2a070e"));

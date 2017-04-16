@@ -2,6 +2,7 @@
 using MySql.Data;
 using MySql.Data.MySqlClient;
 using System.Collections.Generic;
+using System.Text;
 
 namespace HappyHibachiServer
 {
@@ -85,10 +86,11 @@ namespace HappyHibachiServer
         }
 
         //Select GUID, Lat, Lon and Type attributes from Player, landmark, and colosseum tables
-        public void findNearbyObjects(float lat, float lon, List<float> nearbyC, List<Guid> nearbyID)
+        public void findNearbyObjects(float lat, float lon, List<float> nearbyC, List<Guid> nearbyID, List<byte> nearbyPlayerDetails)
         {
-            string queryLandmark = "SELECT GUID, LAT, LON FROM LANDMARK";
-            string queryColosseum = "SELECT GUID, LAT, LON FROM COLOSSEUM";
+            string queryLandmark = "SELECT GUID, LAT, LON FROM LANDMARK;";
+            string queryColosseum = "SELECT GUID, LAT, LON FROM COLOSSEUM;";
+            string queryPlayerDetailsPart = "SELECT PLAYER_NAME, FACTION_NUM, PLAYER_LEVEL, FACTION_LEVEL FROM PLAYER WHERE GUID='";
             try
             {
                 //Open connection
@@ -139,17 +141,29 @@ namespace HappyHibachiServer
                     //close Data Reader
                     dataReader.Close();
 
-                    //close Connection
-                    CloseConnection();
+                    
 
                     foreach(KeyValuePair<Guid, ClientState> cs in ConnectedPlayers.playerDetails)
                     {
+                        string queryPlayerDetails = queryPlayerDetailsPart + cs.Key.ToString() + "';";
+                        cmd = new MySqlCommand(queryPlayerDetails, connection);
+                        dataReader = cmd.ExecuteReader();
+                        dataReader.Read();
+                        //get player name and null terminate string for finding end
+                        nearbyPlayerDetails.AddRange(Encoding.ASCII.GetBytes(dataReader["PLAYER_NAME"].ToString() + "\0"));
+                        nearbyPlayerDetails.Add(byte.Parse(dataReader["FACTION_NUM"].ToString()));
+                        nearbyPlayerDetails.Add(byte.Parse(dataReader["PLAYER_LEVEL"].ToString()));
+                        nearbyPlayerDetails.Add(byte.Parse(dataReader["FACTION_LEVEL"].ToString()));
+                        dataReader.Close();
                         //Console.WriteLine(cs.Key);
                         nearbyID.Add(cs.Key);
                         nearbyC.Add(cs.Value.Latitude[0]);
                         nearbyC.Add(cs.Value.Longtitude[0]);
                         //LATER ADD MECHANISM TO ONLY GET NEARBY ONES USING LAT AND LON (FOR DB STUFF AS WELL)
                     }
+
+                    //close Connection
+                    CloseConnection();
                 }
                 else
                 {

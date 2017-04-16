@@ -254,6 +254,13 @@ public class PlayerControl : MonoBehaviour {
 
     public void DisplayLoss()
     {
+        //REMOVE WHEN DONE
+
+        //UnityEngine.SceneManagement.SceneManager.LoadScene("Overworld");
+
+        //////////////////////
+
+
         // Battle was lost, so create a lose screen overlay
         GameObject loss = Instantiate(LoseCanvas);
 

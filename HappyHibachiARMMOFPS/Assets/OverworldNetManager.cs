@@ -8,6 +8,7 @@ using System.Threading;
 using System.Collections.Generic;
 using System.Diagnostics;
 using UnityEngine.SceneManagement;
+using System.Text;
 
 public class OverworldNetManager : MonoBehaviour {
 
@@ -45,78 +46,102 @@ public class OverworldNetManager : MonoBehaviour {
 
     private bool appClosed = false;
 
+    private static bool started = false;
+
     //connected socket
     private Socket client;
 
     //for response timing
     private Stopwatch responseTime = new Stopwatch();
 
+    private bool restart = false;
+
+    private void Awake()
+    {
+        if (started)
+        {
+            DestroyImmediate(gameObject);
+        }
+    }
+
     // Use this for initialization
     void Start()
     {
-        UnityEngine.Debug.Log(Player.playerID);
-        try
+        if (!started)
         {
-            locService = Input.location;
-            if(!locService.isEnabledByUser)
+            started = true;
+            UnityEngine.Debug.Log(Player.playerID);
+            try
             {
-                //display some sort of error message telling user location services must be enabled
+                locService = Input.location;
+                if (locService.status == LocationServiceStatus.Stopped)
+                {
+                    if (!locService.isEnabledByUser)
+                    {
+                        //display some sort of error message telling user location services must be enabled
+                    }
+
+                    locService.Start();
+
+                    //isnt working so remove location startup stuff so dont have to wait
+                    //MAKE SURE YOU CHANGE BACK LATER (SHOULD BE 30)
+                    int timeout = 30;
+
+                    //potentially display some sort of loading screen while waiting for location services, etc.
+                    while (Input.location.status == LocationServiceStatus.Initializing && timeout > 0)
+                    {
+                        Thread.Sleep(1000);
+                        timeout--;
+                    }
+
+                    if (timeout < 1 || Input.location.status == LocationServiceStatus.Failed)
+                    {
+                        //display some sort of error message, failed to start location services
+                    }
+                }
+
+                //DontDestroyOnLoad(gameObject);
+
+                coords = new byte[UPDATE_SIZE];
+                size = new byte[4];
+
+                //remote endpoint of the server
+                IPEndPoint remoteEP = new IPEndPoint(IP, OVERWORLD_PORT);
+
+                //create TCP socket
+                client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
+                //connect to remote endpoint
+                client.Connect(remoteEP);
+
+                UnityEngine.Debug.Log("Connect Overworld Successful");
+
+                //send the players id to the server
+                client.Send(Player.playerID.ToByteArray());
+
+                //upNearbyObj = false;
+                waitUpdate = new ManualResetEvent(false);
+
+
+                UnityEngine.Debug.Log("Connect Successful");
+
+
+                t = new Timer(setUpdate, null, 0, 12000);
+
+                //start receiving updates from server
+                client.BeginReceive(size, 0, 4, 0, new AsyncCallback(updateDriver), null);
             }
-
-            locService.Start();
-
-            //isnt working so remove location startup stuff so dont have to wait
-            //MAKE SURE YOU CHANGE BACK LATER (SHOULD BE 30)
-            int timeout = 30;
-
-            //potentially display some sort of loading screen while waiting for location services, etc.
-            while(Input.location.status == LocationServiceStatus.Initializing && timeout > 0)
+            //catch exception if fail to connect
+            catch (Exception e)
             {
-                Thread.Sleep(1000);
-                timeout--;
+                UnityEngine.Debug.Log(e.ToString());
+                UnityEngine.Debug.Log("Connection Failure");
+                if (!appClosed)
+                {
+                    started = false;
+                    Start();
+                }
             }
-
-            if(timeout < 1)
-            {
-                //display some sort of error message, failed to start location services
-            }
-
-            //DontDestroyOnLoad(gameObject);
-
-            coords = new byte[UPDATE_SIZE];
-            size = new byte[4];
-
-            //remote endpoint of the server
-            IPEndPoint remoteEP = new IPEndPoint(IP, OVERWORLD_PORT);
-
-            //create TCP socket
-            client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-
-            //connect to remote endpoint
-            client.Connect(remoteEP);
-
-            UnityEngine.Debug.Log("Connect Overworld Successful");
-
-            //send the players id to the server
-            client.Send(Player.playerID.ToByteArray());
-
-            //upNearbyObj = false;
-            waitUpdate = new ManualResetEvent(false);
-
-
-            UnityEngine.Debug.Log("Connect Successful");
-
-
-            t = new Timer(setUpdate, null, 0, 12000);
-
-            //start receiving updates from server
-            client.BeginReceive(size, 0, 4, 0, new AsyncCallback(updateDriver), null);
-        }
-        //catch exception if fail to connect
-        catch (Exception e)
-        {
-            UnityEngine.Debug.Log(e.ToString());
-            UnityEngine.Debug.Log("Connection Failure");
         }
     }
 
@@ -130,6 +155,7 @@ public class OverworldNetManager : MonoBehaviour {
             {
                 if (!appClosed)
                 {
+                    started = false;
                     Start();
                 }
                 return;
@@ -138,8 +164,15 @@ public class OverworldNetManager : MonoBehaviour {
             //UnityEngine.Debug.Log(responseTime.ElapsedMilliseconds);
 
             int nearby = BitConverter.ToInt32(size, 0);
-            int numObjects = nearby / 24;
+            int numObjects;
+            byte[] numObjectsArr = new byte[4];
+            client.Receive(numObjectsArr, 4, 0);
+            numObjects = BitConverter.ToInt32(numObjectsArr, 0);
             byte[] buf = new byte[nearby];
+
+            int nearbyDetailsIndex = numObjects * 24;
+
+            //int numNearbyPlayers = 0;
 
             //read in each nearby items
             client.Receive(buf, nearby, 0);
@@ -159,6 +192,25 @@ public class OverworldNetManager : MonoBehaviour {
                 {
                     o.Type = 0;
                     o.Latitude = lat;
+                    //char temp = 't';
+                    int strLen = 0;
+                    //name strings are null terminated, find where the players name ends
+                    while(buf[nearbyDetailsIndex + strLen] != '\0')
+                    {
+                        strLen++;
+                    }
+                    o.Name = Encoding.ASCII.GetString(buf, nearbyDetailsIndex, strLen);
+                    UnityEngine.Debug.Log(o.Name);
+                    //add one to move past null character
+                    o.FactionNo = buf[nearbyDetailsIndex + strLen + 1];
+                    UnityEngine.Debug.Log(o.FactionNo);
+                    o.PlayerLevel = buf[nearbyDetailsIndex + strLen + 2];
+                    UnityEngine.Debug.Log(o.PlayerLevel);
+                    o.FactionLevel = buf[nearbyDetailsIndex + strLen + 3];
+                    UnityEngine.Debug.Log(o.FactionLevel);
+                    //move the index past the current player's details
+                    nearbyDetailsIndex += strLen + 4;
+                    //numNearbyPlayers++;
 
                 }
                 else if (lat < 272)
@@ -177,9 +229,9 @@ public class OverworldNetManager : MonoBehaviour {
                 Buffer.BlockCopy(buf, 8 * numObjects + i * 16, idBytes, 0, 16);
                 o.Id = new Guid(idBytes);
 
-                //UnityEngine.Debug.Log(o.Id);
+                UnityEngine.Debug.Log(o.Id);
 
-                //-----------------TEMPORARY TEST CODE----------------------
+                /*-----------------TEMPORARY TEST CODE----------------------
 
                 if (o.Type == 0 && o.Id != Player.playerID)
                 {
@@ -187,7 +239,7 @@ public class OverworldNetManager : MonoBehaviour {
                     UnityEngine.Debug.Log("Opponent ID set: " + o.Id);
                 }
 
-                //----------------------------------------------------------
+                //----------------------------------------------------------*/
 
                 nearbyObjects.Add(o);
                 //UnityEngine.Debug.Log(o.Longtitude);
@@ -207,6 +259,7 @@ public class OverworldNetManager : MonoBehaviour {
             //attempt to restart on failure
             if (!appClosed)
             {
+                started = false;
                 Start();
             }
         }
@@ -247,21 +300,25 @@ public class OverworldNetManager : MonoBehaviour {
 
             if (!waitUpdate.WaitOne(0))
             {
+                UnityEngine.Debug.Log(SceneManager.GetActiveScene().name);
                 //place objects on screen or update position if guid already present, store respective guid with object for later use
                 //objects stored in list nearbyObjects which is a list of NearbyObjects that contain lat, long, object type, and id
                 //note: should check which scene is active before drawing, should be able to do that with scenemanager.getactivescene
                 if (SceneManager.GetActiveScene().name.Equals("Overworld"))
                 {
+                    //UnityEngine.Debug.Log("???????????");
+
                     enemyList = new List<NearbyObject>();
                     enemyRadar.options.Clear();
                     enemyRadar.options.Add(new Dropdown.OptionData("(Select)"));
+                    //enemyRadar.options.Add(new Dropdown.OptionData("Test"));
                     foreach (NearbyObject nearbyObject in nearbyObjects)
                     {
                         OnlineMapsMarker3D newMarker = new OnlineMapsMarker3D();
                         newMarker.id = nearbyObject.Id;
                         newMarker.lat = nearbyObject.Latitude;
                         newMarker.lon = nearbyObject.Longtitude;
-
+                        //UnityEngine.Debug.Log("???????????" + nearbyObject.Type);
                         switch (nearbyObject.Type)
                         {
                             case 0:
@@ -283,14 +340,17 @@ public class OverworldNetManager : MonoBehaviour {
                 // Add the enemies to the dropdown menu
                 foreach (NearbyObject enemy in enemyList)
                 {
-                    enemyRadar.options.Add(new Dropdown.OptionData(enemy.Id.ToString()));
+                    if (enemy.Id != Player.playerID)
+                    {
+                        enemyRadar.options.Add(new Dropdown.OptionData(enemy.Id.ToString()));
+                    }
                 }
 
                 waitUpdate.Set();
             }
         }
         catch(Exception) {
-            //  UnityEngine.Debug.Log(e.ToString());
+            //UnityEngine.Debug.Log(e.ToString());
             waitUpdate.Set();
         }
 
@@ -336,6 +396,10 @@ public class OverworldNetManager : MonoBehaviour {
         private float longtitude;
         private Guid id;
         private byte type;
+        private string name;
+        private byte factionNo;
+        private byte playerLevel;
+        private byte factionLevel;
 
         public float Latitude
         {
@@ -386,6 +450,58 @@ public class OverworldNetManager : MonoBehaviour {
             set
             {
                 type = value;
+            }
+        }
+
+        public string Name
+        {
+            get
+            {
+                return name;
+            }
+
+            set
+            {
+                name = value;
+            }
+        }
+
+        public byte FactionNo
+        {
+            get
+            {
+                return factionNo;
+            }
+
+            set
+            {
+                factionNo = value;
+            }
+        }
+
+        public byte PlayerLevel
+        {
+            get
+            {
+                return playerLevel;
+            }
+
+            set
+            {
+                playerLevel = value;
+            }
+        }
+
+        public byte FactionLevel
+        {
+            get
+            {
+                return factionLevel;
+            }
+
+            set
+            {
+                factionLevel = value;
             }
         }
     }

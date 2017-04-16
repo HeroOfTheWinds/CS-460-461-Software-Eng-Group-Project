@@ -45,6 +45,7 @@ public class GenComManager : MonoBehaviour {
     private Socket client;
 
     private bool appClosed = false;
+    private static bool started = false;
 
     //call on event where player touches something
     //for type 5 com (battle response) objID should be the ID of the player that challenged me (stored in BattleNetManager.OpponentID)
@@ -62,48 +63,67 @@ public class GenComManager : MonoBehaviour {
         inAccepted = response;
     }
 
+    private void Awake()
+    {
+        if (started)
+        {
+            DestroyImmediate(gameObject);
+        }
+        else
+        {
+            ItemList.populateItemList();
+        }
+    }
+
     // Use this for initialization
     void Start () {
-        items = items.GetComponent<Canvas>();
-
-        try
+        if (!started)
         {
-            //DontDestroyOnLoad(gameObject);
+            items = items.GetComponent<Canvas>();
 
-            //remote endpoint of the server
-            IPEndPoint remoteEP = new IPEndPoint(IP, GC_PORT);
+            try
+            {
+                //DontDestroyOnLoad(gameObject);
 
-            //create TCP socket
-            client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                //remote endpoint of the server
+                IPEndPoint remoteEP = new IPEndPoint(IP, GC_PORT);
 
-            //connect to remote endpoint
-            client.Connect(remoteEP);
-            //send the players id to the server
-            client.Send(Player.playerID.ToByteArray());
+                //create TCP socket
+                client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
-            Debug.Log("Connect GenCom Successful");
+                //connect to remote endpoint
+                client.Connect(remoteEP);
+                //send the players id to the server
+                client.Send(Player.playerID.ToByteArray());
 
-            update = new byte[UPDATE_SIZE];
-            update[0] = 255;
-            ackReceived = false;
-            type = new byte[1];
-            landmarkInfo = new LandmarkInfo();
-            colloseumInfo = new ColloseumInfo();
-            battleInfo = new BattleInfo();
-            processed = new ManualResetEvent(true);
-            ItemList.populateItemList();
+                Debug.Log("Connect GenCom Successful");
 
-            //Debug.Log("Send Update Successful");
+                update = new byte[UPDATE_SIZE];
+                update[0] = 255;
+                ackReceived = false;
+                type = new byte[1];
+                landmarkInfo = new LandmarkInfo();
+                colloseumInfo = new ColloseumInfo();
+                battleInfo = new BattleInfo();
+                processed = new ManualResetEvent(true);
 
-            //start receiving updates from server
-            client.BeginReceive(type, 0, 1, 0, new AsyncCallback(updateDriver), null);
-            //Debug.Log("Start async successful");
-        }
-        //catch exception if fail to connect
-        catch (Exception e)
-        {
-            Debug.Log(e.ToString());
-            Debug.Log("Connection Failure");
+                //Debug.Log("Send Update Successful");
+
+                //start receiving updates from server
+                client.BeginReceive(type, 0, 1, 0, new AsyncCallback(updateDriver), null);
+                //Debug.Log("Start async successful");
+            }
+            //catch exception if fail to connect
+            catch (Exception e)
+            {
+                Debug.Log(e.ToString());
+                Debug.Log("Connection Failure");
+                if (!appClosed)
+                {
+                    started = false;
+                    Start();
+                }
+            }
         }
     }
 
@@ -120,6 +140,7 @@ public class GenComManager : MonoBehaviour {
             {
                 if (!appClosed)
                 {
+                    started = false;
                     Start();
                 }
                 return;
@@ -229,6 +250,7 @@ public class GenComManager : MonoBehaviour {
             //attempt to restart on failure
             if (!appClosed)
             {
+                started = false;
                 Start();
             }
         }
