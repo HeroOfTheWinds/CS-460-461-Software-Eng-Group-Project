@@ -11,6 +11,9 @@ using UnityEngine.SceneManagement;
 
 public class GenComManager : MonoBehaviour {
 
+    // Loading Screen
+    public GameObject LoadingScreen;
+
     //ip address to connect to
     private static readonly IPAddress IP = IPAddress.Parse("13.84.163.243");
     //port to connect to
@@ -295,7 +298,8 @@ public class GenComManager : MonoBehaviour {
                             {
                                 //send user to battle scene
                                 update[0] = 255;
-                                SceneManager.LoadScene("Battle");
+                                //SceneManager.LoadScene("Battle");
+                                LoadingScreen.GetComponent<SceneLoader>().LoadScene("Battle");
                             }
                             else
                             {
@@ -379,7 +383,8 @@ public class GenComManager : MonoBehaviour {
                             //pause for two seconds to give user time to comprehend what's going on in case ack received quickly
                             Thread.Sleep(2000);
                             //send user to battle scene
-                            SceneManager.LoadScene("Battle");
+                            //SceneManager.LoadScene("Battle");
+                            LoadingScreen.GetComponent<SceneLoader>().LoadScene("Battle");
                         }
                         else if (outAccepted == 0)
                         {

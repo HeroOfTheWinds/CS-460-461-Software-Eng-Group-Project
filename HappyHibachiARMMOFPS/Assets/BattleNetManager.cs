@@ -9,6 +9,9 @@ using UnityEngine.SceneManagement;
 
 public class BattleNetManager : MonoBehaviour
 {
+    // Loading Screen
+    public GameObject LoadingScreen;
+
     //temp guid until dynamic ones are generated on battle start
     private static Guid battleID = new Guid("dddddddddddddddddddddddddddddddd");
     private static Guid opponentID;
@@ -175,7 +178,8 @@ public class BattleNetManager : MonoBehaviour
             //display message to user failed to connect to battle
 
             //send back to overworld
-            SceneManager.LoadScene("Overworld");
+            //SceneManager.LoadScene("Overworld");
+            LoadingScreen.GetComponent<SceneLoader>().LoadScene("Overworld");
         }
     }
 

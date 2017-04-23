@@ -14,6 +14,9 @@ public class Login : MonoBehaviour
     public Text ErrorText; //outputs errors to screen
     private string url = "http://13.84.163.243/login.php"; //script that handles login
 
+    // Store a reference to the loading screen
+    public GameObject loadingScreen;
+
     [Serializable]
     public class LoginSave
     {
@@ -129,10 +132,14 @@ public class Login : MonoBehaviour
     //next scene helpers
     public void goToRegister()
     {
-        SceneManager.LoadScene("Register");
+        //SceneManager.LoadScene("Register");
+        Debug.Log("loading");
+        loadingScreen.GetComponent<SceneLoader>().LoadScene("Register");
     }
     public void goToOverworld()
     {
-        SceneManager.LoadScene("Overworld");
+        //SceneManager.LoadScene("Overworld");
+        Debug.Log("loading");
+        loadingScreen.GetComponent<SceneLoader>().LoadScene("Overworld");
     }
 }

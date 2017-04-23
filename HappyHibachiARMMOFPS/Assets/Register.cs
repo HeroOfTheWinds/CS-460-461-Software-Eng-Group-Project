@@ -9,6 +9,10 @@ public class Register : MonoBehaviour {
     public Text ErrorText; //displays errors
     public InputField emailInput, userInput, passwordInput1, passwordInput2; // user input fields
     private string url = "http://13.84.163.243/register.php"; //script to check email + username in database
+
+    // Loading screen reference
+    public GameObject LoadingScreen;
+
     public void checkRegisterInputs()
     {
         bool emailIsValid = false, usernameIsValid = false, 
@@ -62,7 +66,8 @@ public class Register : MonoBehaviour {
             {
                 Debug.Log("Registration successful");
                 //go to login scene to log in
-                SceneManager.LoadScene("Login");
+                //SceneManager.LoadScene("Login");
+                LoadingScreen.GetComponent<SceneLoader>().LoadScene("Login");
             }
 
             if (text == "1")

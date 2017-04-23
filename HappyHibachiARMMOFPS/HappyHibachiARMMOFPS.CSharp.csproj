@@ -87,6 +87,7 @@
     <Compile Include="Assets\ARControl.cs" />
     <Compile Include="Assets\ARDowsing.cs" />
     <Compile Include="Assets\BattleNetManager.cs" />
+    <Compile Include="Assets\CallColosseum.cs" />
     <Compile Include="Assets\CallLandmark.cs" />
     <Compile Include="Assets\EnemyStatus.cs" />
     <Compile Include="Assets\EnemyUpdate.cs" />
@@ -277,6 +278,7 @@
     <Compile Include="Assets\PlayerStatus.cs" />
     <Compile Include="Assets\Register.cs" />
     <Compile Include="Assets\ReturnToOverworld.cs" />
+    <Compile Include="Assets\SceneLoader.cs" />
     <Compile Include="Assets\Scripts\ARCamera.cs" />
     <Compile Include="Assets\Scripts\DeviceRotation.cs" />
     <Compile Include="Assets\Scripts\FactionTileOverlay.cs" />
@@ -293,6 +295,8 @@
     <Compile Include="Assets\Scripts\Leaderboard\LeaderboardFilter.cs" />
     <Compile Include="Assets\Scripts\Leaderboard\LeaderboardScroll.cs" />
     <Compile Include="Assets\Scripts\MoveShot.cs" />
+    <Compile Include="Assets\SetLandmark.cs" />
+    <Compile Include="Assets\ShowItems.cs" />
     <Compile Include="Assets\ShowPlayerInfo.cs" />
     <Compile Include="Assets\TimeoutManager.cs" />
     <Compile Include="Assets\UI\button.cs" />
