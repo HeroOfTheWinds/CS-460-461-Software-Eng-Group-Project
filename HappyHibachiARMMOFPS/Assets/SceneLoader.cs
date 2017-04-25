@@ -27,10 +27,11 @@ public class SceneLoader : MonoBehaviour {
         "When in doubt, try not to doubt.  It's really a bad habit to form",
         "What limps and is full of holes? Hopefully your foe, not you",
         "Speed limits on overworld travel? Why would we, that's inhumane!",
-        "The bar above this text shows how long before the action starts.  But you knew that"
+        "The bar above this text shows how long before the action starts.  But you knew that",
+        "Moving targets are harder to hit.  So why are you just standing there?"
     };
     // Update this to match the number of lines above
-    private int numTips = 9;
+    private int numTips = 10;
 
 	// Use this for initialization
 	void Start () {
