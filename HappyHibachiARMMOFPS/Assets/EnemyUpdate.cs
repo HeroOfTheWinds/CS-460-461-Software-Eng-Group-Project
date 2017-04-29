@@ -122,6 +122,14 @@ public class EnemyUpdate
             enemy.transform.position = updateVector;
             enemy.transform.rotation = updateQuat;
 
+            // Display animation for the enemy
+            Animator anim = enemy.GetComponent<Animator>();
+            // If the enemy moved on the x or z axis...
+            double xdif = Mathf.Abs(xPos - x[numRecords - 1]);
+            double zdif = Mathf.Abs(zPos - z[numRecords - 1]);
+            // Set the animator parameter to hypotenuse between xdif and zdif
+            anim.SetFloat("Moving", Mathf.Sqrt(Mathf.Pow((float)xdif, 2.0f) + Mathf.Pow((float)zdif, 2.0f)));
+
             lastT = time;
         }
         
