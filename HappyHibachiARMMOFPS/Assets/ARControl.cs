@@ -41,8 +41,8 @@ public class ARControl : MonoBehaviour {
             if (AndroidVer >= 23)
             {
                 // We need to workaround this
-                yRotation += -Input.gyro.rotationRateUnbiased.y * 4f;
-                xRotation += -Input.gyro.rotationRateUnbiased.x * 4f;
+                yRotation += -Input.gyro.rotationRateUnbiased.y * 2.5f;
+                xRotation += -Input.gyro.rotationRateUnbiased.x * 2.5f;
 
                 cam.transform.eulerAngles = new Vector3(xRotation, yRotation, 0f);
                 //euler.y = cam.transform.eulerAngles.y;
