@@ -56,6 +56,8 @@ public class EnemyUpdate
 
     private bool updateRun;
 
+    private Animator anim = null;
+
     public void addUpdate(float xPos, float zPos, float rot, double time)
     {
         //Debug.Log("num records = " + numRecords);
@@ -123,12 +125,24 @@ public class EnemyUpdate
             enemy.transform.rotation = updateQuat;
 
             // Display animation for the enemy
-            Animator anim = enemy.GetComponent<Animator>();
+            if (anim == null)
+            {
+                anim = enemy.GetComponentInChildren<Animator>();
+            }
+
             // If the enemy moved on the x or z axis...
             double xdif = Mathf.Abs(xPos - x[numRecords - 1]);
             double zdif = Mathf.Abs(zPos - z[numRecords - 1]);
             // Set the animator parameter to hypotenuse between xdif and zdif
-            anim.SetFloat("Moving", Mathf.Sqrt(Mathf.Pow((float)xdif, 2.0f) + Mathf.Pow((float)zdif, 2.0f)));
+            if (xdif > 0f || zdif > 0f)
+            {
+                //anim.SetFloat("Moving", Mathf.Sqrt(Mathf.Pow((float)xdif, 2.0f) + Mathf.Pow((float)zdif, 2.0f)));
+                anim.SetFloat("Moving", 0.5f);
+            }
+            else
+            {
+                anim.SetFloat("Moving", 0f);
+            }
 
             lastT = time;
         }
@@ -200,7 +214,14 @@ public class EnemyUpdate
             // Fire a shot by instantiating a bullet and calculating with a raycast
             // First get orientation of enemy and adjust laser's start position so it's outside the player's collider
             Vector3 shotPos = enemy.transform.TransformDirection(1f, -0.5f, 1f) + sPos;
-            
+
+            // Display animation for the enemy
+            if (anim == null)
+            {
+                anim = enemy.GetComponentInChildren<Animator>();
+            }
+
+            anim.SetTrigger("FireT");
 
             // Make a raycast from the enemy to check for target hit
             RaycastHit hit; // Var to store info on what got hit
