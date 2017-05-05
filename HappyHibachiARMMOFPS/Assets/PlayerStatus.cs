@@ -20,6 +20,8 @@ public class PlayerStatus : MonoBehaviour {
     public GameObject HPBar;
     // HP Bar on the HUD
     public Image InnerHPBar;
+    // Sound to play when hit by enemy
+    public AudioSource decreaseHealthSFX;
 
 	// Use this for initialization
 	void Start () {
@@ -46,6 +48,7 @@ public class PlayerStatus : MonoBehaviour {
 
     public void TakeHP(float hp)
     {
+        decreaseHealthSFX.Play();
         // Decrease player's current HP by given amount
         currentHP -= hp;
         if (currentHP < 0)

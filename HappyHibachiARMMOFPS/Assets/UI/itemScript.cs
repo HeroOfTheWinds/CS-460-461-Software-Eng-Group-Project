@@ -7,10 +7,18 @@ public class itemScript : MonoBehaviour {
 	public Canvas itemMenu;
 	//Used for the items in
     public GameObject player;
+    //Used for the sound to play when opening up menu
+    public AudioSource showMenu;
+    //Used for the sound to play when closing menu
+    public AudioSource cancelMenu;
+    //Used for the sound to place Landmine
+    public AudioSource landminePlace;
+    //Used for the sound to use health restoration item
+    public AudioSource healthItemUse;
 
 
-	//This runs at the start of the program
-	void Start()
+    //This runs at the start of the program
+    void Start()
 	{
 		//Links the items menu canvas
 		itemMenu = itemMenu.GetComponent<Canvas>();
@@ -28,7 +36,7 @@ public class itemScript : MonoBehaviour {
 	{
 		//enables the items menu
 		itemMenu.enabled = true;
-
+        showMenu.Play();
 	}
 
 	//Function to hide the items menu
@@ -36,7 +44,8 @@ public class itemScript : MonoBehaviour {
 	{
 		//Disables the items menu
 		itemMenu.enabled = false;
-	}
+        cancelMenu.Play();
+    }
 
 	public void ok()
 	{
@@ -62,6 +71,7 @@ public class itemScript : MonoBehaviour {
                 controller.Mpx = player.transform.position.x;
                 controller.Mpz = player.transform.position.z;
             }
+            landminePlace.Play();
         }
         // Auto-close menu
         itemMenu.enabled = false;
@@ -76,6 +86,7 @@ public class itemScript : MonoBehaviour {
             // Call function to refill the player's health by 50 points
             PlayerStatus status = player.GetComponent<PlayerStatus>();
             status.RestoreHP(50f);
+            healthItemUse.Play();
         }
         // Auto-close menu
         itemMenu.enabled = false;
