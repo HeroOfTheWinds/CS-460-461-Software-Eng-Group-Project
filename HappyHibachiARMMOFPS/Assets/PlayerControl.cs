@@ -297,6 +297,9 @@ public class PlayerControl : MonoBehaviour {
 
         if(GenComManager.getQuestID() == BattleNetManager.OpponentID)
         {
+
+            //GIVE PLAYER 500 EXPERIENCE
+
             GenComManager.setUpdate(3, BattleNetManager.OpponentID);
         }
 

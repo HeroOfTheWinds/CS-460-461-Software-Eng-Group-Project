@@ -135,6 +135,7 @@ namespace HappyHibachiServer
                 ar.AsyncWaitHandle.WaitOne();
                 if (handler.EndReceive(ar) == 0)
                 {
+                    state.disposeTimer();
                     Console.WriteLine("\nPlayer disconnected gen com readUpdate");
                     return;
                 }

@@ -340,14 +340,14 @@ public class GenComManager : MonoBehaviour {
                         break;
                     case 3:
                         //Debug.Log("quest?????????????????????????????????");
-                        GameObject canvas = GameObject.FindGameObjectWithTag("wantedCanvas");
+                        GameObject canvas = GameObject.Find("WantedCanvas");
                         //Debug.Log(canvas);
                         WantedNotice notice = (WantedNotice)canvas.GetComponent(typeof(WantedNotice));
                         
                         //only set the quest if there is a target available
                         if (OverworldNetManager.getQuestEnemy(out notice.level, out notice.name, out questID))
                         {
-                            canvas.SetActive(true);
+                            canvas.GetComponent<Canvas>().enabled = true;
                         }
                         break;
                     case 4:

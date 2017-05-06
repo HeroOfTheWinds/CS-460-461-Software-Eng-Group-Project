@@ -305,7 +305,7 @@ namespace HappyHibachiServer
             //  If a player is 10 levels higher than the other then no exp is given
             // the winner will get more exp if at a lower level and les if higher: need to know opponent_id
 
-            string query = "UPDATE PLAYER SET PLAYER_EXP = PLAYER_EXP + 50 WHERE GUID ='" + player.ToString() + "';";
+            string query = "UPDATE PLAYER SET PLAYER_EXP = PLAYER_EXP + 500 WHERE GUID ='" + player.ToString() + "';";
             //Open connection
             if (OpenConnection() == true)
             {
