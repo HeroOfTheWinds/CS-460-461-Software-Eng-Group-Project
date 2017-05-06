@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Collections.Generic;
 using System.Text;
+using System.Timers;
 
 namespace HappyHibachiServer
 {
@@ -65,6 +66,7 @@ namespace HappyHibachiServer
         //async method for connecting to clients
         public static void connect(IAsyncResult ar)
         {
+            ComState state = null;
             try
             {
                 //connection finished, allow others to connect
@@ -98,7 +100,7 @@ namespace HappyHibachiServer
                     }
                 }
                 //link writelock with the playerdetails gencomwritelock for this client
-                ComState state = new ComState(addSocket.GENCOM_WRITE_LOCK);
+                state = new ComState(addSocket.GENCOM_WRITE_LOCK);
                 //initialize values
                 state.ClientSocket = handler;
                 state.Update = new byte[UPDATE_SIZE];
@@ -110,6 +112,10 @@ namespace HappyHibachiServer
             //catch connection errors
             catch (Exception e)
             {   
+                if(state != null)
+                {
+                    state.disposeTimer();
+                }
                 Console.WriteLine(e.ToString());
                 Console.WriteLine("\nPlayer disconnected gen com connect");
             }
@@ -135,10 +141,10 @@ namespace HappyHibachiServer
 
                 byte type = state.Update[0];
 
-                if (serverUpdateAvailable())
-                {
-                    processSpCom(state);
-                }
+                //if (serverUpdateAvailable(state))
+                //{
+                //    processSpCom(state);
+                //}
 
 
                 switch(type)
@@ -154,6 +160,9 @@ namespace HappyHibachiServer
                     //player interacting with landmark
                     case 2:
                         processLandmarkReq(state);
+                        break;
+                    case 3:
+                        processQuestComplete(state);
                         break;
                     case 4:
                         processItemReq(state);
@@ -173,9 +182,18 @@ namespace HappyHibachiServer
             //end communications gracefully if player disconnects
             catch (Exception)
             {
+                state.disposeTimer();
                 Console.WriteLine("\nPlayer disconnected gen com readUpdate");
 
             }
+        }
+
+        private static void processQuestComplete(ComState state)
+        {
+            var dbCon = new DatabaseConnect();
+            dbCon.updatePlayerExpAfterQuest(state.ClientID);
+
+            Console.WriteLine("Recieved quest complete");
         }
 
         private static void processBattleResponse(ComState state)
@@ -222,7 +240,6 @@ namespace HappyHibachiServer
             //store number of items in size
             //maybe a random number of items? not sure how you want to deal with that
 
-            //------------------TEMPORARY TEST CODE, NO DB BACKING------------------
 
             Random r = new Random();
             size = (short)r.Next(1, 4);
@@ -231,8 +248,6 @@ namespace HappyHibachiServer
                 //lets say 0 is a health pot and 1 is a landmine
                 itemIDs.Add((byte)r.Next(0, 2));
             }
-
-            //----------------------------------------------------------------------
 
             byte[] type = { 4 };
             lock (state.WRITE_LOCK)
@@ -243,10 +258,16 @@ namespace HappyHibachiServer
             }
         }
 
-        private static bool serverUpdateAvailable()
+        private static bool serverUpdateAvailable(ComState state)
         {
-            //check if the server needs to send things to the user, eg quests etc
-            //implement later
+            Console.WriteLine("quest elapsed 0");
+            if (state.getQuest())
+            {
+                Console.WriteLine("quest elapsed 1");
+                return true;
+            }
+
+            //anything else that needs to be checked other than quests?
             
             return false;
         }
@@ -264,10 +285,10 @@ namespace HappyHibachiServer
             //store landmark name description and image in respective vars
             var dbCon = new DatabaseConnect();
             dbCon.provideLandmarkInfoFromDB(getUpdateID(state.Update), ref name, ref description, ref image);
-            Console.WriteLine("Landmark GUID: " + state.ClientID.ToString());
-            Console.WriteLine("Landmark Name: " + name);
-            Console.WriteLine("Landmark description: " + description);
-            Console.WriteLine("Landmark image: " + image);
+            //Console.WriteLine("Landmark GUID: " + state.ClientID.ToString());
+            //Console.WriteLine("Landmark Name: " + name);
+            //Console.WriteLine("Landmark description: " + description);
+            //Console.WriteLine("Landmark image: " + image);
 
             sizeName = (short)Encoding.ASCII.GetByteCount(name);
             sizeDescription = (short)Encoding.ASCII.GetByteCount(description);
@@ -299,10 +320,10 @@ namespace HappyHibachiServer
             //add other details later
             var dbCon = new DatabaseConnect();
             dbCon.provideColosseumInfoFromDB(getUpdateID(state.Update), ref name, ref description, ref image);
-            Console.WriteLine("Colloseum GUID: " + state.ClientID.ToString());
-            Console.WriteLine("Colloseum Name: " + name);
-            Console.WriteLine("Colloseum description: " + description);
-            Console.WriteLine("Colloseum image: " + image);
+            //Console.WriteLine("Colloseum GUID: " + state.ClientID.ToString());
+            //Console.WriteLine("Colloseum Name: " + name);
+            //Console.WriteLine("Colloseum description: " + description);
+            //Console.WriteLine("Colloseum image: " + image);
 
             sizeName = (short)Encoding.ASCII.GetByteCount(name);
             sizeDescription = (short)Encoding.ASCII.GetByteCount(description);
@@ -347,10 +368,9 @@ namespace HappyHibachiServer
 
         private static void processSpCom(ComState state)
         {
-            //send stuff to client
-            //this will have the type id of 3
-            //implement later
+            //tell user they recieved a quest
             byte[] type = { 3 };
+            //Console.WriteLine("quest elapsed 2");
             lock (state.WRITE_LOCK)
             {
                 state.ClientSocket.Send(type);
@@ -375,10 +395,56 @@ namespace HappyHibachiServer
         private byte[] update;
         private bool busy;
         public readonly object WRITE_LOCK;
+        private Random rand;
+        private System.Timers.Timer generateQuest = null;
+        private bool quest;
+
+        public bool getQuest()
+        {
+            if(quest)
+            {
+                quest = false;
+                return true;
+            }
+            return false;
+        }
+
+        public void disposeTimer()
+        {
+            if(generateQuest != null)
+            {
+                generateQuest.Dispose();
+            }
+            
+        }
 
         public ComState(object wl)
         {
+            quest = false;
             WRITE_LOCK = wl;
+            rand = new Random();
+            generateQuest = new System.Timers.Timer(10000);
+            generateQuest.Elapsed += setQuest;
+            generateQuest.Start();
+        }
+
+        private void setQuest(object sender, ElapsedEventArgs e)
+        {
+            quest = true;
+            //tell user they recieved a quest
+            byte[] type = { 3 };
+            lock (WRITE_LOCK)
+            {
+                Console.WriteLine("quest elapsed");
+                clientSocket.Send(type);
+            }
+        }
+
+
+
+        public int getRandomPosition(int max)
+        {
+            return (int)(rand.NextDouble() * max);
         }
 
         //getters and setters

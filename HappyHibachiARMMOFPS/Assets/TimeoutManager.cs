@@ -76,11 +76,6 @@ public class TimeoutManager : MonoBehaviour {
         {
             if(client.EndReceive(ar) == 0)
             {
-                if (!appClosed)
-                {
-                    started = false;
-                    Start();
-                }
                 return;
             }
             client.Send(update);

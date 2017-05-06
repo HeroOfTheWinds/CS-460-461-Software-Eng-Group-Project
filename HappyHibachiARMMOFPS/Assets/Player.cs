@@ -8,7 +8,7 @@ public class Player : MonoBehaviour
 {
     //player attributes
     public static string playername;
-    public static Guid playerID = Guid.NewGuid();
+    public static Guid playerID = new Guid("f519af91e9d511e681d200155d2a070d");
     public static int EXP;
     public static int level;
     public static int faction;

@@ -29,7 +29,8 @@ public class OverworldNetManager : MonoBehaviour {
     public Canvas Land;
     public Canvas Colosseum;
     public Dropdown enemyRadar;
-    List<NearbyObject> enemyList;
+    private static List<NearbyObject> enemyList;
+    private static System.Random rand;
 
     //private bool upNearbyObj;
     private ManualResetEvent waitUpdate;
@@ -55,6 +56,22 @@ public class OverworldNetManager : MonoBehaviour {
     private Stopwatch responseTime = new Stopwatch();
 
     private bool restart = false;
+
+    public static bool getQuestEnemy(out int level, out string name, out Guid id)
+    {
+        if(enemyList.Count != 0)
+        {
+            int index = (int)(rand.NextDouble() * enemyList.Count);
+            level = enemyList[index].PlayerLevel;
+            name = enemyList[index].Name;
+            id = enemyList[index].Id;
+            return true;
+        }
+        level = 0;
+        name = "";
+        id = new Guid();
+        return false;
+    }
 
     private void Awake()
     {
@@ -121,7 +138,7 @@ public class OverworldNetManager : MonoBehaviour {
 
                 //upNearbyObj = false;
                 waitUpdate = new ManualResetEvent(false);
-
+                rand = new System.Random();
 
                 UnityEngine.Debug.Log("Connect Successful");
 
@@ -136,11 +153,6 @@ public class OverworldNetManager : MonoBehaviour {
             {
                 UnityEngine.Debug.Log(e.ToString());
                 UnityEngine.Debug.Log("Connection Failure");
-                if (!appClosed)
-                {
-                    started = false;
-                    Start();
-                }
             }
         }
     }
@@ -153,11 +165,6 @@ public class OverworldNetManager : MonoBehaviour {
             //complete async data read
             if (client.EndReceive(ar) == 0)
             {
-                if (!appClosed)
-                {
-                    started = false;
-                    Start();
-                }
                 return;
             }
 
@@ -256,12 +263,6 @@ public class OverworldNetManager : MonoBehaviour {
         }
         catch(Exception)
         {
-            //attempt to restart on failure
-            if (!appClosed)
-            {
-                started = false;
-                Start();
-            }
         }
 
     }
@@ -323,7 +324,10 @@ public class OverworldNetManager : MonoBehaviour {
                         {
                             case 0:
                                 //newMarker.prefab = (GameObject)Instantiate(Resources.Load("EnemyPlayer"));
-                                enemyList.Add(nearbyObject);
+                                if (nearbyObject.Id != Player.playerID)
+                                {
+                                    enemyList.Add(nearbyObject);
+                                }
                                 break;
                             case 1:
                                 //newMarker.prefab = (GameObject)Instantiate(Resources.Load("Colosseum"));
@@ -340,10 +344,7 @@ public class OverworldNetManager : MonoBehaviour {
                 // Add the enemies to the dropdown menu
                 foreach (NearbyObject enemy in enemyList)
                 {
-                    if (enemy.Id != Player.playerID)
-                    {
                         enemyRadar.options.Add(new Dropdown.OptionData(enemy.Id.ToString()));
-                    }
                 }
 
                 waitUpdate.Set();

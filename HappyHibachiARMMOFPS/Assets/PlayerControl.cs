@@ -279,6 +279,11 @@ public class PlayerControl : MonoBehaviour {
         // Set it to render over the local Main Camera
         win.GetComponent<Canvas>().worldCamera = Camera.main;
 
+        if(GenComManager.getQuestID() == BattleNetManager.OpponentID)
+        {
+            GenComManager.setUpdate(3, BattleNetManager.OpponentID);
+        }
+
         // Bring up the exit button
         exitButton.SetActive(true);
     }

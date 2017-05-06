@@ -7,14 +7,16 @@ public class WantedNotice : MonoBehaviour {
 
     // public vars relating to the objects we want to change
     public Canvas notice;
+    public string name;
+    public int level;
     public Text targetName;
     public Text targetLevel;
 
 	// Use this for initialization
 	void Start () {
         // Create vars to store info from server
-        string name = "";
-        int level = 1;
+        name = "";
+        level = 0;
 
         // Get current location
         Input.location.Start();

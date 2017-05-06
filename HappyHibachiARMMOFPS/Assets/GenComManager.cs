@@ -39,6 +39,7 @@ public class GenComManager : MonoBehaviour {
     private List<byte> itemInfo;
     private BattleInfo battleInfo;
     public Canvas items;
+    private static Guid questID = new Guid();
 
     private ManualResetEvent processed;
 
@@ -49,6 +50,11 @@ public class GenComManager : MonoBehaviour {
 
     private bool appClosed = false;
     private static bool started = false;
+
+    public static Guid getQuestID()
+    {
+        return questID;
+    }
 
     //call on event where player touches something
     //for type 5 com (battle response) objID should be the ID of the player that challenged me (stored in BattleNetManager.OpponentID)
@@ -121,11 +127,6 @@ public class GenComManager : MonoBehaviour {
             {
                 Debug.Log(e.ToString());
                 Debug.Log("Connection Failure");
-                if (!appClosed)
-                {
-                    started = false;
-                    Start();
-                }
             }
         }
     }
@@ -141,11 +142,6 @@ public class GenComManager : MonoBehaviour {
 
             if(client.EndReceive(ar) == 0)
             {
-                if (!appClosed)
-                {
-                    started = false;
-                    Start();
-                }
                 return;
             }
 
@@ -212,7 +208,6 @@ public class GenComManager : MonoBehaviour {
                     processed.WaitOne();
                     break;
                 case 3:
-                    //what is the message being sent from server (special com)
                     processed.Reset();
                     processed.WaitOne();
                     break;
@@ -250,18 +245,11 @@ public class GenComManager : MonoBehaviour {
         }
         catch(Exception)
         {
-            //attempt to restart on failure
-            if (!appClosed)
-            {
-                started = false;
-                Start();
-            }
         }
     }
 
     // Update is called once per frame
     void Update() {
-        //need to add mechanism to make sure multiple requests arent sent before finalized with server, primarily for the battle portion
         try
         {
             lock (UPDATE_LOCK)
@@ -316,6 +304,7 @@ public class GenComManager : MonoBehaviour {
 
             if (!processed.WaitOne(0))
             {
+                //Debug.Log(type[0] + "------------------------------------");
                 //before drawing stuff make sure they are in the expected screen (eg dont draw landmark info over the overworld map if they exit out of it before processed)
                 switch (type[0])
                 {
@@ -350,7 +339,16 @@ public class GenComManager : MonoBehaviour {
 
                         break;
                     case 3:
-                        //show user special com details
+                        //Debug.Log("quest?????????????????????????????????");
+                        GameObject canvas = GameObject.FindGameObjectWithTag("wantedCanvas");
+                        //Debug.Log(canvas);
+                        WantedNotice notice = (WantedNotice)canvas.GetComponent(typeof(WantedNotice));
+                        
+                        //only set the quest if there is a target available
+                        if (OverworldNetManager.getQuestEnemy(out notice.level, out notice.name, out questID))
+                        {
+                            canvas.SetActive(true);
+                        }
                         break;
                     case 4:
                         //show user items they received, stored in itemInfo (list of byte item ids)
@@ -364,7 +362,7 @@ public class GenComManager : MonoBehaviour {
                         items.enabled = true;
                         Debug.Log("Received Items");
                         ItemDetails receivedItem;
-                        String info = "";
+                        string info = "";
                         foreach (byte item in itemInfo)
                         {
                             receivedItem = ItemList.getDetails(item);
@@ -405,7 +403,9 @@ public class GenComManager : MonoBehaviour {
                 processed.Set();
             }
         }
-        catch(Exception) { }
+        catch(Exception e) {
+            Debug.Log(e);
+        }
 	}
 
     private static Guid getUpdateID(byte[] update)
