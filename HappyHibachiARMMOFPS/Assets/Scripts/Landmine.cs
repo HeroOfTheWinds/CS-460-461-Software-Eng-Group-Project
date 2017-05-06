@@ -20,6 +20,9 @@ public class Landmine : MonoBehaviour {
     // Prefab holding the explosion object
     public GameObject Explosion;
 
+    // Sound to play when landmine explodes
+    public AudioClip ExplosionSFX;
+    
     public byte MineOrderID
     {
         get
@@ -59,6 +62,7 @@ public class Landmine : MonoBehaviour {
     // Use this function whenever a player enters into the zone that triggers the landmine
     void OnTriggerEnter( Collider other)
     {
+
         // If the collider entering the detonation range isn't the placer, create explosion
         if (other.gameObject.GetInstanceID() != placer)
         {
@@ -102,7 +106,8 @@ public class Landmine : MonoBehaviour {
                     }
                 }
             }
-
+            //play explosion sound were landmine is located
+            AudioSource.PlayClipAtPoint(ExplosionSFX, transform.position);
             // Now remove the landmine
             Destroy(gameObject);
         }

@@ -17,6 +17,13 @@ public class PlayerControl : MonoBehaviour {
     public GameObject minePrefab; // Object containing the landmine
     public GameObject exitButton;       // Button to exit the Battle Scene
 
+    //Sound Effects
+    public AudioSource FireSFX; //sound to play when shot is fired
+    public AudioSource enemyHitSFX; //sound to play when enemy is hit
+    public AudioSource otherHitSFX; //sound for other objects being hit
+    public AudioSource winJingle; //jingle for win
+    public AudioSource loseJingle; //jingle for lost
+
     //Camera for game view
     public Camera cam;
     //Camera offset
@@ -181,6 +188,7 @@ public class PlayerControl : MonoBehaviour {
                 // First get orientation of camera and adjust laser's start position so it's outside the player's collider
                 Vector3 shotPos = transform.TransformDirection(1f, -0.5f, 1f) + cam.transform.position;
                 Quaternion shotRot = cam.transform.rotation;
+                FireSFX.Play();
 
                 // Make a raycast from the camera to check for target hit
                 RaycastHit hit; // Var to store info on what got hit
@@ -209,11 +217,15 @@ public class PlayerControl : MonoBehaviour {
                             Debug.Log("Hit enemy");
                             // Spawn some sparks to let you know you hit them
                             GameObject sparks = Instantiate(SparkSys, hit.point, Quaternion.identity);
+                            // And play sfx
+                            enemyHitSFX.Play();
                             break;
                         default:
                             // Other cases to consider: wall, arena border, ground
                             // Spawn a cloud of dust
                             GameObject dust = Instantiate(DustSys, hit.point, Quaternion.identity);
+                            // play hit other sfx
+                            otherHitSFX.Play();
                             break;
                     }
                 }
@@ -263,6 +275,8 @@ public class PlayerControl : MonoBehaviour {
 
         // Battle was lost, so create a lose screen overlay
         GameObject loss = Instantiate(LoseCanvas);
+        // and play lose jingle
+        loseJingle.Play();
 
         // Set it to render over the local Main Camera
         loss.GetComponent<Canvas>().worldCamera = Camera.main;
@@ -275,6 +289,8 @@ public class PlayerControl : MonoBehaviour {
     {
         // Battle was won, so create a win screen overlay
         GameObject win = Instantiate(WinCanvas);
+        // and play win jingle
+        winJingle.Play();
 
         // Set it to render over the local Main Camera
         win.GetComponent<Canvas>().worldCamera = Camera.main;
