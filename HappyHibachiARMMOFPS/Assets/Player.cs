@@ -23,31 +23,14 @@ public class Player : MonoBehaviour
     public static Dictionary<string, int> Items = new Dictionary<string, int>();
 
     //function to increase player EXP
-    public void addEXP(int value)
+    public static void addEXP(int value, bool clientSide)
     {
+        //if exp is awarded on server side then just update local player exp and update player lvl in db if needed
+        Debug.Log("Awarding Player exp: " + value);
         EXP += value;
-        updatelevel();
-    }
-
-    //function to increse player level based on EXP, tenative 
-    public void updatelevel()
-    {
-        if(EXP > 0 && EXP < 100)
-        {
-            level = 1;
-        }
-        if (EXP > 100 && EXP < 300)
-        {
-            level = 2;
-        }
-        if (EXP > 300 && EXP < 600)
-        {
-            level = 3;
-        }
-        if (EXP > 600 && EXP < 1000)
-        {
-            level = 4;
-        }
+        GameObject fu = new GameObject();
+        fu.AddComponent<ExperienceUpdate>();
+        fu.GetComponent<ExperienceUpdate>().updateEXP(clientSide);
     }
 
     //function to increase/decrease faction EXP based on action, tenative

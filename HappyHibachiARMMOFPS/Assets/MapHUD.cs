@@ -104,6 +104,11 @@ public class MapHUD : MonoBehaviour {
         else
         {
             Debug.Log("WWW Error: " + www.error);
+            //display info from login
+            pName = Player.playername;
+            EXP = Player.EXP;
+            pLevel = Player.level;
+            Faction = Player.faction;
         }
     }
 }

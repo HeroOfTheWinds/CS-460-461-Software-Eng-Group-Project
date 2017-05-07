@@ -299,7 +299,7 @@ public class PlayerControl : MonoBehaviour {
         {
 
             //GIVE PLAYER 500 EXPERIENCE
-
+            Player.addEXP(500, false); // Exp is given by server so set client-side to false
             GenComManager.setUpdate(3, BattleNetManager.OpponentID);
         }
 
