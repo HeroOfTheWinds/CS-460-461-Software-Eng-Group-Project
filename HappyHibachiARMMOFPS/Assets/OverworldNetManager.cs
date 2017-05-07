@@ -28,6 +28,8 @@ public class OverworldNetManager : MonoBehaviour {
     public OnlineMaps map;
     public Canvas Land;
     public Canvas Colosseum;
+    public GameObject coloPrefab;
+    public GameObject landPrefab;
 
     // map stuff
     public Dropdown enemyRadar;
@@ -353,6 +355,7 @@ public class OverworldNetManager : MonoBehaviour {
                     foreach (NearbyObject nearbyObject in nearbyObjects)
                     {
                         OnlineMapsMarker3D newMarker = new OnlineMapsMarker3D();
+                        Console.WriteLine(nearbyObject.Name);
                         newMarker.id = nearbyObject.Id;
                         newMarker.lat = nearbyObject.Latitude;
                         newMarker.lon = nearbyObject.Longtitude;
@@ -367,12 +370,12 @@ public class OverworldNetManager : MonoBehaviour {
                                 }
                                 break;
                             case 1:
-                                newMarker.prefab = (GameObject)Instantiate(Resources.Load("Colosseum"));
+                                newMarker.prefab = coloPrefab;
                                 colosseums.Add(newMarker);
                                 landmarks.Add(newMarker);
                                 break;
                             case 2:
-                                newMarker.prefab = (GameObject)Instantiate(Resources.Load("Landmark"));
+                                newMarker.prefab = landPrefab;
                                 landmarks.Add(newMarker);
                                 break;
                             default:
