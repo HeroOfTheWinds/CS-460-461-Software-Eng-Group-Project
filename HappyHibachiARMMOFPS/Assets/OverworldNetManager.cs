@@ -28,8 +28,16 @@ public class OverworldNetManager : MonoBehaviour {
     public OnlineMaps map;
     public Canvas Land;
     public Canvas Colosseum;
+
+    // map stuff
     public Dropdown enemyRadar;
     private static List<NearbyObject> enemyList;
+    List<OnlineMapsMarker3D> landmarks;
+    public GameObject prefab;
+    OnlineMapsMarker3D locationMarker;
+    List<OnlineMapsMarker3D> colosseums;
+
+    // Random thing
     private static System.Random rand;
 
     //private bool upNearbyObj;
@@ -147,6 +155,35 @@ public class OverworldNetManager : MonoBehaviour {
 
                 //start receiving updates from server
                 client.BeginReceive(size, 0, 4, 0, new AsyncCallback(updateDriver), null);
+
+                // Gets the current 3D control.
+                OnlineMapsControlBase3D control = OnlineMapsControlBase3D.instance;
+                if (control == null)
+                {
+                    UnityEngine.Debug.LogError("You must use the 3D control (Texture or Tileset).");
+                    return;
+                }
+                //Create a marker to show the current GPS coordinates.
+                //Instead of "null", you can specify the texture desired marker.
+                locationMarker = control.AddMarker3D(Vector2.zero, prefab);
+
+                //Hide handle until the coordinates are not received.
+                locationMarker.enabled = true;
+
+                // Gets Location Service Component.
+                OnlineMapsLocationService ls = OnlineMapsLocationService.instance;
+
+                if (ls == null)
+                {
+                    UnityEngine.Debug.LogError(
+                        "Location Service not found.\nAdd Location Service Component (Component / Infinity Code / Online Maps / Plugins / Location Service).");
+                    return;
+                }
+
+                //Subscribe to the GPS coordinates change
+                ls.OnLocationChanged += OnLocationChanged;
+                ls.OnCompassChanged += OnCompassChanged;
+
             }
             //catch exception if fail to connect
             catch (Exception e)
@@ -330,10 +367,13 @@ public class OverworldNetManager : MonoBehaviour {
                                 }
                                 break;
                             case 1:
-                                //newMarker.prefab = (GameObject)Instantiate(Resources.Load("Colosseum"));
+                                newMarker.prefab = (GameObject)Instantiate(Resources.Load("Colosseum"));
+                                colosseums.Add(newMarker);
+                                landmarks.Add(newMarker);
                                 break;
                             case 2:
-                                //newMarker.prefab = (GameObject)Instantiate(Resources.Load("Landmark"));
+                                newMarker.prefab = (GameObject)Instantiate(Resources.Load("Landmark"));
+                                landmarks.Add(newMarker);
                                 break;
                             default:
                                 break;
@@ -505,6 +545,24 @@ public class OverworldNetManager : MonoBehaviour {
                 factionLevel = value;
             }
         }
+    }
+
+    // Stuff for OnlineMaps, handles location and compass changes
+    private void OnCompassChanged(float f)
+    {
+        //Set marker rotation
+        Transform markerTransform = locationMarker.transform;
+        if (markerTransform != null) markerTransform.rotation = Quaternion.Euler(0, f * 360, 0);
+    }
+
+    //This event occurs at each change of GPS coordinates
+    private void OnLocationChanged(Vector2 position)
+    {
+        //Change the position of the marker to GPS coordinates
+        locationMarker.position = position;
+
+        //If the marker is hidden, show it
+        if (!locationMarker.enabled) locationMarker.enabled = true;
     }
 
 }
