@@ -370,13 +370,9 @@ public class OverworldNetManager : MonoBehaviour {
                                 }
                                 break;
                             case 1:
-<<<<<<< HEAD
                                 newMarker.prefab = coloPrefab;
-=======
-                                newMarker.prefab = (GameObject)Instantiate(Resources.Load("Colosseum"));
                                 newMarker.prefab.GetComponent<ColosseumFaction>().coloseumID = newMarker.id;
                                 newMarker.prefab.GetComponent<ColosseumFaction>().UpdateFaction();
->>>>>>> 439e3c1133b45290877a17c02526393afa08bb08
                                 colosseums.Add(newMarker);
                                 landmarks.Add(newMarker);
                                 break;
