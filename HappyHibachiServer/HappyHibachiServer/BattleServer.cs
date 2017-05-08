@@ -104,6 +104,7 @@ namespace HappyHibachiServer
             {
                 //retrieve player level from the db and use to create player stats
                 state.ClientStats = new PlayerStats(new DatabaseConnect().getPlayerLevel(state.ClientID));
+                Console.WriteLine(new DatabaseConnect().getPlayerLevel(state.ClientID));
 
                 ClientState addSocket;
                 lock (ConnectedPlayers.DICTIONARY_LOCK)
@@ -187,10 +188,12 @@ namespace HappyHibachiServer
                 //lock write operations on the socket
                 lock(state.WriteLock)
                 {
+                    byte[] opponentLevel = new byte[1];
+                    opponentLevel[0] = (byte)((state.OpponentStats.MaxHP - 100) / 21);
+                    handler.Send(opponentLevel, 1, 0);
                     //tell the client where to spawn
                     handler.Send(spawn, 1, 0);
                 }
-                
                 //start receiving client updates
                 handler.BeginReceive(state.Update, 0, UPDATE_SIZE, 0, new AsyncCallback(readUpdate), state);
             }
@@ -261,7 +264,7 @@ namespace HappyHibachiServer
                         }
                         if (((flags >> 6) & 1) == 1)
                         {
-                            state.OpponentStats.HP -= state.ClientStats.Attack - state.OpponentStats.Defense;
+                            state.OpponentStats.HP -= Math.Max(state.ClientStats.Attack - state.OpponentStats.Defense, 1);
                             Console.WriteLine("shot");
                             Console.WriteLine("Opponent life: " + state.OpponentStats.HP.ToString());
                         }

@@ -9,13 +9,13 @@ public class EnemyStatus : MonoBehaviour
 
     // Create private variables for player stats
     private string enemyID;
-    private int level = 1;
-    private int maxHP = 100;
-    private int attack = 15;
-    private int defense = 10;
-    private float atkSpeed = 0.5f;
+    private static int level = 1;
+    private static int maxHP = 100;
+    private static int attack = 15;
+    private static int defense = 10;
+    private static float atkSpeed = 0.5f;
 
-    private float currentHP = 100f;
+    private static float currentHP = 100f;
 
     // Reference the HP bar above the player for updating size
     public GameObject HPBar;
@@ -30,11 +30,11 @@ public class EnemyStatus : MonoBehaviour
     {
         // Code for retrieving enemy level from server should go here //
         enemyID = BattleNetManager.OpponentID.ToString();
-        level = retrieveLevelDB(enemyID);
-        Debug.Log("Enemy level: " + level);
+        //level = retrieveLevelDB(enemyID);
+        //Debug.Log("Enemy level: " + level);
 
         // Calculate stats based off received data
-        CalcStats();
+        //CalcStats();
     }
 
     // Update is called once per frame
@@ -86,45 +86,46 @@ public class EnemyStatus : MonoBehaviour
 
     // Function to calculate current stats based off current level
     // Very much WIP, gotta decide growth functions
-    private void CalcStats()
+    private static void CalcStats()
     {
         // Using linear for now, will do something robust later
         maxHP = 100 + level * 21;
         attack = 15 + level * 4;
         defense = 10 + level * 3;
         atkSpeed = 0.5f + 0.05f * level;
+        currentHP = maxHP;
     }
 
     //function to retrieve the opponent's level based off their guid
-    public int retrieveLevelDB(string playerID)
-    {
-        var form = new WWWForm();
-        form.AddField("playerID", playerID);
-        WWW send = new WWW("http://13.84.163.243/level.php", form);
-        StartCoroutine(WaitForLevelRequest(send, level));
+    //public int retrieveLevelDB(string playerID)
+    //{
+    //    var form = new WWWForm();
+    //    form.AddField("playerID", playerID);
+    //    WWW send = new WWW("http://13.84.163.243/level.php", form);
+    //    StartCoroutine(WaitForLevelRequest(send, level));
 
-        //return level;
-        //return level 0 until complete
-        return 0;
-    }
+    //    return level;
+    //    //return level 0 until complete
+    //    //return 0;
+    //}
 
-    //function sends guid to level.php to retrieve level from server
-    IEnumerator WaitForLevelRequest(WWW www, int level)
-    {
-        yield return www;
-        if (www.error == null) //connection is good and string recieved from server
-        {
-            Debug.Log("Connection good.");
-            string text = Regex.Replace(www.text, @"\s", ""); //strip www.text of any whitespace
-            level = Convert.ToInt32(text);
-            Debug.Log(level);
-            //CalcStats();
-        }
-        else
-        {
-            Debug.Log("Connection error.");
-        }
-    }
+    ////function sends guid to level.php to retrieve level from server
+    //IEnumerator WaitForLevelRequest(WWW www, int level)
+    //{
+    //    yield return www;
+    //    if (www.error == null) //connection is good and string recieved from server
+    //    {
+    //        Debug.Log("Connection good.");
+    //        string text = Regex.Replace(www.text, @"\s", ""); //strip www.text of any whitespace
+    //        level = Convert.ToInt32(text);
+    //        Debug.Log(level);
+    //        //CalcStats();
+    //    }
+    //    else
+    //    {
+    //        Debug.Log("Connection error.");
+    //    }
+    //}
 
     /*
     -------------GETTERS---------------
@@ -133,6 +134,11 @@ public class EnemyStatus : MonoBehaviour
     public int getLevel()
     {
         return level;
+    }
+    public static void setLevel(int l)
+    {
+        level = l;
+        CalcStats();
     }
 
     public int getMaxHP()

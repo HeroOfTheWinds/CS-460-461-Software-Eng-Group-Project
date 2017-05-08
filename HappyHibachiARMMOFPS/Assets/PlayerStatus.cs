@@ -27,8 +27,9 @@ public class PlayerStatus : MonoBehaviour {
 	void Start () {
         // Code for retrieving level from server should go here //
         playerID = Player.playerID.ToString();
-        level = retrieveLevelDB(playerID);
-        Debug.Log("Player level: " + level);
+        //level = retrieveLevelDB(playerID);
+        //Debug.Log("Player level: " + level);
+        level = Player.level;
 
         // Calculate stats based off received data
         CalcStats();
@@ -93,6 +94,7 @@ public class PlayerStatus : MonoBehaviour {
         attack = 15 + level * 4;
         defense = 10 + level * 3;
         atkSpeed = 0.5f + 0.05f * level;
+        currentHP = maxHP;
     }
 
     //function to retrieve the player's level based off their guid
@@ -104,9 +106,9 @@ public class PlayerStatus : MonoBehaviour {
         WWW send = new WWW("http://13.84.163.243/level.php", form);
         StartCoroutine(WaitForLevelRequest(send, level));
 
-        //return level;
+        return Player.level;
         //return level 0 until complete
-        return 0;
+        //return 0;
     }
 
     //function sends guid to level.php to retrieve level from server

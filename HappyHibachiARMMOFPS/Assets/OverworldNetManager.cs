@@ -373,13 +373,13 @@ public class OverworldNetManager : MonoBehaviour {
                                     enemyList.Add(nearbyObject);
                                 }
                                 break;
-                            case 1:
-                                newMarker.prefab = coloPrefab;
-                                newMarker.prefab.GetComponent<ColosseumFaction>().coloseumID = newMarker.id;
-                                newMarker.prefab.GetComponent<ColosseumFaction>().UpdateFaction();
-                                colosseums.Add(newMarker);
-                                landmarks.Add(newMarker);
-                                break;
+                            //case 1:
+                            //    newMarker.prefab = coloPrefab;
+                            //    newMarker.prefab.GetComponent<ColosseumFaction>().coloseumID = newMarker.id;
+                            //    newMarker.prefab.GetComponent<ColosseumFaction>().UpdateFaction();
+                            //    colosseums.Add(newMarker);
+                            //    landmarks.Add(newMarker);
+                            //    break;
                             case 2:
                                 newMarker.prefab = landPrefab;
                                 landmarks.Add(newMarker);

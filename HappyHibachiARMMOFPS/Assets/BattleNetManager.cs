@@ -146,8 +146,12 @@ public class BattleNetManager : MonoBehaviour
             //send the battle guid to the client in order to connect to opponent
             client.Send(BattleID.ToByteArray());
 
+            byte[] opponentLevel = new byte[1];
+            client.Receive(opponentLevel, 1, 0);
+            EnemyStatus.setLevel(opponentLevel[0]);
+
             //gets which spawn to use
-            if(client.Receive(spawn, 1, 0) == 0)
+            if (client.Receive(spawn, 1, 0) == 0)
             {
                 //if socket closed by server throw exception to return to overworld
                 throw new Exception("Connection timed out");
@@ -158,8 +162,6 @@ public class BattleNetManager : MonoBehaviour
             //spawn opponent at the other location
             opponent.transform.position = spawns[(spawn[0] + 1) % 2].SpawnPos;
             opponent.transform.rotation = spawns[(spawn[0] + 1) % 2].SpawnRot;
-
-            
 
             //Debug.Log("Send GUID Successful");
 

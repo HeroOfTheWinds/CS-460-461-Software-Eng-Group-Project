@@ -209,9 +209,9 @@ public class PlayerControl : MonoBehaviour {
                         case "Enemy":
                             // Get that player's stats and take off some HP
                             e_defense = hit.collider.gameObject.GetComponent<EnemyStatus>().getDefense();
-                            float damage = attack - e_defense;
-                            if (damage < 0)
-                                damage = 0f;
+                            float damage = Math.Max(attack - e_defense, 1);
+                            //if (damage < 0)
+                            //    damage = 0f;
                             hit.collider.gameObject.GetComponent<EnemyStatus>().TakeHP(damage);
                             ehit = true;
                             Debug.Log("Hit enemy");
@@ -330,9 +330,9 @@ public class PlayerControl : MonoBehaviour {
     //temp function for hitting player
     public void hit(float e_attack)
     {
-        float damage = e_attack - defense;
-        if (damage < 0)
-            damage = 0f;
+        float damage = Math.Max(e_attack - defense, 1);
+        //if (damage < 0)
+        //    damage = 0f;
         gameObject.GetComponent<PlayerStatus>().TakeHP(damage);
         animator.SetTrigger("Damage");
     }

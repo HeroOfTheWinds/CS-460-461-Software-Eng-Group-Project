@@ -69,6 +69,9 @@ public class MapHUD : MonoBehaviour {
             EXP = Int32.Parse(splitString[1]);
             pLevel = Int32.Parse(splitString[2]);
             Faction = Int32.Parse(splitString[3]);
+            Player.level = pLevel;
+            Player.EXP = EXP;
+            Player.faction = Faction;
 
             // Reflect changes
             pText.text = pName;
