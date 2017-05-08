@@ -39,6 +39,7 @@ public class OverworldNetManager : MonoBehaviour {
     public GameObject prefab;
     OnlineMapsMarker3D locationMarker;
     List<OnlineMapsMarker3D> colosseums;
+    OnlineMapsControlBase3D control;
 
     // Random thing
     private static System.Random rand;
@@ -167,7 +168,7 @@ public class OverworldNetManager : MonoBehaviour {
                 client.BeginReceive(size, 0, 4, 0, new AsyncCallback(updateDriver), null);
 
                 // Gets the current 3D control.
-                OnlineMapsControlBase3D control = OnlineMapsControlBase3D.instance;
+                control = OnlineMapsControlBase3D.instance;
                 if (control == null)
                 {
                     UnityEngine.Debug.LogError("You must use the 3D control (Texture or Tileset).");
@@ -381,13 +382,13 @@ public class OverworldNetManager : MonoBehaviour {
                                     enemyList.Add(nearbyObject.Name,nearbyObject);
                                 }
                                 break;
-                            //case 1:
-                            //    newMarker.prefab = coloPrefab;
-                            //    newMarker.prefab.GetComponent<ColosseumFaction>().coloseumID = newMarker.id;
-                            //    newMarker.prefab.GetComponent<ColosseumFaction>().UpdateFaction();
-                            //    colosseums.Add(newMarker);
-                            //    landmarks.Add(newMarker);
-                            //    break;
+                            case 1:
+                                newMarker.prefab = coloPrefab;
+                                newMarker.prefab.GetComponent<ColosseumFaction>().coloseumID = newMarker.id;
+                                newMarker.prefab.GetComponent<ColosseumFaction>().UpdateFaction();
+                                colosseums.Add(newMarker);
+                                landmarks.Add(newMarker);
+                                break;
                             case 2:
                                 newMarker.prefab = landPrefab;
                                 landmarks.Add(newMarker);
@@ -403,6 +404,13 @@ public class OverworldNetManager : MonoBehaviour {
                 {
                     UnityEngine.Debug.Log("should be adding enemy id");
                     enemyRadar.options.Add(new Dropdown.OptionData(enemy.Value.Name.ToString()));
+                }
+
+                foreach(OnlineMapsMarker3D marker in landmarks)
+                {
+                    locationMarker = marker;
+                    Vector2 locale = new Vector2((float)marker.lat, (float)marker.lon);
+                    locationMarker = control.AddMarker3D(locale, locationMarker.prefab);
                 }
 
                 waitUpdate.Set();
