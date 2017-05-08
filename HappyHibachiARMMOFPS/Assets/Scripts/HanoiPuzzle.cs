@@ -445,6 +445,8 @@ public class HanoiPuzzle : MonoBehaviour {
 
         // Set it to render over the local Main Camera
         loss.GetComponent<Canvas>().worldCamera = Camera.main;
+        Canvas canv = loss.GetComponent<Canvas>();
+        canv.planeDistance = 0.4f;
     }
 
     public void DisplayWin()
@@ -454,5 +456,7 @@ public class HanoiPuzzle : MonoBehaviour {
 
         // Set it to render over the local Main Camera
         win.GetComponent<Canvas>().worldCamera = Camera.main;
+        Canvas canv = win.GetComponent<Canvas>();
+        canv.planeDistance = 0.4f;
     }
 }
