@@ -74,6 +74,8 @@ public class BattleNetManager : MonoBehaviour
     //troubleshooting
     private Stopwatch responseTime = new Stopwatch();
 
+    private int intervals;
+
     public static Guid BattleID
     {
         get
@@ -106,6 +108,7 @@ public class BattleNetManager : MonoBehaviour
     {
         try
         {
+            intervals = 0;
             battleEnded = false;
             endGameDisplayed = false;
             //remote endpoint of the server
@@ -404,14 +407,29 @@ public class BattleNetManager : MonoBehaviour
                 //using normal splines now (degree 3)
                 //UnityEngine.Debug.Log("before");
                 long t = updateTime.ElapsedMilliseconds;
-                //use change in time / 100 because otherwise change much too extreme at high latency
-                eUpdate.extrapolateMotion(lastUpdateTime + Math.Pow((t - lastUpdateTime), 2.0 / 3.0) / 30.0, opponent);
-                //UnityEngine.Debug.Log("after");
+                if(intervals < EnemyUpdate.INTERVALS)
+                {
+                    if (intervals == 0) {
+                        eUpdate.interpolateMotion(true, opponent);
+                    }
+                    else {
+                        eUpdate.interpolateMotion(false, opponent);
+                    }
+                    intervals++;
+                }
+                else
+                {
+                    //use change in time / 100 because otherwise change much too extreme at high latency
+                    eUpdate.extrapolateMotion(lastUpdateTime + Math.Pow((t - lastUpdateTime), 2.0 / 3.0) / 20, opponent);
+                    //UnityEngine.Debug.Log("after");
+                }
+
             }
         }
         //complete final update if battle ended and final update has not been run
         else if(receiveUpdate)
         {
+            intervals = 0;
             eUpdate.runUpdate(controller, opponent);
             //unblock so method can exit (sockets should be closed, so will throw an exception)
             updateFin.Set();

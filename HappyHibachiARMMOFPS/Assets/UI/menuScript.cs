@@ -29,10 +29,10 @@ public class menuScript : MonoBehaviour {
     public void callBattle()
     {
         enemyRadar = GameObject.Find("Dropdown");
-        string id = enemyRadar.GetComponent<Dropdown>().captionText.text;
-        if (id != "(Select)")
+        Guid id = OverworldNetManager.getIdByName(enemyRadar.GetComponent<Dropdown>().captionText.text);
+        if (id != new Guid())
         {
-            opponentID = new Guid(id);
+            opponentID = id;
         }
         GenComManager.setUpdate(0, opponentID);
 

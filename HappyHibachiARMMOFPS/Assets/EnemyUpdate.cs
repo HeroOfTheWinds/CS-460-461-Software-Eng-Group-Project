@@ -54,6 +54,9 @@ public class EnemyUpdate
     private float[] r;
     //store last time for interpolation
     private double lastT;
+    private double interval;
+
+    public static readonly int INTERVALS = 10;
 
     private bool updateRun;
 
@@ -99,6 +102,7 @@ public class EnemyUpdate
         z[0] = 12;
         r[0] = 180;
         lastT = 0;
+        interval = 0;
         numRecords = 1;
         updateRun = false;
     }
@@ -150,15 +154,18 @@ public class EnemyUpdate
         
     }
 
-    public void runUpdate(PlayerControl controller, GameObject enemy)
+    public void interpolateMotion(bool first, GameObject enemy)
     {
         //Debug.Log(battleEnd);
         //Debug.Log("update run start");
         //Debug.Log(rot);  
-        double intervals = 10;
+        
         double time = t[numRecords - 1];
         //interpolate 4 subintervals between last position and this position
-        double interval = (time - lastT) / intervals;
+        if (first)
+        {
+            interval = (time - lastT) / INTERVALS;
+        }
 
         float xPos, zPos, rot;
         double[] c = new double[numRecords];
@@ -170,37 +177,46 @@ public class EnemyUpdate
             updateRun = true;
             //doesnt really make a difference, too fast (if anything might make it worse)
             //possibly come up with an improved version to smooth transitions so keep for now
-            
-            //only estimate for 4 subintervals, use exact position for end point
-            for (int i = 0; i < intervals - 1; i++)
-            {
-                //start at the first time interval after current position
-                lastT += interval;
-                spline3Coef(numRecords, t, x, ref c);
-                xPos = spline3Eval(numRecords, t, x, c, lastT);
-                spline3Coef(numRecords, t, z, ref c);
-                zPos = spline3Eval(numRecords, t, z, c, lastT);
-                spline3Coef(numRecords, t, r, ref c);
-                rot = spline3Eval(numRecords, t, r, c, lastT);
-                updateVector = new Vector3(xPos, 0, zPos);
-                updateQuat = Quaternion.Euler(0, rot, 0);
-                enemy.transform.position = updateVector;
-                enemy.transform.rotation = updateQuat;
-                //Thread.Sleep(17);
-            }
-            
+
+            //start at the first time interval after current position
+            lastT += interval;
+            spline3Coef(numRecords, t, x, ref c);
+            xPos = spline3Eval(numRecords, t, x, c, lastT);
+            spline3Coef(numRecords, t, z, ref c);
+            zPos = spline3Eval(numRecords, t, z, c, lastT);
+            spline3Coef(numRecords, t, r, ref c);
+            rot = spline3Eval(numRecords, t, r, c, lastT);
+            updateVector = new Vector3(xPos, 0, zPos);
+            updateQuat = Quaternion.Euler(0, rot, 0);
+            enemy.transform.position = updateVector;
+            enemy.transform.rotation = updateQuat;
+
+        }
+        else
+        {
+            //set up enemy's position and rotation from update
+            updateVector = new Vector3(x[numRecords - 1], 0, z[numRecords - 1]);
+            updateQuat = Quaternion.Euler(0, r[numRecords - 1], 0);
+
+            //set enemy position and rotation
+            enemy.transform.position = updateVector;
+            enemy.transform.rotation = updateQuat;
+
+            //set the last time to the update time
+            lastT = time;
         }
 
-        //set up enemy's position and rotation from update
-        updateVector = new Vector3(x[numRecords - 1], 0, z[numRecords - 1]);
-        updateQuat = Quaternion.Euler(0, r[numRecords - 1], 0);
 
-        //set enemy position and rotation
-        enemy.transform.position = updateVector;
-        enemy.transform.rotation = updateQuat;
+    }
 
-        //set the last time to the update time
-        lastT = time;
+    public void runUpdate(PlayerControl controller, GameObject enemy)
+    {
+        //all movement now dealt with by interpolation/extrapolation
+
+        if (numRecords >= 3)
+        {
+            updateRun = true;
+        }
 
         //Debug.Log("update run end");
 
@@ -268,7 +284,7 @@ public class EnemyUpdate
         //instantiate mine if placed by enemy
         if (mp)
         {
-            controller.PlaceLandmine(new Vector3(mpx, 0, mpz), updateQuat, enemy.GetInstanceID());
+            controller.PlaceLandmine(new Vector3(mpx, 0, mpz), new Quaternion(), enemy.GetInstanceID());
         }
         
         if(hpr)

@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using UnityEngine.SceneManagement;
 using System.Text;
+using System.Linq;
 
 public class OverworldNetManager : MonoBehaviour {
 
@@ -33,7 +34,7 @@ public class OverworldNetManager : MonoBehaviour {
 
     // map stuff
     public Dropdown enemyRadar;
-    private static List<NearbyObject> enemyList;
+    private static Dictionary<string, NearbyObject> enemyList;
     List<OnlineMapsMarker3D> landmarks;
     public GameObject prefab;
     OnlineMapsMarker3D locationMarker;
@@ -67,14 +68,21 @@ public class OverworldNetManager : MonoBehaviour {
 
     private bool restart = false;
 
+    public static Guid getIdByName(string name)
+    {
+        NearbyObject n;
+        enemyList.TryGetValue(name, out n);
+        return n != null ? n.Id : new Guid();
+    }
+
     public static bool getQuestEnemy(out int level, out string name, out Guid id)
     {
         if(enemyList.Count != 0)
         {
             int index = (int)(rand.NextDouble() * enemyList.Count);
-            level = enemyList[index].PlayerLevel;
-            name = enemyList[index].Name;
-            id = enemyList[index].Id;
+            level = enemyList.Values.ElementAt(index).PlayerLevel;
+            name = enemyList.Values.ElementAt(index).Name;
+            id = enemyList.Values.ElementAt(index).Id;
             return true;
         }
         level = 0;
@@ -350,7 +358,7 @@ public class OverworldNetManager : MonoBehaviour {
                     //UnityEngine.Debug.Log("there are: " + nearbyObjects.Count);
                     landmarks = new List<OnlineMapsMarker3D>();
                     colosseums = new List<OnlineMapsMarker3D>();
-                    enemyList = new List<NearbyObject>();
+                    enemyList = new Dictionary<string, NearbyObject>();
                     enemyRadar.options.Clear();
                     enemyRadar.options.Add(new Dropdown.OptionData("(Select)"));
                     //enemyRadar.options.Add(new Dropdown.OptionData("Test"));
@@ -365,12 +373,12 @@ public class OverworldNetManager : MonoBehaviour {
                         switch (nearbyObject.Type)
                         {
                             case 0:
-                                UnityEngine.Debug.Log("found someone at least");
+                                //UnityEngine.Debug.Log("found someone at least");
                                 //newMarker.prefab = (GameObject)Instantiate(Resources.Load("EnemyPlayer"));
                                 if (nearbyObject.Id != Player.playerID)
                                 {
                                     //UnityEngine.Debug.Log("enemy id found");
-                                    enemyList.Add(nearbyObject);
+                                    enemyList.Add(nearbyObject.Name,nearbyObject);
                                 }
                                 break;
                             //case 1:
@@ -391,10 +399,10 @@ public class OverworldNetManager : MonoBehaviour {
                 }
 
                 // Add the enemies to the dropdown menu
-                foreach (NearbyObject enemy in enemyList)
+                foreach (KeyValuePair<string, NearbyObject> enemy in enemyList)
                 {
                     UnityEngine.Debug.Log("should be adding enemy id");
-                    enemyRadar.options.Add(new Dropdown.OptionData(enemy.Id.ToString()));
+                    enemyRadar.options.Add(new Dropdown.OptionData(enemy.Value.Name.ToString()));
                 }
 
                 waitUpdate.Set();

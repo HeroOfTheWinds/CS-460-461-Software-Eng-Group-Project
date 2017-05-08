@@ -419,7 +419,7 @@ namespace HappyHibachiServer
             quest = false;
             WRITE_LOCK = wl;
             rand = new Random();
-            generateQuest = new System.Timers.Timer(10000);
+            generateQuest = new System.Timers.Timer(600000);
             generateQuest.Elapsed += setQuest;
             generateQuest.Start();
         }
