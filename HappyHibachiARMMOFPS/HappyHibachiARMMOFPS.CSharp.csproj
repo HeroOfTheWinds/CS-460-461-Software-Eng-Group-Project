@@ -282,6 +282,7 @@
     <Compile Include="Assets\ReturnToOverworld.cs" />
     <Compile Include="Assets\SceneLoader.cs" />
     <Compile Include="Assets\Scripts\ARCamera.cs" />
+    <Compile Include="Assets\Scripts\CloseDialogue.cs" />
     <Compile Include="Assets\Scripts\DeviceRotation.cs" />
     <Compile Include="Assets\Scripts\FactionTileOverlay.cs" />
     <Compile Include="Assets\Scripts\HanoiPuzzle.cs" />
