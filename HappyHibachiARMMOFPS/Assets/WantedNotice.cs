@@ -7,7 +7,7 @@ public class WantedNotice : MonoBehaviour {
 
     // public vars relating to the objects we want to change
     public Canvas notice;
-    public string name;
+    public string opname;
     public int level;
     public Text targetName;
     public Text targetLevel;
@@ -15,7 +15,7 @@ public class WantedNotice : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         // Create vars to store info from server
-        name = "";
+        opname = "";
         level = 0;
 
         // Get current location
@@ -27,19 +27,18 @@ public class WantedNotice : MonoBehaviour {
             lon = Input.location.lastData.longitude;
         }
 
-        // Server code here to retrieve current bounty's name and level
-        // Needs to send lat and lon to get local results
-
 
         // Update the info on the notification
-        targetName.text = name;
+        targetName.text = opname;
         targetLevel.text = level.ToString();
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		
-	}
+        // Update the info on the notification
+        targetName.text = opname;
+        targetLevel.text = level.ToString();
+    }
 
     // Function to close the view
     public void CloseNotice()

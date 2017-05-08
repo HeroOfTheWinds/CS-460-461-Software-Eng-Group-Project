@@ -2,6 +2,7 @@
 using System.Collections;
 using UnityStandardAssets.CrossPlatformInput;
 using System;
+using System.Threading;
 
 public class EnemyUpdate
 {
@@ -154,11 +155,12 @@ public class EnemyUpdate
         //Debug.Log(battleEnd);
         //Debug.Log("update run start");
         //Debug.Log(rot);  
+        double intervals = 10;
         double time = t[numRecords - 1];
         //interpolate 4 subintervals between last position and this position
-        double interval = (time - lastT) / 5;
+        double interval = (time - lastT) / intervals;
 
-        //float xPos, zPos, rot;
+        float xPos, zPos, rot;
         double[] c = new double[numRecords];
         Vector3 updateVector;
         Quaternion updateQuat;
@@ -168,9 +170,9 @@ public class EnemyUpdate
             updateRun = true;
             //doesnt really make a difference, too fast (if anything might make it worse)
             //possibly come up with an improved version to smooth transitions so keep for now
-            /*
+            
             //only estimate for 4 subintervals, use exact position for end point
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < intervals - 1; i++)
             {
                 //start at the first time interval after current position
                 lastT += interval;
@@ -184,8 +186,9 @@ public class EnemyUpdate
                 updateQuat = Quaternion.Euler(0, rot, 0);
                 enemy.transform.position = updateVector;
                 enemy.transform.rotation = updateQuat;
+                //Thread.Sleep(17);
             }
-            */
+            
         }
 
         //set up enemy's position and rotation from update

@@ -332,7 +332,7 @@ public class BattleNetManager : MonoBehaviour
         //if battle over, and the end game screen has not already been displayed, display appropriate screen based on details stored in isClient[0]
         if (battleEnded && !endGameDisplayed)
         {
-            UnityEngine.Debug.Log("should come here once: " + endGameDisplayed);
+            //UnityEngine.Debug.Log("should come here once: " + endGameDisplayed);
             //battle won
             if (isClient[0] == 1)
             {

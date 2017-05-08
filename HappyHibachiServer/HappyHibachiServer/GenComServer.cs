@@ -364,13 +364,13 @@ namespace HappyHibachiServer
 
         private static void processSpCom(ComState state)
         {
-            //tell user they recieved a quest
-            byte[] type = { 3 };
-            //Console.WriteLine("quest elapsed 2");
-            lock (state.WRITE_LOCK)
-            {
-                state.ClientSocket.Send(type);
-            }
+            ////tell user they recieved a quest
+            //byte[] type = { 3 };
+            ////Console.WriteLine("quest elapsed 2");
+            //lock (state.WRITE_LOCK)
+            //{
+            //    state.ClientSocket.Send(type);
+            //}
         }
 
         private static Guid getUpdateID(byte[] update)
@@ -419,7 +419,7 @@ namespace HappyHibachiServer
             quest = false;
             WRITE_LOCK = wl;
             rand = new Random();
-            generateQuest = new System.Timers.Timer(100000);
+            generateQuest = new System.Timers.Timer(10000);
             generateQuest.Elapsed += setQuest;
             generateQuest.Start();
         }
@@ -432,7 +432,7 @@ namespace HappyHibachiServer
             lock (WRITE_LOCK)
             {
                 //Console.WriteLine("quest elapsed");
-                clientSocket.Send(type);
+                clientSocket.Send(type, 1, 0);
             }
         }
 

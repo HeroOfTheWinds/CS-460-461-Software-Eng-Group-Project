@@ -304,100 +304,104 @@ public class GenComManager : MonoBehaviour {
 
             if (!processed.WaitOne(0))
             {
-                //Debug.Log(type[0] + "------------------------------------");
-                //before drawing stuff make sure they are in the expected screen (eg dont draw landmark info over the overworld map if they exit out of it before processed)
-                switch (type[0])
+                if (SceneManager.GetActiveScene().name.Equals("Overworld"))
                 {
-                    case 0:
-                        //tell user they have been challenged and ask if accept
-                        //display for 15 seconds
-                        //store whether they accept or not using method respondMatch(bool accepted)
-                        //after user responds to match, call setUpdate(5, BattleNetManager.OpponenetID)
-                        //if user accepted the request switch to the battle scene (will add final stage of verification both users connecting later)
-                        //details of battle will be implemented later
+                    //Debug.Log(type[0] + "------------------------------------");
+                    //before drawing stuff make sure they are in the expected screen (eg dont draw landmark info over the overworld map if they exit out of it before processed)
+                    switch (type[0])
+                    {
+                        case 0:
+                            //tell user they have been challenged and ask if accept
+                            //display for 15 seconds
+                            //store whether they accept or not using method respondMatch(bool accepted)
+                            //after user responds to match, call setUpdate(5, BattleNetManager.OpponenetID)
+                            //if user accepted the request switch to the battle scene (will add final stage of verification both users connecting later)
+                            //details of battle will be implemented later
 
-                        //-----------------TEMPORARY TEST CODE----------------------
+                            //-----------------TEMPORARY TEST CODE----------------------
 
-                        Debug.Log("Received Match request");
-                        respondMatch(true);
-                        setUpdate(5, BattleNetManager.OpponentID);
+                            Debug.Log("Received Match request");
+                            respondMatch(true);
+                            setUpdate(5, BattleNetManager.OpponentID);
 
-                        //----------------------------------------------------------
+                            //----------------------------------------------------------
 
-                        break;
-                    case 1:
-                        //draw colloseum info to screen, stored in colloseumInfo
-                        Debug.Log("Colloseum name: " + colloseumInfo.Name);
-                        Debug.Log("Colloseum description: " + colloseumInfo.Name);
-                        break;
-                    case 2:
-                        //draw landmark info to screen, stored in landmarkInfo
-                        //this gui.box thingy doesnt seem to do anything
-                        //GUI.Box(new Rect(0, 0, Screen.width, Screen.height), landmarkInfo.Name);
-                        Debug.Log("Colloseum name: " + landmarkInfo.Name);
-                        Debug.Log("Colloseum description: " + landmarkInfo.Name);
+                            break;
+                        case 1:
+                            //draw colloseum info to screen, stored in colloseumInfo
+                            Debug.Log("Colloseum name: " + colloseumInfo.Name);
+                            Debug.Log("Colloseum description: " + colloseumInfo.Name);
+                            break;
+                        case 2:
+                            //draw landmark info to screen, stored in landmarkInfo
+                            //this gui.box thingy doesnt seem to do anything
+                            //GUI.Box(new Rect(0, 0, Screen.width, Screen.height), landmarkInfo.Name);
+                            Debug.Log("Colloseum name: " + landmarkInfo.Name);
+                            Debug.Log("Colloseum description: " + landmarkInfo.Name);
 
-                        break;
-                    case 3:
-                        //Debug.Log("quest?????????????????????????????????");
-                        GameObject canvas = GameObject.Find("WantedCanvas");
-                        //Debug.Log(canvas);
-                        WantedNotice notice = (WantedNotice)canvas.GetComponent(typeof(WantedNotice));
-                        
-                        //only set the quest if there is a target available
-                        if (OverworldNetManager.getQuestEnemy(out notice.level, out notice.name, out questID))
-                        {
-                            canvas.GetComponent<Canvas>().enabled = true;
-                        }
-                        break;
-                    case 4:
-                        //show user items they received, stored in itemInfo (list of byte item ids)
-                        //use ItemList.getDestails(byte id) to get an ItemDetails object containing the items name and a path to its image
-                        //for now can just put name or something
-                        //if itemInfo is empty, display try again later message (can't get items)
-                        //place items in users inventory (even if not drawn to screen), can store as a mapping of the items id and the number held or something like that
+                            break;
+                        case 3:
+                            //Debug.Log("quest?????????????????????????????????");
+                            GameObject canvas = GameObject.Find("WantedCanvas");
+                            //Debug.Log(canvas);
+                            WantedNotice notice = (WantedNotice)canvas.GetComponent(typeof(WantedNotice));
 
-                        //-----------------TEMPORARY TEST CODE----------------------
+                            //only set the quest if there is a target available
+                            if (OverworldNetManager.getQuestEnemy(out notice.level, out notice.opname, out questID))
+                            {
+                                Debug.Log("quest opname: " + notice.opname);
+                                canvas.GetComponent<Canvas>().enabled = true;
+                            }
+                            break;
+                        case 4:
+                            //show user items they received, stored in itemInfo (list of byte item ids)
+                            //use ItemList.getDestails(byte id) to get an ItemDetails object containing the items name and a path to its image
+                            //for now can just put name or something
+                            //if itemInfo is empty, display try again later message (can't get items)
+                            //place items in users inventory (even if not drawn to screen), can store as a mapping of the items id and the number held or something like that
 
-                        items.enabled = true;
-                        Debug.Log("Received Items");
-                        ItemDetails receivedItem;
-                        string info = "";
-                        foreach (byte item in itemInfo)
-                        {
-                            receivedItem = ItemList.getDetails(item);
-                            info += receivedItem.Name + "\n";
-                            Debug.Log("Received Item: " + receivedItem.Name);
-                        }
-                        items.GetComponentInChildren<Text>().text = info;
+                            //-----------------TEMPORARY TEST CODE----------------------
 
-                        //----------------------------------------------------------
+                            items.enabled = true;
+                            Debug.Log("Received Items");
+                            ItemDetails receivedItem;
+                            string info = "";
+                            foreach (byte item in itemInfo)
+                            {
+                                receivedItem = ItemList.getDetails(item);
+                                info += receivedItem.Name + "\n";
+                                Debug.Log("Received Item: " + receivedItem.Name);
+                            }
+                            items.GetComponentInChildren<Text>().text = info;
 
-                        break;
-                    case 5:
-                        Debug.Log("Received Match response");
-                        if (outAccepted == 1)
-                        {
-                            //pause for two seconds to give user time to comprehend what's going on in case ack received quickly
-                            Thread.Sleep(2000);
-                            //send user to battle scene
-                            //SceneManager.LoadScene("Battle");
-                            LoadingScreen.GetComponent<SceneLoader>().LoadScene("Battle");
-                        }
-                        else if (outAccepted == 0)
-                        {
-                            //what happens if match declined?
-                            //prolly just display notice match declined for now
-                        }
-                        else
-                        {
-                            //should anything happen if an old request comes through?
-                            //do nothing for now
-                        }
-                        break;
-                    default:
-                        Debug.Log("Unexpected type");
-                        break;
+                            //----------------------------------------------------------
+
+                            break;
+                        case 5:
+                            Debug.Log("Received Match response");
+                            if (outAccepted == 1)
+                            {
+                                //pause for two seconds to give user time to comprehend what's going on in case ack received quickly
+                                Thread.Sleep(2000);
+                                //send user to battle scene
+                                //SceneManager.LoadScene("Battle");
+                                LoadingScreen.GetComponent<SceneLoader>().LoadScene("Battle");
+                            }
+                            else if (outAccepted == 0)
+                            {
+                                //what happens if match declined?
+                                //prolly just display notice match declined for now
+                            }
+                            else
+                            {
+                                //should anything happen if an old request comes through?
+                                //do nothing for now
+                            }
+                            break;
+                        default:
+                            Debug.Log("Unexpected type");
+                            break;
+                    }
                 }
 
                 processed.Set();
