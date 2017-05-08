@@ -275,11 +275,16 @@ public class PlayerControl : MonoBehaviour {
 
         // Battle was lost, so create a lose screen overlay
         GameObject loss = Instantiate(LoseCanvas);
+        Canvas canv = loss.GetComponent<Canvas>();
+        canv.planeDistance = 0.4f;
         // and play lose jingle
         loseJingle.Play();
 
         // Set it to render over the local Main Camera
         loss.GetComponent<Canvas>().worldCamera = Camera.main;
+
+        // Find the exitButton on the canvas
+        exitButton = GameObject.Find("BattleExit");
 
         // Bring up the exit button
         exitButton.SetActive(true);
@@ -289,6 +294,8 @@ public class PlayerControl : MonoBehaviour {
     {
         // Battle was won, so create a win screen overlay
         GameObject win = Instantiate(WinCanvas);
+        Canvas canv = win.GetComponent<Canvas>();
+        canv.planeDistance = 0.4f;
         // and play win jingle
         winJingle.Play();
 
@@ -300,6 +307,9 @@ public class PlayerControl : MonoBehaviour {
             Player.addEXP(500, false); // Exp is given by server so set client-side to false
             GenComManager.setUpdate(3, BattleNetManager.OpponentID);
         }
+
+        // Find the exitButton on the canvas
+        exitButton = GameObject.Find("BattleExit");
 
         // Bring up the exit button
         exitButton.SetActive(true);

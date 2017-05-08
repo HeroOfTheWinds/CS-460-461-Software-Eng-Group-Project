@@ -89,9 +89,9 @@
     <Compile Include="Assets\BattleNetManager.cs" />
     <Compile Include="Assets\CallColosseum.cs" />
     <Compile Include="Assets\CallLandmark.cs" />
-    <Compile Include="Assets\ColosseumFaction.cs" />
     <Compile Include="Assets\EnemyStatus.cs" />
     <Compile Include="Assets\EnemyUpdate.cs" />
+    <Compile Include="Assets\ExperienceUpdate.cs" />
     <Compile Include="Assets\FactionUpdate.cs" />
     <Compile Include="Assets\GenComManager.cs" />
     <Compile Include="Assets\Infinity Code\Online maps\Examples (API usage)\AMapSearchExample.cs" />
@@ -278,6 +278,7 @@
     <Compile Include="Assets\PlayerControl.cs" />
     <Compile Include="Assets\PlayerStatus.cs" />
     <Compile Include="Assets\Register.cs" />
+    <Compile Include="Assets\Resources\ColosseumFaction.cs" />
     <Compile Include="Assets\ReturnToOverworld.cs" />
     <Compile Include="Assets\SceneLoader.cs" />
     <Compile Include="Assets\Scripts\ARCamera.cs" />
