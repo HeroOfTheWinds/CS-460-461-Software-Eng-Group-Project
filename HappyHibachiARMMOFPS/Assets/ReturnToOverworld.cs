@@ -24,7 +24,7 @@ public class ReturnToOverworld : MonoBehaviour {
             if (rand > 0.5)
             {
                 //SceneManager.LoadScene("AR Scene 2");
-                LoadingScreen.GetComponent<SceneLoader>().LoadScene("AR Scene");
+                LoadingScreen.GetComponent<SceneLoader>().LoadScene("AR Scene 2");
             }
             else
             {
