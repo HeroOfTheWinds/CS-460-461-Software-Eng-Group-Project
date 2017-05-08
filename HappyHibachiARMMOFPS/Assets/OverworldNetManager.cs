@@ -223,9 +223,9 @@ public class OverworldNetManager : MonoBehaviour {
 
             byte[] idBytes = new byte[16];
 
-            nearbyObjects = new List<NearbyObject>();
-
             float lat;
+
+            nearbyObjects = new List<NearbyObject>();
 
             for (int i = 0; i < numObjects; i++)
             {
@@ -273,7 +273,7 @@ public class OverworldNetManager : MonoBehaviour {
                 Buffer.BlockCopy(buf, 8 * numObjects + i * 16, idBytes, 0, 16);
                 o.Id = new Guid(idBytes);
 
-                UnityEngine.Debug.Log(o.Id);
+                //UnityEngine.Debug.Log(o.Id);
 
                 /*-----------------TEMPORARY TEST CODE----------------------
 
@@ -285,6 +285,7 @@ public class OverworldNetManager : MonoBehaviour {
 
                 //----------------------------------------------------------*/
 
+                //UnityEngine.Debug.Log("Am I not being added?   " + o.Type);
                 nearbyObjects.Add(o);
                 //UnityEngine.Debug.Log(o.Longtitude);
             }
@@ -344,8 +345,9 @@ public class OverworldNetManager : MonoBehaviour {
                 //note: should check which scene is active before drawing, should be able to do that with scenemanager.getactivescene
                 if (SceneManager.GetActiveScene().name.Equals("Overworld"))
                 {
-                    //UnityEngine.Debug.Log("???????????");
-
+                    //UnityEngine.Debug.Log("there are: " + nearbyObjects.Count);
+                    landmarks = new List<OnlineMapsMarker3D>();
+                    colosseums = new List<OnlineMapsMarker3D>();
                     enemyList = new List<NearbyObject>();
                     enemyRadar.options.Clear();
                     enemyRadar.options.Add(new Dropdown.OptionData("(Select)"));
@@ -360,19 +362,21 @@ public class OverworldNetManager : MonoBehaviour {
                         switch (nearbyObject.Type)
                         {
                             case 0:
+                                UnityEngine.Debug.Log("found someone at least");
                                 //newMarker.prefab = (GameObject)Instantiate(Resources.Load("EnemyPlayer"));
                                 if (nearbyObject.Id != Player.playerID)
                                 {
+                                    //UnityEngine.Debug.Log("enemy id found");
                                     enemyList.Add(nearbyObject);
                                 }
                                 break;
-                            case 1:
-                                newMarker.prefab = (GameObject)Instantiate(Resources.Load("Colosseum"));
-                                newMarker.prefab.GetComponent<ColosseumFaction>().coloseumID = newMarker.id;
-                                newMarker.prefab.GetComponent<ColosseumFaction>().UpdateFaction();
-                                colosseums.Add(newMarker);
-                                landmarks.Add(newMarker);
-                                break;
+                            //case 1:
+                            //    newMarker.prefab = (GameObject)Instantiate(Resources.Load("Colosseum"));
+                            //    newMarker.prefab.GetComponent<ColosseumFaction>().coloseumID = newMarker.id;
+                            //    newMarker.prefab.GetComponent<ColosseumFaction>().UpdateFaction();
+                            //    colosseums.Add(newMarker);
+                            //    landmarks.Add(newMarker);
+                            //    break;
                             case 2:
                                 newMarker.prefab = (GameObject)Instantiate(Resources.Load("Landmark"));
                                 landmarks.Add(newMarker);
@@ -386,14 +390,15 @@ public class OverworldNetManager : MonoBehaviour {
                 // Add the enemies to the dropdown menu
                 foreach (NearbyObject enemy in enemyList)
                 {
-                        enemyRadar.options.Add(new Dropdown.OptionData(enemy.Id.ToString()));
+                    UnityEngine.Debug.Log("should be adding enemy id");
+                    enemyRadar.options.Add(new Dropdown.OptionData(enemy.Id.ToString()));
                 }
 
                 waitUpdate.Set();
             }
         }
-        catch(Exception) {
-            //UnityEngine.Debug.Log(e.ToString());
+        catch(Exception e) {
+            UnityEngine.Debug.Log(e.ToString());
             waitUpdate.Set();
         }
 

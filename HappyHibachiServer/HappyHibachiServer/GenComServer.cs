@@ -356,11 +356,6 @@ namespace HappyHibachiServer
             }
             else
             {
-                //signal player could not be challenged when implemented
-                //can probably just wait for server response when challenge sent
-                //just send a byte indicating whether server determined client to be busy (check if busy set in state), or if dced
-                //if client busy and receives request because server not updated yet or timed out, have it respond with 0, 1, or 2
-                //where receiving a 2 in a type 5 com means client busy (0 declined, 1 accepted)
 
                 //temporarily write console message for potential troubleshooting
                 Console.WriteLine("Received ID not in player table");
@@ -424,7 +419,7 @@ namespace HappyHibachiServer
             quest = false;
             WRITE_LOCK = wl;
             rand = new Random();
-            generateQuest = new System.Timers.Timer(10000);
+            generateQuest = new System.Timers.Timer(100000);
             generateQuest.Elapsed += setQuest;
             generateQuest.Start();
         }
@@ -436,7 +431,7 @@ namespace HappyHibachiServer
             byte[] type = { 3 };
             lock (WRITE_LOCK)
             {
-                Console.WriteLine("quest elapsed");
+                //Console.WriteLine("quest elapsed");
                 clientSocket.Send(type);
             }
         }

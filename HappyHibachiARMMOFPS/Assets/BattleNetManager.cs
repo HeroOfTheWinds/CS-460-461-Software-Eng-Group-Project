@@ -47,8 +47,8 @@ public class BattleNetManager : MonoBehaviour
     private ManualResetEvent readUpdate;
     private ManualResetEvent updateFin;
 
-    private bool battleEnded = false;
-    private bool endGameDisplayed = false;
+    private static bool battleEnded;
+    private static bool endGameDisplayed;
 
     //connected socket
     private Socket client;
@@ -106,6 +106,8 @@ public class BattleNetManager : MonoBehaviour
     {
         try
         {
+            battleEnded = false;
+            endGameDisplayed = false;
             //remote endpoint of the server
             IPEndPoint remoteEP = new IPEndPoint(IP, BATTLE_PORT);
 
@@ -328,6 +330,7 @@ public class BattleNetManager : MonoBehaviour
         //if battle over, and the end game screen has not already been displayed, display appropriate screen based on details stored in isClient[0]
         if (battleEnded && !endGameDisplayed)
         {
+            UnityEngine.Debug.Log("should come here once: " + endGameDisplayed);
             //battle won
             if (isClient[0] == 1)
             {

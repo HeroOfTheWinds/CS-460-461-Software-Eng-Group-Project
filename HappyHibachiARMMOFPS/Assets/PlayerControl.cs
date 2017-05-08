@@ -297,8 +297,6 @@ public class PlayerControl : MonoBehaviour {
 
         if(GenComManager.getQuestID() == BattleNetManager.OpponentID)
         {
-
-            //GIVE PLAYER 500 EXPERIENCE
             Player.addEXP(500, false); // Exp is given by server so set client-side to false
             GenComManager.setUpdate(3, BattleNetManager.OpponentID);
         }
